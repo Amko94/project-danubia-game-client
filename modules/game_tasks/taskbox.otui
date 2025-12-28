@@ -1,0 +1,78 @@
+TaskBox < UIWidget
+  size: 160 160
+  margin: 4
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #444444
+  focusable: true
+  clipping: true
+
+  layout:
+    type: anchor
+
+  Panel
+    id: header
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 22
+    background-color: #00000066
+    phantom: true
+
+  Label
+    id: taskName
+    font: verdana-11px-rounded
+    color: #ffffff
+    text-align: center
+    anchors.top: parent.top
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 3
+
+  Panel
+    id: iconContainer
+    anchors.top: header.bottom
+    anchors.bottom: progressPanel.top
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 10
+    background-color: #00000000
+    phantom: true
+
+    layout:
+      type: grid
+      cell-size: 64 64
+      cell-spacing: -35
+      num-columns: 3
+
+  Panel
+    id: progressPanel
+    size: 130 16
+    background-color: #000000aa
+    border-width: 1
+    border-color: #333333
+    anchors.bottom: parent.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-bottom: 10
+
+    Panel
+      id: progressBar
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      width: 0
+      background-color: #00ff00
+      opacity: 0.6
+
+    Label
+      id: progressLabel
+      font: verdana-11px-antialised
+      color: #ffffff
+      text-align: center
+      anchors.fill: parent
+
+  $hover:
+    background-color: #2a2a2a
+    border-color: #ffffff33
+
+  $on:
+    background-color: #333333
+    border-color: #00ff00

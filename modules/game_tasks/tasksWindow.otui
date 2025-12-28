@@ -1,0 +1,221 @@
+TaskWindow < MainWindow
+  id: taskWindow
+  text: Tasks
+  size: 740 650
+  draggable: true
+  @onEscape: self:destroy()
+  onDestroy: modules.game_tasks.onWindowDestroy()
+
+  Label
+    id: statusLabel
+    visible: false
+
+  ActiveTaskPanel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.bottom: filterPanel.top
+
+  Panel
+    id: categoryPanel
+    anchors.top: parent.top
+    anchors.left: activeTaskPanel.right
+    anchors.right: parent.right
+    height: 20
+    margin: 5 5 0 5
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #333333
+
+    layout:
+      type: grid
+      num-columns: 5
+      cell-size: 105 20
+      cell-spacing: 1
+
+    Button
+      id: categoryAll
+      text: All
+      font: verdana-11px-rounded
+      background-color: #222222
+      border-width: 0
+      @onClick: modules.game_tasks.filterByCategory(0)
+      $on:
+        background-color: #444444
+        color: #00ff00
+
+    Button
+      id: categoryLow
+      text: Low
+      font: verdana-11px-rounded
+      background-color: #222222
+      border-width: 0
+      @onClick: modules.game_tasks.filterByCategory(1)
+      $on:
+        background-color: #444444
+        color: #00ff00
+
+    Button
+      id: categoryMedium
+      text: Medium
+      font: verdana-11px-rounded
+      background-color: #222222
+      border-width: 0
+      @onClick: modules.game_tasks.filterByCategory(2)
+      $on:
+        background-color: #444444
+        color: #00ff00
+
+    Button
+      id: categoryHard
+      text: Hard
+      font: verdana-11px-rounded
+      background-color: #222222
+      border-width: 0
+      @onClick: modules.game_tasks.filterByCategory(3)
+      $on:
+        background-color: #444444
+        color: #00ff00
+
+    Button
+      id: categoryVeryHard
+      text: Very Hard
+      font: verdana-11px-rounded
+      background-color: #222222
+      border-width: 0
+      @onClick: modules.game_tasks.filterByCategory(4)
+      $on:
+        background-color: #444444
+        color: #00ff00
+
+  ScrollablePanel
+    id: taskList
+    anchors.top: categoryPanel.bottom
+    anchors.left: activeTaskPanel.right
+    anchors.right: parent.right
+    anchors.bottom: filterPanel.top
+    margin: 5
+    padding: 5
+    vertical-scrollbar: taskListScrollBar
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    layout:
+      type: grid
+      num-columns: 3
+      cell-size: 160 160
+      spacing: 8
+
+  Label
+    id: emptyList
+    visible: false
+    text: No monsters found.
+    color: #aaaaaa
+    text-align: center
+    anchors.fill: taskList
+
+  VerticalScrollBar
+    id: taskListScrollBar
+    width: 14
+    anchors.top: taskList.top
+    anchors.bottom: taskList.bottom
+    anchors.right: taskList.right
+    step: 50
+    pixels-scroll: true
+
+  Panel
+    id: filterPanel
+    anchors.bottom: inputPanel.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 40
+    margin: 5
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #333333
+
+    TextEdit
+      id: filterInput
+      placeholder: Search monster...
+      height: 24
+      anchors.fill: parent
+      margin: 8 15
+      background-color: #00000044
+      @onTextChange: modules.game_tasks.filterTasks(self:getText())
+
+  Panel
+    id: inputPanel
+    anchors.bottom: closeButton.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 75
+    margin: 5
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #333333
+
+    Label
+      id: amountPrefix
+      text: Target Amount:
+      anchors.left: parent.left
+      anchors.top: parent.top
+      margin: 12 0 0 15
+
+    TextEdit
+      id: amountInput
+      width: 80
+      height: 22
+      anchors.left: amountPrefix.right
+      anchors.verticalCenter: amountPrefix.verticalCenter
+      margin-left: 10
+      text-align: center
+
+    Label
+      id: maxAmount
+      text: Max: 0
+      color: #888888
+      anchors.left: amountInput.right
+      anchors.verticalCenter: amountInput.verticalCenter
+      margin-left: 10
+
+    Button
+      id: okButton
+      text: Activate Task
+      width: 120
+      height: 25
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      margin: 0 0 10 15
+      color: #228B22
+
+    Button
+      id: rewardButton
+      text: Claim Reward
+      width: 120
+      height: 25
+      anchors.bottom: parent.bottom
+      anchors.left: okButton.right
+      margin: 0 0 10 10
+      color: #FFD700
+      text-color: #000000
+
+    Button
+      id: cancelButton
+      text: Cancel
+      width: 120
+      height: 25
+      anchors.bottom: parent.bottom
+      anchors.left: rewardButton.right
+      margin: 0 0 10 10
+      color: #DC143C
+      @onClick: modules.game_tasks.cancelTask()
+
+  Button
+    id: closeButton
+    text: Close
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    width: 100
+    height: 25
+    margin: 10
+    @onClick: self:getParent():destroy()

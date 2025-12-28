@@ -1,0 +1,58 @@
+RewardWindow < MainWindow
+  id: rewardWindow
+  text: "Rewards"
+  size: 350 200
+  draggable: true
+  @onEscape: self:destroy()
+
+  Panel
+    id: rewardPanel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin: 5
+    background-color: #2e2e2e
+
+    layout:
+      type: horizontalBox
+      spacing: 10
+      padding: 10
+
+RewardBox < UIWidget
+  size: 150 150
+  background-color: #222222
+  border-width: 1
+  border-color: gray
+  focusable: true
+
+  layout:
+    type: anchor
+
+  UIItem
+    id: rewardIcon
+    virtual: true
+    size: 64 64
+    phantom: true
+    focusable: false
+    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.top: parent.top
+    margin-top: 15
+    ignore: true
+
+  Label
+    id: rewardAmount
+    font: verdana-11px-antialised
+    color: white
+    text-align: center
+    anchors.top: rewardIcon.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 15
+
+  $hover:
+    background-color: #444444
+    border-color: white
+
+  $focus:
+    background-color: #666666
+    border-color: #00ff00

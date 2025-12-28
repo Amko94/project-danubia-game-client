@@ -1,0 +1,7 @@
+Module
+  name: game_tasks
+  description: Adds a Hello World button and window
+  author: Amko94
+  scripts: [ tasks ]
+  @onLoad: init()
+  @onUnload: terminate()

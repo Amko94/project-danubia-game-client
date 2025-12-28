@@ -1,0 +1,136 @@
+ActiveTaskPanel < Panel
+  id: activeTaskPanel
+  anchors.top: parent.top
+  anchors.left: parent.left
+  anchors.bottom: filterPanel.top
+  width: 180
+  margin: 5
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #333333
+  padding: 10
+
+  Button
+    id: activeTab
+    text: Active
+    anchors.top: parent.top
+    anchors.left: parent.left
+    width: 85
+    height: 25
+    font: verdana-11px-rounded
+    background-color: #333333
+    border-width: 1
+    border-color: #555555
+    @onClick: modules.game_tasks.switchActiveTab()
+    $on:
+      background-color: #00ff00
+      color: #000000
+      border-color: #00ff00
+
+  Button
+    id: pausedTab
+    text: Paused
+    anchors.top: parent.top
+    anchors.left: activeTab.right
+    width: 85
+    height: 25
+    margin-left: 2
+    font: verdana-11px-rounded
+    background-color: #333333
+    border-width: 1
+    border-color: #555555
+    @onClick: modules.game_tasks.switchPausedTab()
+    $on:
+      background-color: #ff9900
+      color: #000000
+      border-color: #ff9900
+
+  Panel
+    id: activeTaskContent
+    anchors.top: activeTab.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin-top: 8
+    background-color: #0a0a0a
+    border-width: 1
+    border-color: #333333
+    padding: 5
+
+    UIWidget
+      id: activeTaskBase
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 10
+      size: 160 160
+
+    Panel
+      id: activeRewardPanel
+      anchors.top: activeTaskBase.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      height: 60
+      margin-top: 10
+      visible: false
+
+      UIItem
+        id: expRewardIcon
+        size: 32 32
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        margin-left: 20
+        virtual: true
+
+      Label
+        id: expRewardLabel
+        anchors.left: prev.right
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        margin-left: 10
+        text-align: left
+        font: verdana-11px-rounded
+        color: #FFD700
+
+  Panel
+    id: pausedTaskContent
+    anchors.top: activeTab.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin-top: 8
+    background-color: #0a0a0a
+    border-width: 1
+    border-color: #333333
+    padding: 5
+    visible: false
+
+    Label
+      id: emptyPausedLabel
+      text: No paused tasks
+      font: verdana-11px-rounded
+      color: #666666
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 20
+      visible: false
+
+    ScrollablePanel
+      id: pausedTaskList
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin-top: 0
+      margin-right: 0
+      vertical-scrollbar: pausedScrollBar
+      background-color: transparent
+      layout: verticalBox
+
+    VerticalScrollBar
+      id: pausedScrollBar
+      width: 8
+      anchors.top: pausedTaskList.top
+      anchors.bottom: pausedTaskList.bottom
+      anchors.right: pausedTaskList.right
+      pixels-scroll: true
+      visible: false

@@ -1,0 +1,49 @@
+ConfirmDialog < MainWindow
+  id: confirmDialog
+  size: 300 150
+  text: "Confirm Cancellation"
+  draggable: true
+  @onEscape: self:destroy()
+
+  Label
+    id: confirmLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 10
+    text-align: center
+    text: "Are you sure to cancel your task?"
+
+  Label
+    id: taskNameAndProcess
+    anchors.top: confirmLabel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 5 10 0 10
+    text-align: center
+    text: "placeholder"
+    color: #ffffff
+
+
+  Button
+    id: confirmButton
+    text: "Cancel Task!"
+    width: 110
+    height: 28
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    margin: 10
+    color: #ff6347
+    hover-color: #cc0000
+    font: verdana-11px-antialised
+    @onClick: modules.game_tasks.confirmCancel()
+
+
+  Button
+    id: abortButton
+    text: "Close"
+    width: 80
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    margin: 10
+    @onClick: self:getParent():destroy()

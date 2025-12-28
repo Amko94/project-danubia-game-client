@@ -2,6 +2,6 @@ Module
   name: game_tasks
   description: Adds a Hello World button and window
   author: Amko94
-  scripts: [ tasks ]
+  scripts: [ scripts/task-json-parser, scripts/tasks-manager, scripts/task-protocol, scripts/task-ui, scripts/tasks ]
   @onLoad: init()
   @onUnload: terminate()

@@ -21,7 +21,7 @@ ActiveTaskPanel < Panel
     background-color: #333333
     border-width: 1
     border-color: #555555
-    @onClick: modules.game_tasks.switchActiveTab()
+    @onClick: TaskUI.switchActiveTab()
     $on:
       background-color: #00ff00
       color: #000000
@@ -39,7 +39,7 @@ ActiveTaskPanel < Panel
     background-color: #333333
     border-width: 1
     border-color: #555555
-    @onClick: modules.game_tasks.switchPausedTab()
+    @onClick: TaskUI.switchPausedTab()
     $on:
       background-color: #ff9900
       color: #000000

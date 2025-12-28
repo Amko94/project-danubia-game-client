@@ -38,7 +38,7 @@ TaskWindow < MainWindow
       font: verdana-11px-rounded
       background-color: #222222
       border-width: 0
-      @onClick: modules.game_tasks.filterByCategory(0)
+      @onClick: TaskUI.filterByCategory(0)
       $on:
         background-color: #444444
         color: #00ff00
@@ -49,7 +49,7 @@ TaskWindow < MainWindow
       font: verdana-11px-rounded
       background-color: #222222
       border-width: 0
-      @onClick: modules.game_tasks.filterByCategory(1)
+      @onClick: TaskUI.filterByCategory(1)
       $on:
         background-color: #444444
         color: #00ff00
@@ -60,7 +60,7 @@ TaskWindow < MainWindow
       font: verdana-11px-rounded
       background-color: #222222
       border-width: 0
-      @onClick: modules.game_tasks.filterByCategory(2)
+      @onClick: TaskUI.filterByCategory(2)
       $on:
         background-color: #444444
         color: #00ff00
@@ -71,7 +71,7 @@ TaskWindow < MainWindow
       font: verdana-11px-rounded
       background-color: #222222
       border-width: 0
-      @onClick: modules.game_tasks.filterByCategory(3)
+      @onClick: TaskUI.filterByCategory(3)
       $on:
         background-color: #444444
         color: #00ff00
@@ -82,7 +82,7 @@ TaskWindow < MainWindow
       font: verdana-11px-rounded
       background-color: #222222
       border-width: 0
-      @onClick: modules.game_tasks.filterByCategory(4)
+      @onClick: TaskUI.filterByCategory(4)
       $on:
         background-color: #444444
         color: #00ff00
@@ -141,7 +141,7 @@ TaskWindow < MainWindow
       anchors.fill: parent
       margin: 8 15
       background-color: #00000044
-      @onTextChange: modules.game_tasks.filterTasks(self:getText())
+      @onTextChange: TaskUI.filterTasks(self:getText())
 
   Panel
     id: inputPanel
@@ -208,7 +208,7 @@ TaskWindow < MainWindow
       anchors.left: rewardButton.right
       margin: 0 0 10 10
       color: #DC143C
-      @onClick: modules.game_tasks.cancelTask()
+      @onClick: TaskUI.cancelTask()
 
   Button
     id: closeButton

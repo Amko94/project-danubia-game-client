@@ -43,6 +43,7 @@ function TaskUI.show()
     tasksWindow:show()
     tasksWindow:raise()
     tasksWindow:focus()
+    TaskUI.updateCategoryButtons()
     TaskUI.switchActiveTab()
 
     scheduleEvent(function()
@@ -166,7 +167,6 @@ function TaskUI.updateActiveTaskPanel()
         local empty = g_ui.createWidget("Label", activeTaskBase)
         empty:setText("No task started yet")
         empty:setTextAlign(AlignCenter)
-        empty:fill("parent")
         return
     end
 

@@ -72,11 +72,10 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
 
     elseif opcode == TaskProtocol.RecvOpcode.TaskResumed then
         TaskProtocol.requestTasksFromServer()
-        scheduleEvent(function()
-            if TaskUI and tasksWindow then
-                TaskUI.switchActiveTab()
-            end
-        end, 10)
+        if TaskUI then
+            TaskUI.switchActiveTab()
+        end
+
     elseif opcode == TaskProtocol.RecvOpcode.ResumeError then
         if TaskUI then
             TaskUI.showResumeError()

@@ -1,7 +1,7 @@
 TaskWindow < MainWindow
   id: taskWindow
   text: Tasks
-  size: 740 650
+  size: 720 650
   draggable: true
   @onEscape: self:destroy()
   onDestroy: modules.game_tasks.onWindowDestroy()
@@ -29,7 +29,7 @@ TaskWindow < MainWindow
     layout:
       type: grid
       num-columns: 5
-      cell-size: 105 20
+      cell-size: 100 20
       cell-spacing: 1
 
     Button
@@ -38,54 +38,59 @@ TaskWindow < MainWindow
       font: verdana-11px-rounded
       background-color: #222222
       border-width: 0
+      color: #B8B8B8
       @onClick: TaskUI.filterByCategory(0)
       $on:
         background-color: #444444
-        color: #00ff00
+        color: #FFFFFF
 
     Button
       id: categoryLow
       text: Low
       font: verdana-11px-rounded
       background-color: #222222
+      color: #B8B8B8
       border-width: 0
       @onClick: TaskUI.filterByCategory(1)
       $on:
         background-color: #444444
-        color: #00ff00
+        color: #FFFFFF
 
     Button
       id: categoryMedium
       text: Medium
       font: verdana-11px-rounded
+      color: #B8B8B8
       background-color: #222222
       border-width: 0
       @onClick: TaskUI.filterByCategory(2)
       $on:
         background-color: #444444
-        color: #00ff00
+        color: #FFFFFF
 
     Button
       id: categoryHard
       text: Hard
       font: verdana-11px-rounded
       background-color: #222222
+      color: #B8B8B8
       border-width: 0
       @onClick: TaskUI.filterByCategory(3)
       $on:
         background-color: #444444
-        color: #00ff00
+        color: #FFFFFF
 
     Button
       id: categoryVeryHard
       text: Very Hard
       font: verdana-11px-rounded
+      color: #B8B8B8
       background-color: #222222
       border-width: 0
       @onClick: TaskUI.filterByCategory(4)
       $on:
         background-color: #444444
-        color: #00ff00
+        color: #FFFFFF
 
   ScrollablePanel
     id: taskList

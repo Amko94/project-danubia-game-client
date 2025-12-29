@@ -1,0 +1,27 @@
+ErrorResume < MainWindow
+  id: errorResumeDialog
+  size: 500 130
+  text: Already running task
+  draggable: true
+  color: #FF8C00
+  @onEscape: self:destroy()
+
+  Label
+    id: warningLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: abortButton.top
+    margin: 10
+    text-align: center
+    text: Please finish or pause your current task before starting another one.
+
+  Button
+    id: abortButton
+    text: Close
+    width: 80
+    height: 25
+    anchors.bottom: parent.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-bottom: 10
+    @onClick: self:getParent():destroy()

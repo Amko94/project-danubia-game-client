@@ -1,0 +1,27 @@
+NoTaskWarningDialog < MainWindow
+  id: confirmDialog
+  size: 300 130
+  text: No selected Task
+  draggable: true
+  color: #FF8C00
+  @onEscape: self:destroy()
+
+  Label
+    id: warningLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: abortButton.top
+    margin-bottom: 10
+    text-align: center
+    text: Please select a task first
+
+  Button
+    id: abortButton
+    text: Close
+    width: 80
+    height: 25
+    anchors.bottom: parent.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-bottom: 10
+    @onClick: self:getParent():destroy()

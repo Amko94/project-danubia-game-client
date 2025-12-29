@@ -5,14 +5,16 @@ TaskProtocol.SendOpcode = {
     RequestData = 0x03,
     RequestAll = 0x04,
     ResumeTask = 0x05,
-    PauseTask = 0x06
+    PauseTask = 0x06,
+    CancelTask = 0x07
 }
 
 TaskProtocol.RecvOpcode = {
-    TaskActivated = 1,
+    TaskProgressUpdate = 1,
     ActiveTasks = 3,
     AvailablePart = 4,
-    TaskResumed = 5
+    TaskResumed = 5,
+    ResumeError = 101
 }
 
 local PART_TOKEN = "TASKLIST_PART;"
@@ -33,6 +35,7 @@ function TaskProtocol.connect()
     local protocol = g_game.getProtocolGame()
     if protocol then
         connect(protocol, { onExtendedOpcode = TaskProtocol.onExtendedOpcode })
+        TaskProtocol.requestTasksFromServer()
     end
 end
 
@@ -48,14 +51,36 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
         local data = safeJsonDecode(buffer)
         TasksManager.updateActiveTasks(data)
 
+    elseif opcode == TaskProtocol.RecvOpcode.TaskProgressUpdate then
+        if buffer:sub(1, 13) == "TASK_UPDATED;" then
+            local parts = string.split(buffer, ";")
+            local taskId = tonumber(parts[2])
+            local progress = tonumber(parts[3])
+            local amount = tonumber(parts[4])
+
+            if taskId and progress and amount then
+                TasksManager.updateTaskProgress(taskId, progress, amount)
+            end
+        end
+
+
     elseif opcode == TaskProtocol.RecvOpcode.AvailablePart then
         if buffer:sub(1, #PART_TOKEN) == PART_TOKEN then
             local data = safeJsonDecode(buffer:sub(#PART_TOKEN + 1))
             TasksManager.addAvailableTasks(data)
         end
 
-    elseif opcode == TaskProtocol.RecvOpcode.TaskActivated or opcode == TaskProtocol.RecvOpcode.TaskResumed then
+    elseif opcode == TaskProtocol.RecvOpcode.TaskResumed then
         TaskProtocol.requestTasksFromServer()
+        scheduleEvent(function()
+            if TaskUI and tasksWindow then
+                TaskUI.switchActiveTab()
+            end
+        end, 10)
+    elseif opcode == TaskProtocol.RecvOpcode.ResumeError then
+        if TaskUI then
+            TaskUI.showResumeError()
+        end
     end
 end
 
@@ -95,5 +120,12 @@ function TaskProtocol.sendGetReward(id)
     local protocol = g_game.getProtocolGame()
     if protocol then
         protocol:sendExtendedOpcode(TaskProtocol.SendOpcode.RequestData, id)
+    end
+end
+
+function TaskProtocol.cancelTask(id)
+    local protocol = g_game.getProtocolGame()
+    if protocol then
+        protocol:sendExtendedOpcode(TaskProtocol.SendOpcode.CancelTask, id)
     end
 end

@@ -6,6 +6,8 @@ local selectedTask = nil
 local currentCategory = 0
 local filterText = ""
 local debounceEvent = nil
+local selectedActiveTask = nil
+local selectedPausedTask = nil
 
 function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/tasks-main-window')
@@ -13,6 +15,8 @@ function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/task-box')
     g_ui.importStyle('/modules/game_tasks/ui/reward-box')
     g_ui.importStyle('/modules/game_tasks/ui/confirm-dialog')
+    g_ui.importStyle('/modules/game_tasks/ui/no-selected-task-warning')
+    g_ui.importStyle('/modules/game_tasks/ui/error-resume-dialog')
 end
 
 function TaskUI.terminate()
@@ -39,6 +43,7 @@ function TaskUI.show()
     tasksWindow:show()
     tasksWindow:raise()
     tasksWindow:focus()
+    TaskUI.updateCategoryButtons()
     TaskUI.switchActiveTab()
 
     scheduleEvent(function()
@@ -46,7 +51,7 @@ function TaskUI.show()
             return
         end
         TaskUI.refresh()
-        TaskProtocol.requestTasksFromServer()
+
     end, 50)
 end
 
@@ -66,7 +71,6 @@ function TaskUI.refresh()
     TaskUI.updateFilterMonsterList()
     TaskUI.updateActiveTaskPanel()
     TaskUI.updatePausedTasksList()
-    TaskUI.updateButtonState()
 end
 
 function TaskUI.onAvailableTasksUpdate()
@@ -102,7 +106,6 @@ function TaskUI.appendMissingTasks(available, currentCount)
 
             box.onClick = function()
                 selectedTask = task
-                TaskUI.updateButtonState()
                 for _, child in ipairs(currentPlayerTaskList:getChildren()) do
                     child:setOn(child == box)
                 end
@@ -164,13 +167,14 @@ function TaskUI.updateActiveTaskPanel()
         local empty = g_ui.createWidget("Label", activeTaskBase)
         empty:setText("No task started yet")
         empty:setTextAlign(AlignCenter)
-        empty:fill("parent")
         return
     end
 
     local activeBox = g_ui.createWidget("TaskBox", activeTaskBase)
     activeBox:setMargin(0)
-    activeBox:fill("parent")
+
+    selectedActiveTask = tracked
+    activeBox:setOn(true)
 
     local taskData = TasksManager.getTaskById(tracked.taskId)
     if taskData then
@@ -183,6 +187,7 @@ function TaskUI.updateActiveTaskPanel()
         local percent = math.floor((tracked.progress / tracked.amount) * 100)
         progressPanel:getChildById("progressLabel"):setText(tracked.progress .. "/" .. tracked.amount .. " (" .. percent .. "%)")
         local bar = progressPanel:getChildById("progressBar")
+        TaskUI.colorizeProgressBar(bar, percent)
         bar:setWidth(math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100))))
         progressPanel:setVisible(true)
     end
@@ -204,6 +209,26 @@ function TaskUI.updatePausedTasksList()
         if task.paused == 1 and task.active == 1 then
             pausedCount = pausedCount + 1
             local box = g_ui.createWidget("TaskBox", pausedList)
+
+            box.onClick = function()
+                selectedPausedTask = task
+
+                local parent = box:getParent()
+                if parent then
+                    for _, child in ipairs(parent:getChildren()) do
+                        child:setOn(false)
+                    end
+                end
+
+                box:setOn(true)
+            end
+
+            if pausedCount == 1 then
+                selectedPausedTask = task
+                box:setOn(true)
+            end
+
+            box:setSize({ width = 140, height = 140 })
             box:getChildById("taskName"):setText(TasksManager.getTaskNameById(task.taskId))
             local taskData = TasksManager.getTaskById(task.taskId)
             if taskData then
@@ -212,13 +237,16 @@ function TaskUI.updatePausedTasksList()
 
             local progressPanel = box:getChildById("progressPanel")
             if progressPanel then
+
                 local percent = math.floor((task.progress / task.amount) * 100)
                 progressPanel:getChildById("progressLabel"):setText(task.progress .. "/" .. task.amount .. " (" .. percent .. "%)")
                 local bar = progressPanel:getChildById("progressBar")
+                bar:setBackgroundColor("#ff9900")
                 bar:setWidth(math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100))))
                 progressPanel:setVisible(true)
             end
         end
+
     end
 
     emptyLabel:setVisible(pausedCount == 0)
@@ -227,58 +255,25 @@ function TaskUI.updatePausedTasksList()
     end
 end
 
-function TaskUI.updateButtonState()
-    if not tasksWindow or not selectedTask then
+function TaskUI.colorizeProgressBar(progressBar, percent)
+    if not progressBar then
         return
     end
-    local panel = tasksWindow:getChildById("inputPanel")
-    local okBtn = panel:getChildById("okButton")
-    local input = panel:getChildById("amountInput")
-    local maxLbl = panel:getChildById("maxAmount")
 
-    local status = TasksManager.getTaskStatusByTaskId(selectedTask.id)
-    local maxVal = TasksManager.getMaxAmountForTask(selectedTask.id)
-    local activeRunning = TasksManager.getTrackedTask() ~= nil
+    local color = "#00FF00"
 
-    maxLbl:setText(maxVal <= 0 and "Completed" or "Max: " .. maxVal)
-    input.onTextChange = function(w)
-        local val = tonumber(w:getText())
-        if val and val > maxVal then
-            w:setText(tostring(maxVal))
-        end
+    if percent >= 80 then
+        color = "#004D00"
+    elseif percent >= 60 then
+        color = "#008000"
+    elseif percent >= 40 then
+        color = "#00B300"
+    elseif percent >= 20 then
+        color = "#33FF33"
     end
 
-    if status then
-        input:setEnabled(false)
-        input:setText(tostring(status.amount))
-        if status.progress >= status.amount then
-            okBtn:setText("Get Reward")
-            okBtn.onClick = function()
-                TaskProtocol.sendGetReward(selectedTask.id)
-            end
-        elseif status.paused == 1 then
-            okBtn:setText("Resume")
-            okBtn:setEnabled(not activeRunning)
-            okBtn.onClick = function()
-                TaskProtocol.sendResumeTask(selectedTask.id)
-            end
-        else
-            okBtn:setText("Pause")
-            okBtn.onClick = function()
-                TaskProtocol.sendPauseTask(selectedTask.id)
-            end
-        end
-    else
-        input:setEnabled(maxVal > 0)
-        input:setText(maxVal > 0 and "50" or "0")
-        okBtn:setText("Activate")
-        okBtn.onClick = function()
-            TaskProtocol.sendStartTask(selectedTask.id, tonumber(input:getText()) or 50)
-            TaskUI.hide()
-        end
-    end
+    progressBar:setBackgroundColor(color)
 end
-
 function TaskUI.filterTasks(text)
     if debounceEvent then
         removeEvent(debounceEvent)
@@ -293,7 +288,6 @@ function TaskUI.filterByCategory(cat)
     currentCategory = cat
     TaskUI.updateCategoryButtons()
     TaskUI.updateFilterMonsterList()
-    TaskUI.updateButtonState()
 end
 
 function TaskUI.updateCategoryButtons()
@@ -347,4 +341,85 @@ function TaskUI.switchPausedTab()
     tasksWindow:recursiveGetChildById("pausedTaskContent"):setVisible(true)
     tasksWindow:recursiveGetChildById("activeTab"):setOn(false)
     tasksWindow:recursiveGetChildById("pausedTab"):setOn(true)
+end
+
+function TaskUI.cancelTask()
+    local rootPanel = modules.game_interface.getRootPanel()
+    local activeTabVisible = tasksWindow:recursiveGetChildById("activeTaskContent"):isVisible()
+
+    local taskToCancel = activeTabVisible and selectedActiveTask or selectedPausedTask
+
+    if not taskToCancel then
+        local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
+        noTask:show()
+        noTask:raise()
+        noTask:focus()
+        return
+    end
+
+    local confirm = g_ui.createWidget("ConfirmDialog", rootPanel)
+    confirm:getChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
+            TasksManager.getTaskNameById(taskToCancel.taskId),
+            taskToCancel.progress,
+            taskToCancel.amount))
+
+    confirm.taskId = taskToCancel.taskId
+
+    confirm:show()
+    confirm:raise()
+    confirm:focus()
+end
+
+function TaskUI.confirmCancel()
+    local rootPanel = modules.game_interface.getRootPanel()
+    local dialog = rootPanel:getChildById('confirmDialog')
+
+    if dialog and dialog.taskId then
+        TaskProtocol.cancelTask(dialog.taskId)
+
+        selectedActiveTask = nil
+        selectedPausedTask = nil
+
+        dialog:destroy()
+        TaskUI.refresh()
+    end
+end
+
+function TaskUI.resumeTask()
+    local rootPanel = modules.game_interface.getRootPanel()
+
+    if not selectedPausedTask then
+        local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
+        noTask:show()
+        noTask:raise()
+        noTask:focus()
+        return
+    end
+
+    TaskProtocol.sendResumeTask(selectedPausedTask.taskId)
+end
+
+function TaskUI.showResumeError()
+    local rootPanel = modules.game_interface.getRootPanel()
+
+    if rootPanel:getChildById('errorResumeDialog') then
+        return
+    end
+
+    local errorDialog = g_ui.createWidget("ErrorResume", rootPanel)
+    errorDialog:show()
+    errorDialog:raise()
+    errorDialog:focus()
+end
+
+function TaskUI.pauseTask()
+    if not selectedActiveTask then
+        local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
+        noTask:show()
+        noTask:raise()
+        noTask:focus()
+        return
+    end
+
+    TaskProtocol.sendPauseTask(selectedActiveTask.taskId)
 end

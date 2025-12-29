@@ -36,7 +36,7 @@ ConfirmDialog < MainWindow
     color: #ff6347
     hover-color: #cc0000
     font: verdana-11px-antialised
-    @onClick: modules.game_tasks.confirmCancel()
+    @onClick: TaskUI.confirmCancel()
 
 
   Button

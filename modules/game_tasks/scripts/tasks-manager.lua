@@ -16,6 +16,19 @@ function TasksManager.clear()
     availableTasks = {}
 end
 
+function TasksManager.updateTaskProgress(taskId, progress, amount)
+    for _, task in ipairs(activeTasks) do
+        if task.taskId == taskId then
+            task.progress = progress
+            task.amount = amount
+            break
+        end
+    end
+    if TaskUI then
+        TaskUI.refresh()
+    end
+end
+
 function TasksManager.isAvailableTasksLoaded()
     return #availableTasks > 0
 end

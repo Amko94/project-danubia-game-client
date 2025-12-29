@@ -75,4 +75,4 @@ TaskBox < UIWidget
 
   $on:
     background-color: #333333
-    border-color: #00ff00
+    border-color: #FFFFFF

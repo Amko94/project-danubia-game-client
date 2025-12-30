@@ -1,0 +1,82 @@
+StartTaskDialog < MainWindow
+  id: startTaskDialog
+  size: 350 260
+  text: Task Assignment
+  @onEscape: self:destroy()
+
+  Panel
+    id: monsterSection
+    height: 64
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    border: 1 #444444
+
+    Panel
+      id: iconContainer
+      height: 64
+      anchors.centerIn: parent
+      layout:
+        type: horizontalBox
+        spacing: -15
+        fit-size: true
+        align-center: true
+
+  Label
+    id: amountLabel
+    text: Enter kill amount:
+    font: verdana-11px-rounded
+    color: #dfdfdf
+    anchors.top: monsterSection.bottom
+    anchors.left: parent.left
+    margin-top: 20
+    margin-left: 20
+
+  TextEdit
+    id: amountInput
+    placeholder: Max 1000
+    size: 100 24
+    anchors.verticalCenter: amountLabel.verticalCenter
+    anchors.right: parent.right
+    margin-right: 20
+    background-color: #00000066
+    border: 1 #333333
+    @onTextChange: TaskUI.updateTaskAmount(self:getParent(),self:getText())
+
+  Label
+    id: errorLabel
+    text: Only numbers allowed!
+    font: verdana-6px-rounded
+    color: #ff4444
+    visible: false
+    anchors.top: amountInput.bottom
+    anchors.right: amountInput.right
+    margin-top: 1
+    margin-bottom: 10
+
+  HorizontalSeparator
+    anchors.top: amountInput.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 15 15 0 15
+
+  Button
+    id: okButton
+    text: Start Task
+    width: 130
+    height: 28
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    margin: 0 0 15 20
+    color: #228B22
+    @onClick: TaskUI.confirmStartTask()
+
+  Button
+    id: cancelButton
+    text: Close
+    width: 130
+    height: 28
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    margin: 0 20 15 0
+    @onClick: self:getParent():destroy()

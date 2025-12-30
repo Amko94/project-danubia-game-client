@@ -1,5 +1,5 @@
-ErrorResume < MainWindow
-  id: errorResumeDialog
+ErrorStartTaskDialog < MainWindow
+  id: errorStartTaskDialog
   size: 500 130
   text: Already running task
   draggable: true

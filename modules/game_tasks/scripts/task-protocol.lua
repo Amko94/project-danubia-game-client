@@ -78,7 +78,7 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
 
     elseif opcode == TaskProtocol.RecvOpcode.ResumeError then
         if TaskUI then
-            TaskUI.showResumeError()
+            TaskUI.showStartTaskError()
         end
     end
 end

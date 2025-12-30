@@ -100,10 +100,16 @@ function json.parseObject(str)
                     local arrayStr = value:sub(2, -2)
                     local arrayResult = {}
                     if arrayStr ~= "" then
-                        for num in arrayStr:gmatch('[^,]+') do
-                            num = tonumber(num)
-                            if num then
-                                table.insert(arrayResult, num)
+                        if arrayStr:find('"') then
+                            for str in arrayStr:gmatch('"([^"]*)"') do
+                                table.insert(arrayResult, str)
+                            end
+                        else
+                            for num in arrayStr:gmatch('[^,]+') do
+                                num = tonumber(num)
+                                if num then
+                                    table.insert(arrayResult, num)
+                                end
                             end
                         end
                     end

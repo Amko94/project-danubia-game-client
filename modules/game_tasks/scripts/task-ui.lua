@@ -33,7 +33,6 @@ local filterText = ""
 local debounceEvent = nil
 local selectedActiveTask = nil
 local selectedPausedTask = nil
-local amount = nil
 
 function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/tasks-main-window')
@@ -181,12 +180,19 @@ function TaskUI.updateFilterMonsterList()
     end
 end
 
+
 function TaskUI.updateActiveTaskPanel()
     if not tasksWindow then
         return
     end
+
     local activeTaskBase = tasksWindow:recursiveGetChildById("activeTaskBase")
     local emptyLabel = tasksWindow:recursiveGetChildById("emptyActiveLabel")
+    local rewardBtn = tasksWindow:recursiveGetChildById("rewardButton")
+    local cancelBtn = tasksWindow:recursiveGetChildById("cancelTaskButton")
+    local pauseBtn = tasksWindow:recursiveGetChildById("pauseButton")
+    local activeTitle = tasksWindow:recursiveGetChildById("activeTitle")
+
     if not activeTaskBase then
         return
     end
@@ -199,11 +205,39 @@ function TaskUI.updateActiveTaskPanel()
         if emptyLabel then
             emptyLabel:setVisible(true)
         end
+
+        if cancelBtn then
+            cancelBtn:setEnabled(false)
+        end
+
+        if pauseBtn then
+            pauseBtn:setEnabled(false)
+        end
+
+        if activeTitle then
+            pauseBtn:setColor("#666666")
+        end
+
         return
     end
 
     if emptyLabel then
         emptyLabel:setVisible(false)
+    end
+
+    if rewardBtn then
+        rewardBtn:setEnabled(true)
+    end
+    if cancelBtn then
+        cancelBtn:setEnabled(true)
+    end
+
+    if pauseBtn then
+        pauseBtn:setEnabled(true)
+    end
+
+    if activeTitle then
+        activeTitle:setColor("#25E00B")
     end
 
     local display = g_ui.createWidget("CurrentTaskContainer", activeTaskBase)
@@ -221,24 +255,20 @@ function TaskUI.updateActiveTaskPanel()
 
     local percent = math.floor((tracked.progress / tracked.amount) * 100)
 
-    scheduleEvent(function()
-        if display then
-            local progressPanel = display:getChildById("progressPanel")
-            if progressPanel then
-                local progressBar = progressPanel:getChildById("progressBar")
-                local progressLabel = progressPanel:getChildById("progressLabel")
+    local progressPanel = display:getChildById("progressPanel")
+    if progressPanel then
+        local progressBar = progressPanel:getChildById("progressBar")
+        local progressLabel = progressPanel:getChildById("progressLabel")
 
-                if progressBar then
-                    local barWidth = math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100)))
-                    progressBar:setWidth(barWidth)
-                end
-
-                if progressLabel then
-                    progressLabel:setText(tracked.progress .. "/" .. tracked.amount .. " (" .. percent .. "%)")
-                end
-            end
+        if progressBar then
+            local barWidth = math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100)))
+            progressBar:setWidth(barWidth)
         end
-    end, 10)
+
+        if progressLabel then
+            progressLabel:setText(tracked.progress .. "/" .. tracked.amount .. " (" .. percent .. "%)")
+        end
+    end
 end
 
 function TaskUI.updatePausedTasksList()
@@ -248,55 +278,61 @@ function TaskUI.updatePausedTasksList()
     local pausedList = tasksWindow:recursiveGetChildById("pausedTaskContainer")
     local pausedTitle = tasksWindow:recursiveGetChildById("pausedTitle")
     if not pausedList then
-        return
     end
 
     pausedList:destroyChildren()
     local active = TasksManager.getActiveTasks()
-    local pausedCount = 0
-    local itemsToUpdate = {} -- Sammeln statt sofort updaten
 
+    local pausedTasks = {}
     for _, task in ipairs(active) do
         if task.paused == 1 and task.active == 1 then
-            pausedCount = pausedCount + 1
-            local item = g_ui.createWidget("PausedTaskListItem", pausedList)
-            item.taskData = task
-            item:getChildById("taskName"):setText(TasksManager.getTaskNameById(task.taskId))
-
-            local taskData = TasksManager.getTaskById(task.taskId)
-            if taskData and taskData.lookTypeIds then
-                item:getChildById("monsterIcon"):setOutfit({ type = taskData.lookTypeIds[1] })
-            end
-
-            local percent = math.floor((task.progress / task.amount) * 100)
-            local pLabel = item:recursiveGetChildById("progressLabel")
-            if pLabel then
-                pLabel:setText(task.progress .. "/" .. task.amount)
-            end
-
-            table.insert(itemsToUpdate, { item = item, percent = percent })
-
-            item.onClick = function()
-                selectedPausedTask = task
-                for _, child in ipairs(pausedList:getChildren()) do
-                    child:setBorderColor("#333333")
-                end
-                item:setBorderColor("#ffffff")
-            end
+            -- Wir holen uns den Namen für die Sortierung direkt dazu
+            task.cachedName = TasksManager.getTaskNameById(task.taskId)
+            table.insert(pausedTasks, task)
         end
     end
 
-    scheduleEvent(function()
-        for _, data in ipairs(itemsToUpdate) do
-            local bar = data.item:recursiveGetChildById("progressBar")
-            local progressPanel = data.item:getChildById("progressPanel")
-            if bar and progressPanel then
-                bar:setBackgroundColor("#ff9900")
-                local barWidth = math.max(0, math.floor((progressPanel:getWidth() - 2) * (data.percent / 100)))
-                bar:setWidth(barWidth)
-            end
+    table.sort(pausedTasks, function(a, b)
+        return a.cachedName:lower() < b.cachedName:lower()
+    end)
+
+    local pausedCount = #pausedTasks
+    for _, task in ipairs(pausedTasks) do
+        local item = g_ui.createWidget("PausedTaskListItem", pausedList)
+        item.taskData = task
+        item:getChildById("taskName"):setText(task.cachedName)
+
+        local taskData = TasksManager.getTaskById(task.taskId)
+        if taskData and taskData.lookTypeIds then
+            item:getChildById("monsterIcon"):setOutfit({ type = taskData.lookTypeIds[1] })
         end
-    end, 10)
+
+        local percent = math.floor((task.progress / task.amount) * 100)
+        local pLabel = item:recursiveGetChildById("progressLabel")
+        if pLabel then
+            pLabel:setText(task.progress .. "/" .. task.amount)
+        end
+
+        local bar = item:recursiveGetChildById("progressBar")
+        local progressPanel = item:getChildById("progressPanel")
+        if bar and progressPanel then
+            bar:setBackgroundColor("#ff9900")
+            scheduleEvent(function()
+                if bar and progressPanel then
+                    local barWidth = math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100)))
+                    bar:setWidth(barWidth)
+                end
+            end, 10)
+        end
+
+        item.onClick = function()
+            selectedPausedTask = task
+            for _, child in ipairs(pausedList:getChildren()) do
+                child:setBorderColor("#333333")
+            end
+            item:setBorderColor("#ffffff")
+        end
+    end
 
     if pausedTitle then
         pausedTitle:setText(string.format("PAUSED (%d)", pausedCount))
@@ -393,26 +429,6 @@ function TaskUI.createIconGrid(box, lookTypeIds)
             icon:setPhantom(true)
         end
     end
-end
-
-function TaskUI.switchActiveTab()
-    if not tasksWindow then
-        return
-    end
-    tasksWindow:recursiveGetChildById("activeTaskContent"):setVisible(true)
-    tasksWindow:recursiveGetChildById("pausedTaskContent"):setVisible(false)
-    tasksWindow:recursiveGetChildById("activeTab"):setOn(true)
-    tasksWindow:recursiveGetChildById("pausedTab"):setOn(false)
-end
-
-function TaskUI.switchPausedTab()
-    if not tasksWindow then
-        return
-    end
-    tasksWindow:recursiveGetChildById("activeTaskContent"):setVisible(false)
-    tasksWindow:recursiveGetChildById("pausedTaskContent"):setVisible(true)
-    tasksWindow:recursiveGetChildById("activeTab"):setOn(false)
-    tasksWindow:recursiveGetChildById("pausedTab"):setOn(true)
 end
 
 function TaskUI.cancelTask()

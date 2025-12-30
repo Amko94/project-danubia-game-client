@@ -45,7 +45,6 @@ CurrentTaskContainer < Panel
 
     Label
       id: progressLabel
-      font: verdana-8px-rounded
       color: #ffffff
       anchors.centerIn: parent
       text-align: center

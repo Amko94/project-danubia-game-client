@@ -4,7 +4,6 @@ PausedTaskListItem < Panel
   border-width: 1
   border-color: #333333
   margin-bottom: 2
-  padding: 3
 
   UICreature
     id: monsterIcon
@@ -29,6 +28,7 @@ PausedTaskListItem < Panel
     anchors.right: taskMenu.left
     margin-left: 5
     margin-right: 10
+    margin-bottom: 5
     background-color: #00000066
     border-width: 1
     border-color: #333333
@@ -40,11 +40,10 @@ PausedTaskListItem < Panel
       anchors.left: parent.left
       width: 0
       margin: 1
-      background-color: #ff9900
+      background-color: #E0980C
 
     Label
       id: progressLabel
-      font: verdana-9px-rounded
       color: #ffffff
       anchors.centerIn: parent
       text-align: center
@@ -55,8 +54,9 @@ PausedTaskListItem < Panel
     height: 20
     anchors.bottom: parent.bottom
     anchors.right: parent.right
-    margin-right: 10
+    margin-right: 15
     margin-left: 5
+    margin-bottom: 5
     text: >
     @onClick: |
       local menu = g_ui.createWidget('PopupMenu')

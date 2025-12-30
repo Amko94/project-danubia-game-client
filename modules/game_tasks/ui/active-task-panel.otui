@@ -16,7 +16,7 @@ ActiveTaskPanel < Panel
       id: activeTitle
       text: Current Task
       font: verdana-11px-rounded
-      color: #25E00B
+      color: #666666
       anchors.fill: parent
       text-align: center
 
@@ -65,6 +65,7 @@ ActiveTaskPanel < Panel
         anchors.right: parent.right
         margin: 3 3 0 3
         color: #FFD700
+        enabled: false
 
       Button
         id: pauseButton
@@ -74,6 +75,7 @@ ActiveTaskPanel < Panel
         anchors.left: parent.left
         margin: 3 2 0 3
         @onClick: TaskUI.pauseTask()
+        enabled: false
 
       Button
         id: cancelTaskButton
@@ -85,6 +87,7 @@ ActiveTaskPanel < Panel
         margin: 3 3 0 2
         color: #FF4444
         @onClick: TaskUI.cancelTask()
+        enabled: false
 
   HorizontalSeparator
     anchors.top: activeTaskContent.bottom
@@ -117,6 +120,8 @@ ActiveTaskPanel < Panel
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
+    margin: 0
+    padding: 0 10 0 0
     vertical-scrollbar: pausedScrollBar
     background-color: #111111
     border-width: 1
@@ -128,9 +133,9 @@ ActiveTaskPanel < Panel
   VerticalScrollBar
     id: pausedScrollBar
     width: 10
-    anchors.top: pausedTaskContainer.top
-    anchors.bottom: pausedTaskContainer.bottom
-    anchors.right: pausedTaskContainer.right
+    anchors.top: pausedTitleHeader.bottom
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
     step: 40
     pixels-scroll: true
     auto-hide: true

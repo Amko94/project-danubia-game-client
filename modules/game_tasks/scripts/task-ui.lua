@@ -45,6 +45,7 @@ function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/no-selected-task-warning')
     g_ui.importStyle '/modules/game_tasks/ui/error-start-task-dialog'
     g_ui.importStyle '/modules/game_tasks/ui/start-task-dialog'
+    g_ui.importStyle '/modules/game_tasks/ui/current-task-container'
 end
 
 function TaskUI.terminate()
@@ -205,7 +206,7 @@ function TaskUI.updateActiveTaskPanel()
         emptyLabel:setVisible(false)
     end
 
-    local display = g_ui.createWidget("CurrentTaskDisplay", activeTaskBase)
+    local display = g_ui.createWidget("CurrentTaskContainer", activeTaskBase)
     display:fill('parent')
 
     selectedActiveTask = tracked

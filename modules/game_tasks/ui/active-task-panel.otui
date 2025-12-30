@@ -1,81 +1,31 @@
-CurrentTaskDisplay < Panel
-  anchors.fill: parent
-  padding: 5
-
-  UICreature
-    id: monsterIcon
-    size: 48 48
-    anchors.top: parent.top
-    anchors.left: parent.left
-    margin-top: 5
-    phantom: true
-
-  Label
-    id: taskName
-    font: verdana-11px-rounded
-    color: #ffffff
-    anchors.top: parent.top
-    anchors.left: monsterIcon.right
-    anchors.right: parent.right
-    margin-left: 10
-    margin-top: 8
-    text-align: left
-
-  Panel
-    id: progressPanel
-    height: 16
-    anchors.top: taskName.bottom
-    anchors.left: monsterIcon.right
-    anchors.right: parent.right
-    margin-left: 10
-    margin-top: 5
-    margin-right: 5
-    background-color: #00000066
-    border-width: 1
-    border-color: #333333
-
-    Panel
-      id: progressBar
-      anchors.top: parent.top
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
-      width: 0
-      margin: 1
-      background-color: #125400
-
-    Label
-      id: progressLabel
-      font: verdana-8px-rounded
-      color: #ffffff
-      anchors.centerIn: parent
-      text-align: center
-
 ActiveTaskPanel < Panel
   id: activeTaskPanel
   width: 190
-  background-color: #111111
-  border-width: 1
-  border-color: #333333
 
-  Label
-    id: activeTitle
-    text: Current Task
-    font: verdana-11px-rounded
-    color: #25E00B
+  Panel
+    id: activeTaskHeader
+    height: 18
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    text-align: center
-    height: 18
-    background-color: #00ff0011
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    Label
+      id: activeTitle
+      text: Current Task
+      font: verdana-11px-rounded
+      color: #25E00B
+      anchors.fill: parent
+      text-align: center
 
   Panel
     id: activeTaskContent
-    anchors.top: activeTitle.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
+    anchors.top: activeTaskHeader.bottom
+    anchors.left: activeTaskHeader.left
+    anchors.right: activeTaskHeader.right
     height: 110
-    margin: 2
     background-color: #111111
     border-width: 1
     border-color: #333333
@@ -136,27 +86,37 @@ ActiveTaskPanel < Panel
         color: #FF4444
         @onClick: TaskUI.cancelTask()
 
-  Label
-    id: pausedTitle
-    text: PAUSED (0)
-    font: verdana-11px-rounded
-    color: #E0980C
+  HorizontalSeparator
     anchors.top: activeTaskContent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    text-align: center
+    margin: 5 15 5 15
+
+  Panel
+    id: pausedTitleHeader
     height: 20
-    margin-top: 5
-    background-color: #ff990011
+    anchors.top: activeTaskContent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    Label
+      id: pausedTitle
+      text: PAUSED (0)
+      font: verdana-11px-rounded
+      color: #E0980C
+      anchors.fill: parent
+      text-align: center
 
   ScrollablePanel
     id: pausedTaskContainer
-    anchors.top: pausedTitle.bottom
+    anchors.top: pausedTitleHeader.bottom
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    margin: 2
-    padding: 2
     vertical-scrollbar: pausedScrollBar
     background-color: #111111
     border-width: 1

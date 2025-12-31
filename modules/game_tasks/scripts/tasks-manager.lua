@@ -16,6 +16,18 @@ function TasksManager.clear()
     availableTasks = {}
 end
 
+function TasksManager.calculateGoldReward(amount, experience)
+
+    if amount > 1000 then
+        amount = 1000
+    end
+    local baseRewardPerKill = experience / 5
+
+    local totalGold = math.floor(baseRewardPerKill * amount)
+
+    return totalGold
+end
+
 function TasksManager.updateTaskProgress(taskId, progress, amount)
     for _, task in ipairs(activeTasks) do
         if task.taskId == taskId then
@@ -111,3 +123,4 @@ function TasksManager.getTaskById(taskId)
     end
     return nil
 end
+

@@ -26,6 +26,25 @@ local TASK_POINTS_CATEGORY = {
     [4] = 40
 }
 
+local TASK_REWARDS = {
+    [1] = {
+        baseGold = 100,
+        multiplier = 0.5
+    },
+    [2] = {
+        baseGold = 500,
+        multiplier = 1.0
+    },
+    [3] = {
+        baseGold = 1500,
+        multiplier = 1.5
+    },
+    [4] = {
+        baseGold = 3000,
+        multiplier = 2.0
+    }
+}
+
 local tasksWindow = nil
 local currentPlayerTaskList = nil
 local currentCategory = 0
@@ -179,7 +198,6 @@ function TaskUI.updateFilterMonsterList()
         empty:setVisible(count == 0)
     end
 end
-
 
 function TaskUI.updateActiveTaskPanel()
     if not tasksWindow then
@@ -546,6 +564,7 @@ function TaskUI.openStartTaskDialog(task)
     dialog:setText(task.taskName)
     dialog.taskId = task.id
     dialog.taskCategory = task.category
+    dialog.taskExperience = task.experience
 
     if task.lookTypeIds and #task.lookTypeIds > 0 then
         local iconContainer = dialog:recursiveGetChildById("iconContainer")
@@ -605,6 +624,81 @@ function TaskUI.updateTaskAmount(dialog, text)
     elseif val < 0 then
         amountInput:setText(0)
     end
+
+    TaskUI.updateGoldCoinIcon(dialog, val)
+end
+
+function TaskUI.updateGoldCoinIcon(dialog, amount)
+    if not dialog or not amount or amount == 0 then
+        return
+    end
+
+    local goldSection = dialog:recursiveGetChildById("goldCoinRewardSection")
+    local goldAmountLabel = dialog:recursiveGetChildById("goldAmountLabel")
+    local expLabel = dialog:recursiveGetChildById("experienceLabel")
+    local tpLabel = dialog:recursiveGetChildById("taskPointsLabel")
+
+    if not goldSection then
+        return
+    end
+
+    goldSection:destroyChildren()
+
+    -- Gold berechnen
+    local totalGold = TasksManager.calculateGoldReward(amount, dialog.taskExperience or 1)
+    local goldCoins = totalGold % 100
+    local platinumCoins = math.floor(totalGold / 100) % 100
+    local crystalCoins = math.floor(totalGold / 10000)
+
+    -- Gold Icons anzeigen (max 3)
+    if crystalCoins > 0 then
+        local crystal = g_ui.createWidget("Item", goldSection)
+        crystal:setItemId(3043)
+        crystal:setItemCount(crystalCoins)
+    end
+
+    if platinumCoins > 0 then
+        local platinum = g_ui.createWidget("Item", goldSection)
+        platinum:setItemId(3035)
+        platinum:setItemCount(platinumCoins)
+    end
+
+    if goldCoins > 0 then
+        local gold = g_ui.createWidget("Item", goldSection)
+        gold:setItemId(3031)
+        gold:setItemCount(goldCoins)
+    end
+
+    -- Gold Amount
+    if goldAmountLabel then
+        goldAmountLabel:setText(formatNumber(totalGold))
+    end
+
+    -- Experience
+    if expLabel then
+        local totalExp = 0
+        if dialog.taskExperience and dialog.taskExperience > 0 then
+            totalExp = dialog.taskExperience * amount
+        end
+        expLabel:setText(formatNumber(totalExp))
+    end
+
+    -- Task Points
+    if tpLabel then
+        local taskCategory = dialog.taskCategory or 1
+        local basePoints = TASK_POINTS_CATEGORY[taskCategory] or 10
+        local totalTP = basePoints * amount
+        tpLabel:setText(totalTP)
+    end
+end
+
+function formatNumber(number)
+    if number >= 1000000 then
+        return string.format("%.1fM", number / 1000000):gsub("%.0M", "M")
+    elseif number >= 1000 then
+        return string.format("%.1fK", number / 1000):gsub("%.0K", "K")
+    end
+    return tostring(number)
 end
 
 function TaskUI.confirmStartTask()
@@ -613,10 +707,16 @@ function TaskUI.confirmStartTask()
     if not dialog then
         return
     end
-
+    local errorLabel = dialog:recursiveGetChildById("errorLabel")
     local amount = tonumber(dialog:recursiveGetChildById("amountInput"):getText()) or 0
     if amount <= 0 then
         return
+    end
+
+    if (amount < 50 or not amount) and errorLabel then
+        errorLabel:setText("Minimum 50 Monsters")
+        errorLabel:setVisible(true)
+        return false
     end
 
     TaskProtocol.sendStartTask(dialog.taskId, amount)

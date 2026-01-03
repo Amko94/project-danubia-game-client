@@ -66,6 +66,12 @@ function TaskUI.show()
     tasksWindow:show()
     tasksWindow:raise()
     tasksWindow:focus()
+
+    local label = tasksWindow:recursiveGetChildById("taskPointsLabel")
+    if label and TasksManager.playerTaskPoints then
+        label:setText(tostring("Task Points: " .. TasksManager.playerTaskPoints))
+    end
+
     TaskUI.updateCategoryButtons()
 
     scheduleEvent(function()
@@ -958,3 +964,4 @@ function TaskUI.checkPlayerPz(isClaimReward)
     end
     return false
 end
+

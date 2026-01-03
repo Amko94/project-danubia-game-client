@@ -19,6 +19,7 @@ TaskProtocol.RecvOpcode = {
     TaskRewardResponse = 8,
     ClaimRewardSuccess = 10,
     PauseTaskSuccess = 11,
+    PlayerTaskPoints = 12,
 
     ResumeError = 101,
     TaskNoFinished = 102,
@@ -77,6 +78,10 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
             local data = safeJsonDecode(buffer:sub(#PART_TOKEN + 1))
             TasksManager.addAvailableTasks(data)
         end
+
+    elseif opcode == TaskProtocol.RecvOpcode.PlayerTaskPoints then
+        local taskPoints = tonumber(buffer)
+        TasksManager.playerTaskPoints = taskPoints
 
     elseif opcode == TaskProtocol.RecvOpcode.TaskResumed then
         TaskProtocol.requestTasksFromServer()

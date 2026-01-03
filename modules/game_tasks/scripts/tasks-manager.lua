@@ -174,4 +174,3 @@ function TasksManager.getTaskById(taskId)
     end
     return nil
 end
-

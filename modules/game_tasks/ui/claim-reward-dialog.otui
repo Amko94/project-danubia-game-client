@@ -7,7 +7,7 @@ ClaimRewardDialog < MainWindow
   Label
     id: rewardLabel
     text: Select Your Reward
-    font: verdana-20px-rounded
+    font: verdana-11px-rounded
     color: #dfdfdf
     text-shadow: #000000
     anchors.top: parent.top
@@ -34,7 +34,7 @@ ClaimRewardDialog < MainWindow
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-12px-rounded
+      font: verdana-11px-rounded
       color: #FFD700
       text-shadow: #000000
       margin-top: 10
@@ -56,7 +56,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-10px-rounded
+      font: verdana-11px-rounded
       color: #FFD700
       text-shadow: #000000
       margin-bottom: 10
@@ -80,7 +80,7 @@ ClaimRewardDialog < MainWindow
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-12px-rounded
+      font: verdana-11px-rounded
       color: #E638CB
       text-shadow: #000000
       margin-top: 10
@@ -102,7 +102,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-10px-rounded
+      font: verdana-11px-rounded
       color: #E638CB
       text-shadow: #000000
       margin-bottom: 10
@@ -126,7 +126,7 @@ ClaimRewardDialog < MainWindow
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-12px-rounded
+      font: verdana-11px-rounded
       color: #FFD700
       text-shadow: #000000
       margin-top: 10
@@ -148,7 +148,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-9px-rounded
+      font: verdana-11px-rounded
       color: #FFD700
       text-shadow: #000000
       margin-bottom: 22
@@ -160,7 +160,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-9px-rounded
+      font: verdana-11px-rounded
       color: #E638CB
       text-shadow: #000000
       margin-bottom: 8
@@ -184,7 +184,7 @@ ClaimRewardDialog < MainWindow
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-12px-rounded
+      font: verdana-11px-rounded
       color: #FFE81F
       text-shadow: #000000
       margin-top: 12
@@ -196,7 +196,7 @@ ClaimRewardDialog < MainWindow
       anchors.top: taskPointsTitle.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-16px-rounded
+      font: verdana-11px-rounded
       color: #FFE81F
       text-shadow: #000000
       margin-top: 5
@@ -208,47 +208,49 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-10px-rounded
+      font: verdana-11px-rounded
       color: #AAAAAA
       text-shadow: #000000
-      margin-bottom: 8
       text-align: center
-
-  Button
-    id: claimButton
-    text: Confirm
-    width: 370
-    height: 35
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    margin: 0 25 15 25
-    color: #FFD700
-    font: verdana-12px-rounded
-    @onClick: TaskUI.confirmClaimReward()
-    enabled: false
 
   Label
     id: pzWarningLabel
     text: You cannot claim rewards while in combat
-    anchors.bottom: cancelButton.top
+    anchors.bottom: buttonPanel.top
     anchors.left: parent.left
     anchors.right: parent.right
-    font: verdana-10px-rounded
-    color: #FF6B6B
+    font: verdana-11px-rounded
     text-shadow: #000000
     margin-bottom: 10
     text-align: center
     visible: false
 
-  Button
-    id: cancelButton
-    text: Cancel
-    width: 370
-    height: 32
+  Panel
+    id: buttonPanel
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    margin: 0 25 55 25
-    color: #dfdfdf
-    @onClick: self:getParent():destroy()
+    height: 50
+    margin: 0 15 15 15
+
+    Button
+      id: cancelButton
+      text: Cancel
+      width: 175
+      height: 35
+      anchors.left: parent.left
+      anchors.bottom: parent.bottom
+      @onClick: self:getParent():getParent():destroy()
+
+    Button
+      id: claimButton
+      text: Confirm
+      width: 175
+      height: 35
+      anchors.left: cancelButton.right
+      anchors.bottom: parent.bottom
+      margin-left: 10
+      color: #FFD700
+      font: verdana-11px-rounded
+      @onClick: TaskUI.confirmClaimReward()
+      enabled: false

@@ -667,7 +667,9 @@ function TaskUI.updateTaskAmount(dialog, text)
             errorLabel:setVisible(true)
             scheduleEvent(function()
                 if errorLabel then
+                    errorLabel:setText("Only numbers allowed")
                     errorLabel:setVisible(false)
+
                 end
             end, 2000)
         end
@@ -740,12 +742,9 @@ function TaskUI.confirmStartTask()
     end
     local errorLabel = dialog:recursiveGetChildById("errorLabel")
     local amount = tonumber(dialog:recursiveGetChildById("amountInput"):getText()) or 0
-    if amount <= 0 then
-        return
-    end
 
     if (amount < 50 or not amount) and errorLabel then
-        errorLabel:setText("Minimum 50 Monsters")
+        errorLabel:setText("Minimum 50 monsters")
         errorLabel:setVisible(true)
         return false
     end

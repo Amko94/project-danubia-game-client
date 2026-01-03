@@ -46,21 +46,23 @@ StartTaskDialog < MainWindow
 
   Label
     id: errorLabel
-    text: Only numbers allowed!
+    text: Only numbers allowed
     font: verdana-11px-rounded
     color: #ff4444
     text-shadow: #000000
     visible: false
     anchors.top: amountInput.bottom
-    anchors.right: amountInput.right
-    margin-top: 1
+    anchors.left: amountInput.left
+
+    margin-top: 5
+    margin-bottom: 5
 
   HorizontalSeparator
     id: separator
     anchors.top: amountInput.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    margin: 15 15 0 15
+    margin: 20 15 0 15
     background-color: #333333
 
   Label
@@ -212,7 +214,7 @@ StartTaskDialog < MainWindow
     width: 130
     height: 28
     anchors.bottom: parent.bottom
-    anchors.left: parent.left
+    anchors.right: parent.right
     margin-right: 5
     @onClick: TaskUI.confirmStartTask()
 
@@ -222,7 +224,7 @@ StartTaskDialog < MainWindow
     width: 130
     height: 28
     anchors.bottom: parent.bottom
-    anchors.right: parent.right
+    anchors.left: parent.left
     margin-left: 5
     color: #dfdfdf
     @onClick: self:getParent():destroy()

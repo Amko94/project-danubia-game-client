@@ -102,7 +102,9 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
 
 
     elseif opcode == TaskProtocol.RecvOpcode.PauseTaskSuccess then
-        TaskUI.TaskUI.resetActiveTask()()
+        if TaskUI then
+            TaskUI.resetActiveTask()
+        end
     end
 end
 

@@ -896,7 +896,7 @@ function TaskUI.showClaimRewardDialog(goldStr, expStr, pointsStr)
 
     updateBorders()
 
-    if TaskUI.checkPlayerPz() then
+    if TaskUI.checkPlayerPz(true) then
         if pzWarningLabel then
             pzWarningLabel:setVisible(true)
         end
@@ -950,9 +950,9 @@ function TaskUI.resetActiveTask()
     selectedActiveTask = nil
 end
 
-function TaskUI.checkPlayerPz()
+function TaskUI.checkPlayerPz(isClaimReward)
     local player = g_game.getLocalPlayer()
-    if player and player:hasState(PlayerStates.Swords) then
+    if player and player:hasState(PlayerStates.Swords) and not isClaimReward then
         TaskUI.showPzBlockDialog()
         return true
     end

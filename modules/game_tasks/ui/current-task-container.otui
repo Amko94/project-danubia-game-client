@@ -8,7 +8,6 @@ CurrentTaskContainer < Panel
     anchors.top: parent.top
     anchors.left: parent.left
     margin-top: 5
-    phantom: true
 
   Label
     id: taskName

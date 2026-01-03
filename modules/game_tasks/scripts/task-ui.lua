@@ -286,10 +286,14 @@ function TaskUI.updateActiveTaskPanel()
         if taskData.lookTypeIds and #taskData.lookTypeIds > 0 then
             display:getChildById("monsterIcon"):setOutfit({ type = taskData.lookTypeIds[1] })
         end
+
+        if taskData.monsterNames and #taskData.monsterNames > 0 then
+            local monsterList = table.concat(taskData.monsterNames, "\n")
+            display:getChildById("monsterIcon"):setTooltip(monsterList)
+        end
     end
 
     local percent = math.floor((tracked.progress / tracked.amount) * 100)
-
     local progressPanel = display:getChildById("progressPanel")
     if progressPanel then
         local progressBar = progressPanel:getChildById("progressBar")

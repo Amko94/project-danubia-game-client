@@ -64,8 +64,7 @@ ActiveTaskPanel < Panel
         anchors.left: parent.left
         anchors.right: parent.right
         margin: 3 3 0 3
-        color: #FFD700
-        enabled: false
+        @onClick: TaskUI.taskRewardRequest()
 
       Button
         id: pauseButton

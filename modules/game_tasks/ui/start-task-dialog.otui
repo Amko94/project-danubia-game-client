@@ -1,6 +1,6 @@
 StartTaskDialog < MainWindow
   id: startTaskDialog
-  size: 350 320
+  size: 320 420
   text: Task Assignment
   @onEscape: self:destroy()
 
@@ -10,7 +10,6 @@ StartTaskDialog < MainWindow
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    border: 1 #444444
 
     Panel
       id: iconContainer
@@ -27,6 +26,7 @@ StartTaskDialog < MainWindow
     text: Enter kill amount:
     font: verdana-11px-rounded
     color: #dfdfdf
+    text-shadow: #000000
     anchors.top: monsterSection.bottom
     anchors.left: parent.left
     margin-top: 20
@@ -39,15 +39,17 @@ StartTaskDialog < MainWindow
     anchors.verticalCenter: amountLabel.verticalCenter
     anchors.right: parent.right
     margin-right: 20
-    background-color: #00000066
+    background-color: #1a1a1a
     border: 1 #333333
+    text-shadow: #000000
     @onTextChange: TaskUI.updateTaskAmount(self:getParent(),self:getText())
 
   Label
     id: errorLabel
     text: Only numbers allowed!
-    font: verdana-6px-rounded
+    font: verdana-11px-rounded
     color: #ff4444
+    text-shadow: #000000
     visible: false
     anchors.top: amountInput.bottom
     anchors.right: amountInput.right
@@ -59,32 +61,150 @@ StartTaskDialog < MainWindow
     anchors.left: parent.left
     anchors.right: parent.right
     margin: 15 15 0 15
+    background-color: #333333
 
   Label
-    icon: rewardLabel
-    text: Reward:
+    id: rewardLabel
+    text: Reward
     font: verdana-11px-rounded
     color: #dfdfdf
+    text-shadow: #000000
     anchors.top: separator.bottom
     anchors.left: parent.left
+    anchors.horizontalCenter: parent.horizontalCenter
     margin-top: 10
-    margin-left: 20
 
   Panel
     id: goldCoinRewardSection
-    width: 300
-    height: 80
+    width: 80
+    height: 140
     anchors.top: rewardLabel.bottom
-    anchors.left: rewardLabel.right
-    margin-top: 2
-    background-color: #2a2a2a
+    anchors.left: parent.left
+    margin-top: 15
+    margin-left: 15
+    background-color: #1a1a1a
     border: 1 #333333
-    padding: 15
-    layout:
-      type: horizontalBox
-      spacing: 10
-      fit-size: false
-      align-center: true
+
+    Label
+      id: goldCoinRewardLabel
+      text: Gold
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-top: 5
+      text-align: center
+
+    UIWidget
+      id: goldCoinRewardIcon
+      image-source: /images/game/prey/prey_bigloot.png
+      width: 44
+      height: 92
+      anchors.top: goldCoinRewardLabel.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+
+    Label
+      id: goldCoinAmount
+      text: 0
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-bottom: 5
+      text-align: center
+
+  Panel
+    id: expRewardSection
+    width: 80
+    height: 140
+    anchors.top: rewardLabel.bottom
+    anchors.left: goldCoinRewardSection.right
+    margin-top: 15
+    margin-left: 10
+    background-color: #1a1a1a
+    border: 1 #333333
+
+    Label
+      id: expRewardLabel
+      text: Experience
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #E638CB
+      text-shadow: #000000
+      margin-top: 5
+      text-align: center
+
+    UIWidget
+      id: expRewardIcon
+      image-source: /images/game/prey/prey_bigxp.png
+      width: 44
+      height: 92
+      anchors.top: expRewardLabel.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+
+    Label
+      id: expAmount
+      text: 0
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #E638CB
+      text-shadow: #000000
+      margin-bottom: 5
+      text-align: center
+
+  Panel
+    id: taskPointsRewardSection
+    width: 80
+    height: 140
+    anchors.top: rewardLabel.bottom
+    anchors.left: expRewardSection.right
+    margin-top: 15
+    margin-left: 10
+    background-color: #1a1a1a
+    border: 1 #333333
+
+    Label
+      id: taskPointsRewardLabel
+      text: Task Points
+      font: verdana-11px-rounded
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      color: #FFE81F
+      text-shadow: #000000
+      margin-top: 5
+      text-align: center
+
+    UIWidget
+      id: taskPointsRewardIcon
+      image-source: /images/game/prey/task_points.png
+      width: 44
+      height: 92
+      anchors.top: taskPointsRewardLabel.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+
+    Label
+      id: taskPointsAmount
+      text: 0
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFE81F
+      text-shadow: #000000
+      margin-bottom: 5
+      text-align: center
 
   Button
     id: okButton
@@ -93,8 +213,7 @@ StartTaskDialog < MainWindow
     height: 28
     anchors.bottom: parent.bottom
     anchors.left: parent.left
-    margin: 0 0 15 20
-    color: #228B22
+    margin-right: 5
     @onClick: TaskUI.confirmStartTask()
 
   Button
@@ -104,5 +223,6 @@ StartTaskDialog < MainWindow
     height: 28
     anchors.bottom: parent.bottom
     anchors.right: parent.right
-    margin: 0 20 15 0
+    margin-left: 5
+    color: #dfdfdf
     @onClick: self:getParent():destroy()

@@ -28,7 +28,7 @@ PausedTaskListItem < Panel
     anchors.right: taskMenu.left
     margin-left: 5
     margin-right: 10
-    margin-bottom: 5
+    margin-bottom: 10
     background-color: #00000066
     border-width: 1
     border-color: #333333

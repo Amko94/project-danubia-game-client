@@ -19,32 +19,6 @@ local PLAYER_OUTFIT_TYPES = {
     ['Fury'] = { type = 149, head = 94, body = 77, legs = 96, feet = 0, addons = 3 }
 }
 
-local TASK_POINTS_CATEGORY = {
-    [1] = 10,
-    [2] = 20,
-    [3] = 30,
-    [4] = 40
-}
-
-local TASK_REWARDS = {
-    [1] = {
-        baseGold = 100,
-        multiplier = 0.5
-    },
-    [2] = {
-        baseGold = 500,
-        multiplier = 1.0
-    },
-    [3] = {
-        baseGold = 1500,
-        multiplier = 1.5
-    },
-    [4] = {
-        baseGold = 3000,
-        multiplier = 2.0
-    }
-}
-
 local tasksWindow = nil
 local currentPlayerTaskList = nil
 local currentCategory = 0
@@ -61,9 +35,11 @@ function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/reward-box')
     g_ui.importStyle('/modules/game_tasks/ui/confirm-dialog')
     g_ui.importStyle('/modules/game_tasks/ui/no-selected-task-warning')
-    g_ui.importStyle '/modules/game_tasks/ui/error-start-task-dialog'
-    g_ui.importStyle '/modules/game_tasks/ui/start-task-dialog'
-    g_ui.importStyle '/modules/game_tasks/ui/current-task-container'
+    g_ui.importStyle('/modules/game_tasks/ui/error-start-task-dialog')
+    g_ui.importStyle('/modules/game_tasks/ui/start-task-dialog')
+    g_ui.importStyle('/modules/game_tasks/ui/current-task-container')
+    g_ui.importStyle('/modules/game_tasks/ui/claim-reward-dialog')
+    g_ui.importStyle('/modules/game_tasks/ui/pz-block-dialog.otui')
 end
 
 function TaskUI.terminate()
@@ -106,6 +82,25 @@ function TaskUI.hide()
         tasksWindow:destroy()
         tasksWindow = nil
     end
+    local rootPanel = modules.game_interface.getRootPanel()
+
+    local dialogs = {
+        'claimRewardDialog',
+        'startTaskDialog',
+        'confirmDialog',
+        'errorStartTaskDialog',
+        'noTaskWarningDialog',
+        'pzBlockDialog'
+    }
+
+    for _, dialogId in ipairs(dialogs) do
+        local dialog = rootPanel:getChildById(dialogId)
+        if dialog then
+            dialog:destroy()
+        end
+    end
+    selectedActiveTask = nil
+    selectedPausedTask = nil
 end
 
 function TaskUI.refresh()
@@ -232,8 +227,12 @@ function TaskUI.updateActiveTaskPanel()
             pauseBtn:setEnabled(false)
         end
 
+        if rewardBtn then
+            rewardBtn:setEnabled(false)
+        end
+
         if activeTitle then
-            pauseBtn:setColor("#666666")
+            activeTitle:setColor("#666666")
         end
 
         return
@@ -243,15 +242,29 @@ function TaskUI.updateActiveTaskPanel()
         emptyLabel:setVisible(false)
     end
 
-    if rewardBtn then
-        rewardBtn:setEnabled(true)
-    end
-    if cancelBtn then
-        cancelBtn:setEnabled(true)
-    end
+    selectedActiveTask = tracked
 
-    if pauseBtn then
-        pauseBtn:setEnabled(true)
+    if selectedActiveTask.finished == 1 then
+        if pauseBtn then
+            pauseBtn:setEnabled(false)
+        end
+        if cancelBtn then
+            cancelBtn:setEnabled(false)
+        end
+        if rewardBtn then
+            rewardBtn:setEnabled(true)
+            rewardBtn:setColor("#FFD700")
+        end
+    else
+        if rewardBtn then
+            rewardBtn:setEnabled(true)
+        end
+        if cancelBtn then
+            cancelBtn:setEnabled(true)
+        end
+        if pauseBtn then
+            pauseBtn:setEnabled(true)
+        end
     end
 
     if activeTitle then
@@ -260,8 +273,6 @@ function TaskUI.updateActiveTaskPanel()
 
     local display = g_ui.createWidget("CurrentTaskContainer", activeTaskBase)
     display:fill('parent')
-
-    selectedActiveTask = tracked
 
     local taskData = TasksManager.getTaskById(tracked.taskId)
     if taskData then
@@ -304,7 +315,6 @@ function TaskUI.updatePausedTasksList()
     local pausedTasks = {}
     for _, task in ipairs(active) do
         if task.paused == 1 and task.active == 1 then
-            -- Wir holen uns den Namen für die Sortierung direkt dazu
             task.cachedName = TasksManager.getTaskNameById(task.taskId)
             table.insert(pausedTasks, task)
         end
@@ -376,6 +386,7 @@ function TaskUI.colorizeProgressBar(progressBar, percent)
 
     progressBar:setBackgroundColor(color)
 end
+
 function TaskUI.filterTasks(text)
     if debounceEvent then
         removeEvent(debounceEvent)
@@ -453,10 +464,21 @@ function TaskUI.cancelTask()
     local rootPanel = modules.game_interface.getRootPanel()
 
     if not selectedActiveTask then
+        if rootPanel:getChildById('noTaskWarningDialog') then
+            return
+        end
         local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
         noTask:show()
         noTask:raise()
         noTask:focus()
+        return
+    end
+
+    if rootPanel:getChildById('confirmDialog') then
+        return
+    end
+
+    if TaskUI.checkPlayerPz() then
         return
     end
 
@@ -477,10 +499,21 @@ function TaskUI.cancelPausedTask()
     local rootPanel = modules.game_interface.getRootPanel()
 
     if not selectedPausedTask then
+        if rootPanel:getChildById('noTaskWarningDialog') then
+            return
+        end
         local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
         noTask:show()
         noTask:raise()
         noTask:focus()
+        return
+    end
+
+    if rootPanel:getChildById('confirmDialog') then
+        return
+    end
+
+    if TaskUI.checkPlayerPz() then
         return
     end
 
@@ -533,6 +566,10 @@ end
 
 function TaskUI.pauseTask()
     if not selectedActiveTask then
+        local rootPanel = modules.game_interface.getRootPanel()
+        if rootPanel:getChildById('noTaskWarningDialog') then
+            return
+        end
         local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
         noTask:show()
         noTask:raise()
@@ -540,8 +577,11 @@ function TaskUI.pauseTask()
         return
     end
 
+    if TaskUI.checkPlayerPz() then
+        return
+    end
+
     TaskProtocol.sendPauseTask(selectedActiveTask.taskId)
-    selectedActiveTask = nil
 end
 
 function TaskUI.openStartTaskDialog(task)
@@ -555,6 +595,15 @@ function TaskUI.openStartTaskDialog(task)
     end
 
     local rootPanel = modules.game_interface.getRootPanel()
+
+    if rootPanel:getChildById('startTaskDialog') then
+        return
+    end
+
+    if TaskUI.checkPlayerPz() then
+        return
+    end
+
     local dialog = g_ui.createWidget("StartTaskDialog", rootPanel)
 
     if not dialog then
@@ -625,80 +674,56 @@ function TaskUI.updateTaskAmount(dialog, text)
         amountInput:setText(0)
     end
 
-    TaskUI.updateGoldCoinIcon(dialog, val)
+    TaskUI.updateRewardPreview(dialog, val)
 end
 
-function TaskUI.updateGoldCoinIcon(dialog, amount)
+function TaskUI.updateRewardPreview(dialog, amount)
     if not dialog or not amount or amount == 0 then
         return
     end
 
     local goldSection = dialog:recursiveGetChildById("goldCoinRewardSection")
-    local goldAmountLabel = dialog:recursiveGetChildById("goldAmountLabel")
-    local expLabel = dialog:recursiveGetChildById("experienceLabel")
-    local tpLabel = dialog:recursiveGetChildById("taskPointsLabel")
+    local goldAmountLabel = dialog:recursiveGetChildById("goldCoinAmount")
+    local expAmountLabel = dialog:recursiveGetChildById("expAmount")
+    local tpLabel = dialog:recursiveGetChildById("taskPointsAmount")
 
-    if not goldSection then
+    if not goldSection or not goldAmountLabel then
         return
     end
 
-    goldSection:destroyChildren()
+    local totalGold = TasksManager.calculateGoldReward(amount, dialog.taskExperience, dialog.taskCategory)
+    local totalExp = TasksManager.calculateExperienceReward(amount, dialog.taskExperience)
+    local totalTaskPoints = TasksManager.calculateTaskPointsReward(amount, dialog.taskExperience, dialog.taskCategory)
 
-    -- Gold berechnen
-    local totalGold = TasksManager.calculateGoldReward(amount, dialog.taskExperience or 1)
-    local goldCoins = totalGold % 100
-    local platinumCoins = math.floor(totalGold / 100) % 100
-    local crystalCoins = math.floor(totalGold / 10000)
+    goldAmountLabel:setText(TaskUI.formatGoldAmount(totalGold))
 
-    -- Gold Icons anzeigen (max 3)
-    if crystalCoins > 0 then
-        local crystal = g_ui.createWidget("Item", goldSection)
-        crystal:setItemId(3043)
-        crystal:setItemCount(crystalCoins)
+    if expAmountLabel then
+        expAmountLabel:setText(TaskUI.formatAmount(totalExp))
     end
 
-    if platinumCoins > 0 then
-        local platinum = g_ui.createWidget("Item", goldSection)
-        platinum:setItemId(3035)
-        platinum:setItemCount(platinumCoins)
-    end
-
-    if goldCoins > 0 then
-        local gold = g_ui.createWidget("Item", goldSection)
-        gold:setItemId(3031)
-        gold:setItemCount(goldCoins)
-    end
-
-    -- Gold Amount
-    if goldAmountLabel then
-        goldAmountLabel:setText(formatNumber(totalGold))
-    end
-
-    -- Experience
-    if expLabel then
-        local totalExp = 0
-        if dialog.taskExperience and dialog.taskExperience > 0 then
-            totalExp = dialog.taskExperience * amount
-        end
-        expLabel:setText(formatNumber(totalExp))
-    end
-
-    -- Task Points
     if tpLabel then
-        local taskCategory = dialog.taskCategory or 1
-        local basePoints = TASK_POINTS_CATEGORY[taskCategory] or 10
-        local totalTP = basePoints * amount
-        tpLabel:setText(totalTP)
+        tpLabel:setText(totalTaskPoints)
     end
 end
 
-function formatNumber(number)
-    if number >= 1000000 then
-        return string.format("%.1fM", number / 1000000):gsub("%.0M", "M")
-    elseif number >= 1000 then
-        return string.format("%.1fK", number / 1000):gsub("%.0K", "K")
+function TaskUI.formatGoldAmount(amount)
+    if amount >= 1000000 then
+        return string.format("%.2f", amount / 1000000):gsub("%.?0+$", "") .. "kk"
+    elseif amount >= 1000 then
+        return string.format("%.2f", amount / 1000):gsub("%.?0+$", "") .. "k"
+    else
+        return tostring(amount .. 'gp')
     end
-    return tostring(number)
+end
+
+function TaskUI.formatAmount(amount)
+    if amount >= 1000000 then
+        return string.format("%.2f", amount / 1000000):gsub("%.?0+$", "") .. "kk"
+    elseif amount >= 1000 then
+        return string.format("%.2f", amount / 1000):gsub("%.?0+$", "") .. "k"
+    else
+        return tostring(amount)
+    end
 end
 
 function TaskUI.confirmStartTask()
@@ -773,9 +798,163 @@ function TaskUI.onTaskMenuChange(button, option)
     local task = item.taskData
 
     if option == "Resume" then
+        if TaskUI.checkPlayerPz() then
+            return
+        end
         TaskProtocol.sendResumeTask(task.taskId)
     elseif option == "Cancel" then
         selectedPausedTask = task
         TaskUI.cancelPausedTask()
     end
+end
+
+function TaskUI.taskRewardRequest()
+    if not selectedActiveTask then
+        print("ERROR: No taskId provided")
+        return false
+    end
+
+    TaskProtocol.taskRewardRequest(selectedActiveTask.id)
+end
+
+function TaskUI.showClaimRewardDialog(goldStr, expStr, pointsStr)
+    local gold = tonumber(goldStr) or 0
+    local exp = tonumber(expStr) or 0
+    local points = tonumber(pointsStr) or 0
+
+    local rootPanel = modules.game_interface.getRootPanel()
+
+    if rootPanel:getChildById('claimRewardDialog') then
+        return
+    end
+
+    local dialog = g_ui.createWidget("ClaimRewardDialog", rootPanel)
+
+    if not dialog then
+        print("ERROR: Could not create ClaimRewardDialog")
+        return
+    end
+
+    if selectedActiveTask then
+        dialog.taskId = selectedActiveTask.id
+    end
+
+    dialog:recursiveGetChildById("goldAmount"):setText(TaskUI.formatGoldAmount(gold))
+    dialog:recursiveGetChildById("expAmount"):setText(TaskUI.formatAmount(exp))
+    dialog:recursiveGetChildById("taskPointsAmount"):setText("+ " .. points)
+    dialog:recursiveGetChildById("splitGoldAmount"):setText(TaskUI.formatGoldAmount(math.floor(gold / 2)))
+    dialog:recursiveGetChildById("splitExpAmount"):setText(TaskUI.formatAmount(math.floor(exp / 2)))
+    local claimButton = dialog:recursiveGetChildById("claimButton")
+    local pzWarningLabel = dialog:recursiveGetChildById("pzWarningLabel")
+
+    local goldSection = dialog:recursiveGetChildById("goldSection")
+    local expSection = dialog:recursiveGetChildById("expSection")
+    local splitSection = dialog:recursiveGetChildById("splitSection")
+
+    if not goldSection or not expSection or not splitSection then
+        print("ERROR: Could not find reward sections")
+        return
+    end
+
+    dialog.goldValue = gold
+    dialog.expValue = exp
+    dialog.pointsValue = points
+    dialog.selectedReward = "gold"
+
+    if selectedActiveTask.finished == 1 then
+        claimButton:setEnabled(true)
+    end
+
+    local function updateBorders()
+        goldSection:setBackgroundColor("#1a1a1a")
+        expSection:setBackgroundColor("#1a1a1a")
+        splitSection:setBackgroundColor("#1a1a1a")
+
+        if dialog.selectedReward == "gold" then
+            goldSection:setBackgroundColor("#2a3a1a")
+        elseif dialog.selectedReward == "exp" then
+            expSection:setBackgroundColor("#2a1a3a")
+        elseif dialog.selectedReward == "split" then
+            splitSection:setBackgroundColor("#2a3a1a")
+        end
+    end
+
+    goldSection.onClick = function()
+        dialog.selectedReward = "gold"
+        updateBorders()
+    end
+
+    expSection.onClick = function()
+        dialog.selectedReward = "exp"
+        updateBorders()
+    end
+
+    splitSection.onClick = function()
+        dialog.selectedReward = "split"
+        updateBorders()
+    end
+
+    updateBorders()
+
+    if TaskUI.checkPlayerPz() then
+        if pzWarningLabel then
+            pzWarningLabel:setVisible(true)
+        end
+        if claimButton then
+            claimButton:setEnabled(false)
+        end
+    end
+
+    dialog:show()
+    dialog:raise()
+    dialog:focus()
+end
+
+function TaskUI.confirmClaimReward()
+    local rootPanel = modules.game_interface.getRootPanel()
+    local dialog = rootPanel:getChildById('claimRewardDialog')
+
+    if not dialog then
+        return
+    end
+
+    if not dialog.taskId then
+        print("ERROR: No taskId in dialog")
+        return
+    end
+
+    if TaskUI.checkPlayerPz() then
+        return
+    end
+
+    local selectedReward = dialog.selectedReward or "gold"
+    local taskId = dialog.taskId
+
+    TaskProtocol.confirmRewardClaiming(taskId, selectedReward)
+end
+
+function TaskUI.showPzBlockDialog()
+    local rootPanel = modules.game_interface.getRootPanel()
+
+    if rootPanel:getChildById('pzBlockDialog') then
+        return
+    end
+
+    local dialog = g_ui.createWidget("PzBlockDialog", rootPanel)
+    dialog:show()
+    dialog:raise()
+    dialog:focus()
+end
+
+function TaskUI.resetActiveTask()
+    selectedActiveTask = nil
+end
+
+function TaskUI.checkPlayerPz()
+    local player = g_game.getLocalPlayer()
+    if player and player:hasState(PlayerStates.Swords) then
+        TaskUI.showPzBlockDialog()
+        return true
+    end
+    return false
 end

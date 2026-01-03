@@ -170,4 +170,4 @@ TaskWindow < MainWindow
     text: Close
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    @onClick: self:getParent():destroy()
+    @onClick: TaskUI.hide()

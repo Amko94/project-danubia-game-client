@@ -6,7 +6,9 @@ TaskProtocol.SendOpcode = {
     RequestAll = 0x04,
     ResumeTask = 0x05,
     PauseTask = 0x06,
-    CancelTask = 0x07
+    CancelTask = 0x07,
+    TaskRewardRequest = 0x08,
+    ConfirmClaimReward = 0x09,
 }
 
 TaskProtocol.RecvOpcode = {
@@ -14,7 +16,13 @@ TaskProtocol.RecvOpcode = {
     ActiveTasks = 3,
     AvailablePart = 4,
     TaskResumed = 5,
-    ResumeError = 101
+    TaskRewardResponse = 8,
+    ClaimRewardSuccess = 10,
+    PauseTaskSuccess = 11,
+
+    ResumeError = 101,
+    TaskNoFinished = 102,
+
 }
 
 local PART_TOKEN = "TASKLIST_PART;"
@@ -77,6 +85,24 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
         if TaskUI then
             TaskUI.showStartTaskError()
         end
+
+    elseif opcode == TaskProtocol.RecvOpcode.TaskRewardResponse then
+        if TaskUI then
+
+            local parts = string.split(buffer, ";")
+            local gold = tonumber(parts[1]) or 0
+            local exp = tonumber(parts[2]) or 0
+            local points = tonumber(parts[3]) or 0
+
+            TaskUI.showClaimRewardDialog(gold, exp, points)
+        end
+
+    elseif opcode == TaskProtocol.RecvOpcode.ClaimRewardSuccess then
+        TaskUI.hide()
+
+
+    elseif opcode == TaskProtocol.RecvOpcode.PauseTaskSuccess then
+        TaskUI.TaskUI.resetActiveTask()()
     end
 end
 
@@ -125,3 +151,19 @@ function TaskProtocol.cancelTask(id)
         protocol:sendExtendedOpcode(TaskProtocol.SendOpcode.CancelTask, id)
     end
 end
+
+function TaskProtocol.confirmRewardClaiming(taskId, selectedReward)
+    local protocol = g_game.getProtocolGame()
+    if protocol then
+        protocol:sendExtendedOpcode(TaskProtocol.SendOpcode.ConfirmClaimReward, taskId .. ";" .. selectedReward)
+    end
+end
+
+function TaskProtocol.taskRewardRequest(taskId)
+    local protocol = g_game.getProtocolGame()
+    if protocol then
+        protocol:sendExtendedOpcode(TaskProtocol.SendOpcode.TaskRewardRequest, tostring(taskId))
+    end
+end
+
+

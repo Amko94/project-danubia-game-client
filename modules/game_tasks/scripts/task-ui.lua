@@ -40,10 +40,29 @@ function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/current-task-container')
     g_ui.importStyle('/modules/game_tasks/ui/claim-reward-dialog')
     g_ui.importStyle('/modules/game_tasks/ui/pz-block-dialog.otui')
+
+    connect(g_game, {
+        onGameEnd = TaskUI.onGameEnd
+    })
+
+    connect(g_game, {
+        onGameStart = TaskUI.onGameStart
+    })
 end
 
 function TaskUI.terminate()
+    disconnect(g_game, {
+        onGameEnd = TaskUI.onGameEnd
+    })
     TaskUI.hide()
+end
+function TaskUI.onGameEnd()
+    TaskUI.hide()
+end
+
+function TaskUI.onGameStart()
+    selectedActiveTask = nil
+    selectedPausedTask = nil
 end
 
 function TaskUI.toggle()

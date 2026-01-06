@@ -2,6 +2,6 @@ Module
   name: game_tasks
   description: Task System Module
   author: Amko94
-  scripts: [ scripts/task-json-parser, scripts/tasks-manager, scripts/task-protocol, scripts/task-ui, scripts/tasks ]
+  scripts: [ scripts/tasks-manager, scripts/task-protocol, scripts/task-ui, scripts/tasks ]
   @onLoad: init()
   @onUnload: terminate()

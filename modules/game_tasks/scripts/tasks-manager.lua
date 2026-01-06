@@ -2,6 +2,7 @@ TasksManager = {}
 
 local activeTasks = {}
 local availableTasks = {}
+local currentPlayerId = nil
 
 function TasksManager.init()
     TasksManager.clear()
@@ -14,6 +15,7 @@ end
 function TasksManager.clear()
     activeTasks = {}
     availableTasks = {}
+    currentPlayerId = nil
 end
 
 function TasksManager.calculateTaskPointsReward(amount, experience, category)
@@ -95,7 +97,11 @@ function TasksManager.isAvailableTasksLoaded()
     return #availableTasks > 0
 end
 
-function TasksManager.updateActiveTasks(data)
+function TasksManager.updateActiveTasks(data, playerId)
+    if currentPlayerId ~= playerId then
+        activeTasks = {}
+        currentPlayerId = playerId
+    end
     activeTasks = data
     TaskUI.refresh()
 end

@@ -57,8 +57,12 @@ end
 
 function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
     if opcode == TaskProtocol.RecvOpcode.ActiveTasks then
-        local data = safeJsonDecode(buffer)
-        TasksManager.updateActiveTasks(data)
+        local parts = string.split(buffer, ";", 2)
+        local playerId = tonumber(parts[1])
+        local jsonData = parts[2]
+
+        local data = json.decode(jsonData)
+        TasksManager.updateActiveTasks(data, playerId)
 
     elseif opcode == TaskProtocol.RecvOpcode.TaskProgressUpdate then
         if buffer:sub(1, 13) == "TASK_UPDATED;" then
@@ -75,13 +79,16 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
 
     elseif opcode == TaskProtocol.RecvOpcode.AvailablePart then
         if buffer:sub(1, #PART_TOKEN) == PART_TOKEN then
-            local data = safeJsonDecode(buffer:sub(#PART_TOKEN + 1))
+            local data = json.decode(buffer:sub(#PART_TOKEN + 1))
             TasksManager.addAvailableTasks(data)
         end
 
     elseif opcode == TaskProtocol.RecvOpcode.PlayerTaskPoints then
-        local taskPoints = tonumber(buffer)
+        local parts = string.split(buffer, ";", 2)
+        local playerId = tonumber(parts[1])
+        local taskPoints = tonumber(parts[2])
         TasksManager.playerTaskPoints = taskPoints
+        TasksManager.currentPlayerId = playerId
 
     elseif opcode == TaskProtocol.RecvOpcode.TaskResumed then
         TaskProtocol.requestTasksFromServer()

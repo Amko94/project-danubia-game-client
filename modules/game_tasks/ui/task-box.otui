@@ -43,6 +43,18 @@ TaskBox < UIWidget
       cell-spacing: -35
       num-columns: 3
 
+  Button
+    id: startTaskButton
+    text: Start Task
+    width: 75
+    height: 20
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    margin-right: 4
+    margin-bottom: 4
+    @onClick: TaskUI.openStartTaskDialog()
+    visible: false
+
   Panel
     id: progressPanel
     size: 130 16

@@ -1,83 +1,54 @@
 ActiveTaskPanel < Panel
   id: activeTaskPanel
-  anchors.top: parent.top
-  anchors.left: parent.left
-  anchors.bottom: filterPanel.top
-  width: 170
-  margin: 5
-  border-width: 1
-  border-color: #333333
+  width: 190
 
-
-  Button
-    id: activeTab
-    text: Active
+  Panel
+    id: activeTaskHeader
+    height: 18
     anchors.top: parent.top
     anchors.left: parent.left
-    width: 85
-    height: 20
-    font: verdana-11px-rounded
-    color: #B8B8B8
-    @onClick: TaskUI.switchActiveTab()
-    $on:
-      background-color: #00ff00
-      color: #25E00B
-      border-color: #00ff00
+    anchors.right: parent.right
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
 
-  Button
-    id: pausedTab
-    text: Paused
-    anchors.top: parent.top
-    anchors.left: activeTab.right
-    width: 85
-    height: 20
-    margin-left: 2
-    font: verdana-11px-rounded
-    color: #B8B8B8
-    @onClick: TaskUI.switchPausedTab()
-    $on:
-      background-color: #ff9900
-      color: #E0980C
-      border-color: #ff9900
+    Label
+      id: activeTitle
+      text: Current Task
+      font: verdana-11px-rounded
+      color: #666666
+      anchors.fill: parent
+      text-align: center
 
   Panel
     id: activeTaskContent
-    anchors.top: activeTab.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom
-    margin-top: 8
-    background-color: #0a0a0a
+    anchors.top: activeTaskHeader.bottom
+    anchors.left: activeTaskHeader.left
+    anchors.right: activeTaskHeader.right
+    height: 110
+    background-color: #111111
     border-width: 1
     border-color: #333333
-    padding: 5
 
-    VerticalScrollBar
-      id: activeScrollBar
-      width: 14
-      anchors.top: parent.top
-      anchors.bottom: parent.bottom
-      anchors.right: parent.right
-      step: 50
-      pixels-scroll: true
-      auto-hide: true
-
-    ScrollablePanel
+    Panel
       id: activeTaskBase
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      anchors.bottom: parent.bottom
-      vertical-scrollbar: activeScrollBar
-      layout:
-        type: grid
-        num-columns: 1
-        cell-size: 140 140
-        spacing: 10
+      anchors.bottom: activeTaskFooter.top
+      margin: 2
+
+    Label
+      id: emptyActiveLabel
+      text: No active task
+      font: verdana-11px-rounded
+      color: #666666
+      anchors.centerIn: activeTaskBase
+      visible: false
 
     Panel
       id: activeTaskFooter
-      height: 55
+      height: 42
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
@@ -88,108 +59,82 @@ ActiveTaskPanel < Panel
       Button
         id: rewardButton
         text: Claim Reward
-        height: 20
+        height: 16
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.right: parent.right
-        margin: 5 5 0 5
-        color: #FFD700
-        text-color: #000000
-        enabled: false
-        @onClick: TaskUI.claimReward()
+        margin: 3 3 0 3
+        @onClick: TaskUI.taskRewardRequest()
 
       Button
         id: pauseButton
         text: Pause
-        width: 75
-        height: 20
+        height: 16
         anchors.top: rewardButton.bottom
         anchors.left: parent.left
-        margin: 5 0 0 5
+        margin: 3 2 0 3
         @onClick: TaskUI.pauseTask()
+        enabled: false
 
       Button
-        id: cancelButton
+        id: cancelTaskButton
         text: Cancel
-        width: 75
-        height: 20
+        height: 16
         anchors.top: rewardButton.bottom
+        anchors.left: pauseButton.right
         anchors.right: parent.right
-        margin: 5 5 0 0
+        margin: 3 3 0 2
         color: #FF4444
         @onClick: TaskUI.cancelTask()
+        enabled: false
+
+  HorizontalSeparator
+    anchors.top: activeTaskContent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 5 15 5 15
 
   Panel
-    id: pausedTaskContent
-    anchors.top: activeTab.bottom
+    id: pausedTitleHeader
+    height: 20
+    anchors.top: activeTaskContent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    Label
+      id: pausedTitle
+      text: PAUSED (0)
+      font: verdana-11px-rounded
+      color: #E0980C
+      anchors.fill: parent
+      text-align: center
+
+  ScrollablePanel
+    id: pausedTaskContainer
+    anchors.top: pausedTitleHeader.bottom
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    margin-top: 8
-    background-color: #0a0a0a
+    margin: 0
+    padding: 0 10 0 0
+    vertical-scrollbar: pausedScrollBar
+    background-color: #111111
     border-width: 1
     border-color: #333333
-    padding: 5
-    visible: false
+    layout:
+      type: verticalBox
+      spacing: 2
 
-    VerticalScrollBar
-      id: pausedScrollBar
-      width: 14
-      anchors.top: parent.top
-      anchors.bottom: pausedTaskFooter.top
-      anchors.right: parent.right
-      step: 50
-      pixels-scroll: true
-      auto-hide: true
-
-    ScrollablePanel
-      id: pausedTaskList
-      anchors.top: parent.top
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.bottom: pausedTaskFooter.top
-      vertical-scrollbar: pausedScrollBar
-      layout:
-        type: grid
-        num-columns: 1
-        cell-size: 145 145
-        spacing: 8
-
-    Panel
-      id: pausedTaskFooter
-      height: 40
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
-      anchors.right: parent.right
-      background-color: #1a1a1a
-      border-width: 1
-      border-color: #333333
-
-      Button
-        id: resumeButton
-        text: Resume
-        width: 75
-        height: 20
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.left
-        margin-left: 10
-        @onClick: TaskUI.resumeTask()
-
-      Button
-        id: cancelButton
-        text: Cancel
-        width: 75
-        height: 20
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.right: parent.right
-        margin-right: 10
-        color: #FF4444
-        @onClick: TaskUI.cancelTask()
-
-    Label
-      id: emptyPausedLabel
-      text: No paused tasks
-      font: verdana-11px-rounded
-      color: #666666
-      anchors.centerIn: pausedTaskList
-      visible: false
+  VerticalScrollBar
+    id: pausedScrollBar
+    width: 10
+    anchors.top: pausedTitleHeader.bottom
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    step: 40
+    pixels-scroll: true
+    auto-hide: true

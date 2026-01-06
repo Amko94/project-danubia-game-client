@@ -1,0 +1,150 @@
+SpellContainer < UIWidget
+  size: 250 48
+  margin-bottom: 5
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #444444
+  focusable: true
+
+  Panel
+    id: iconPanel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    width: 48
+    height: 48
+    background-color: #00000066
+    phantom: true
+    margin: 4
+
+    UIWidget
+      id: spellIcon
+
+  Label
+    id: spellName
+    anchors.top: parent.top
+    anchors.left: iconPanel.right
+    width: 150
+    color: #ffffff
+    font: cipsoftFont
+    margin-left: 4
+    margin-top: 2
+    text-align: left
+    z: 10
+
+  Label
+    id: spellWords
+    anchors.top: spellName.bottom
+    anchors.left: iconPanel.right
+    width: 150
+    color: #88aa88
+    font: verdana-10px-antialised
+    margin-left: 4
+    margin-top: 1
+    text-align: left
+    z: 10
+
+  Panel
+    id: boostLevels
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    anchors.left: spellName.right
+    anchors.right: boostButton.left
+    margin: 4 2 4 4
+    z: 5
+
+    Panel
+      id: boostLevel1
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      width: 20
+      background-color: #000000aa
+      border-width: 1
+      border-color: #555555
+      margin-right: 2
+
+      Panel
+        id: boostLevel1Fill
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: 0
+        background-color: #00ff00
+        opacity: 0.9
+        border-width: 1
+        border-color: #00cc47
+
+    Panel
+      id: boostLevel2
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: boostLevel1.right
+      width: 20
+      background-color: #000000aa
+      border-width: 1
+      border-color: #555555
+      margin-right: 2
+
+      Panel
+        id: boostLevel2Fill
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: 0
+        background-color: #00ff00
+        opacity: 0.9
+        border-width: 1
+        border-color: #00cc47
+
+    Panel
+      id: boostLevel3
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: boostLevel2.right
+      width: 20
+      background-color: #000000aa
+      border-width: 1
+      border-color: #555555
+      margin-right: 2
+
+      Panel
+        id: boostLevel3Fill
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: 0
+        background-color: #00ff00
+        opacity: 0.9
+        border-width: 1
+        border-color: #00cc47
+
+    Panel
+      id: boostLevel4
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: boostLevel3.right
+      width: 20
+      background-color: #000000aa
+      border-width: 1
+      border-color: #555555
+
+      Panel
+        id: boostLevel4Fill
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        width: 0
+        background-color: #00ff00
+        opacity: 0.9
+        border-width: 1
+        border-color: #00cc47
+
+  Button
+    id: boostButton
+    text: Boost
+    width: 80
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 20
+    background-color: #00ff00
+    z: 10

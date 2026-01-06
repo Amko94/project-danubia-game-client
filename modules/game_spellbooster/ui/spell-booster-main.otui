@@ -1,0 +1,77 @@
+SpellBoosterDialog < MainWindow
+  id: spellBoosterDialog
+  size: 450 400
+  text: Select Spell to Boost
+  @onEscape: self:destroy()
+
+  Panel
+    id: categoryPanel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 40
+    margin: 5
+
+    layout:
+      type: grid
+      num-columns: 4
+      cell-size: 100 30
+      cell-spacing: 5
+
+    Button
+      id: all
+      text: All
+      @onClick: SpellBoosterUI.filterByCategory(0)
+
+    Button
+      id: attack
+      text: Attack
+      @onClick: SpellBoosterUI.filterByCategory(1)
+
+    Button
+      id: healing
+      text: Healing
+      @onClick: SpellBoosterUI.filterByCategory(2)
+
+    Button
+      id: support
+      text: Support
+      @onClick: SpellBoosterUI.filterByCategory(3)
+
+  ScrollablePanel
+    id: spellList
+    anchors.top: categoryPanel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: closeButton.top
+    margin: 5
+    margin-top: 10
+    vertical-scrollbar: spellListScrollBar
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    layout:
+      type: grid
+      num-columns: 1
+      cell-size: 400 48
+      spacing: 5
+
+  VerticalScrollBar
+    id: spellListScrollBar
+    width: 14
+    anchors.top: spellList.top
+    anchors.bottom: spellList.bottom
+    anchors.right: spellList.right
+    step: 50
+    pixels-scroll: true
+
+  Button
+    id: closeButton
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    text: Close
+    width: 100
+    height: 30
+    margin: 5
+    @onClick: SpellBoosterUI.closeDialog()

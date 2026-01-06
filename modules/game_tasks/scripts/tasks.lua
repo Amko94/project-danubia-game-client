@@ -4,7 +4,7 @@ function init()
     TaskProtocol.init()
 
     if modules.client_topmenu then
-        modules.client_topmenu.addRightGameToggleButton("taskButton", tr("Tasks"), "/images/topbuttons/questlog", TaskUI.toggle)
+        modules.client_topmenu.addRightGameToggleButton("taskButton", tr("Tasks"), "/images/topbuttons/tasks", TaskUI.toggle)
     end
 end
 

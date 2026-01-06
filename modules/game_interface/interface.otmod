@@ -18,6 +18,8 @@ Module
     - game_containers
     - game_viplist
     - game_tasks
+    - game_testModule
+    - game_spellbooster
     - game_battle
     - game_minimap
     - game_npctrade

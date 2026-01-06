@@ -1,0 +1,71 @@
+PausedTaskListItem < Panel
+  height: 40
+  background-color: #111111
+  border-width: 1
+  border-color: #333333
+  margin-bottom: 2
+
+  UICreature
+    id: monsterIcon
+    size: 32 32
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    phantom: true
+
+  Label
+    id: taskName
+    font: verdana-11px-rounded
+    anchors.top: parent.top
+    anchors.left: monsterIcon.right
+    margin-left: 5
+    text-auto-resize: true
+
+  Panel
+    id: progressPanel
+    height: 12
+    anchors.bottom: parent.bottom
+    anchors.left: monsterIcon.right
+    anchors.right: taskMenu.left
+    margin-left: 5
+    margin-right: 10
+    margin-bottom: 10
+    background-color: #00000066
+    border-width: 1
+    border-color: #333333
+
+    Panel
+      id: progressBar
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      width: 0
+      margin: 1
+      background-color: #E0980C
+
+    Label
+      id: progressLabel
+      color: #ffffff
+      anchors.centerIn: parent
+      text-align: center
+
+  Button
+    id: taskMenu
+    width: 20
+    height: 20
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    margin-right: 15
+    margin-left: 5
+    margin-bottom: 5
+    text: >
+    @onClick: |
+      local menu = g_ui.createWidget('PopupMenu')
+      menu:addOption('Resume', function() TaskUI.onTaskMenuChange(self, 'Resume') end)
+      menu:addOption('Cancel', function() TaskUI.onTaskMenuChange(self, 'Cancel') end)
+
+      local cancelItem = menu:getChildByIndex(2)
+      if cancelItem then
+        cancelItem:setColor('#FF0000')
+      end
+
+      menu:display(self:getRect())

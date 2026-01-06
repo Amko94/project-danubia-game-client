@@ -1,7 +1,7 @@
-ErrorResume < MainWindow
-  id: errorResumeDialog
+PzBlockDialog < MainWindow
+  id: pzBlockDialog
   size: 500 130
-  text: Already running task
+  text: In Combat
   draggable: true
   color: #FF8C00
   @onEscape: self:destroy()
@@ -14,7 +14,7 @@ ErrorResume < MainWindow
     anchors.bottom: abortButton.top
     margin: 10
     text-align: center
-    text: Please finish or pause your current task before starting another one.
+    text: You cannot manage tasks while in combat.
 
   Button
     id: abortButton

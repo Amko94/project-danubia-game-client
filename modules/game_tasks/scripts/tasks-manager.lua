@@ -2,6 +2,7 @@ TasksManager = {}
 
 local activeTasks = {}
 local availableTasks = {}
+local currentPlayerId = nil
 
 function TasksManager.init()
     TasksManager.clear()
@@ -14,6 +15,69 @@ end
 function TasksManager.clear()
     activeTasks = {}
     availableTasks = {}
+    currentPlayerId = nil
+end
+
+function TasksManager.calculateTaskPointsReward(amount, experience, category)
+    if amount > 1000 then
+        amount = 1000
+    end
+
+    local categoryMultiplier = 1
+
+    if category == 1 then
+        categoryMultiplier = 0.1
+    elseif category == 2 then
+        categoryMultiplier = 0.5
+    elseif category == 3 then
+        categoryMultiplier = 1
+    elseif category == 4 then
+        categoryMultiplier = 1.5
+    end
+
+    local basePointsPerKill = (experience / 10000) * categoryMultiplier
+
+    local totalTP = math.floor(basePointsPerKill * amount)
+
+    totalTP = math.floor(totalTP / 2)
+
+    return totalTP
+end
+
+function TasksManager.calculateGoldReward(amount, experience, category)
+
+    if amount > 1000 then
+        amount = 1000
+    end
+    local baseRewardPerKill = experience / 5
+
+    if category >= 3 then
+        baseRewardPerKill = baseRewardPerKill / 3
+    end
+
+    local totalGold = math.floor(baseRewardPerKill * amount)
+
+    return totalGold
+end
+
+function TasksManager.calculateExperienceReward(amount, experience)
+    if amount > 1000 then
+        amount = 1000
+    end
+
+    local totalExp = math.floor(amount * experience * 0.55)
+
+    return totalExp
+end
+
+function TasksManager.calculateExperienceReward(amount, experience)
+    if amount > 1000 then
+        amount = 1000
+    end
+
+    local totalExp = math.floor(amount * experience * 0.55)
+
+    return totalExp
 end
 
 function TasksManager.updateTaskProgress(taskId, progress, amount)
@@ -33,7 +97,11 @@ function TasksManager.isAvailableTasksLoaded()
     return #availableTasks > 0
 end
 
-function TasksManager.updateActiveTasks(data)
+function TasksManager.updateActiveTasks(data, playerId)
+    if currentPlayerId ~= playerId then
+        activeTasks = {}
+        currentPlayerId = playerId
+    end
     activeTasks = data
     TaskUI.refresh()
 end
@@ -63,6 +131,7 @@ end
 function TasksManager.getActiveTasks()
     return activeTasks
 end
+
 function TasksManager.getAvailableTasks()
     return availableTasks
 end

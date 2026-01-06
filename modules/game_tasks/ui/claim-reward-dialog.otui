@@ -1,0 +1,256 @@
+ClaimRewardDialog < MainWindow
+  id: claimRewardDialog
+  size: 420 520
+  text: Claim Reward
+  @onEscape: self:destroy()
+
+  Label
+    id: rewardLabel
+    text: Select Your Reward
+    font: verdana-11px-rounded
+    color: #dfdfdf
+    text-shadow: #000000
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 20
+    text-align: center
+
+  UIWidget
+    id: goldSection
+    width: 110
+    height: 170
+    anchors.top: rewardLabel.bottom
+    anchors.left: parent.left
+    margin-top: 30
+    margin-left: 25
+    background-color: #1a1a1a
+    border: 3 #333333
+    cursor: pointer
+
+    Label
+      id: goldLabel
+      text: Gold
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-top: 10
+      text-align: center
+
+    UIWidget
+      id: goldIcon
+      image-source: /images/game/prey/prey_bigloot.png
+      width: 50
+      height: 95
+      anchors.top: goldLabel.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+      phantom: true
+
+    Label
+      id: goldAmount
+      text: 0
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-bottom: 10
+      text-align: center
+
+  UIWidget
+    id: expSection
+    width: 110
+    height: 170
+    anchors.top: rewardLabel.bottom
+    anchors.left: goldSection.right
+    margin-top: 30
+    margin-left: 15
+    background-color: #1a1a1a
+    border: 3 #333333
+    cursor: pointer
+
+    Label
+      id: expLabel
+      text: Experience
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #E638CB
+      text-shadow: #000000
+      margin-top: 10
+      text-align: center
+
+    UIWidget
+      id: expIcon
+      image-source: /images/game/prey/prey_bigxp.png
+      width: 50
+      height: 95
+      anchors.top: expLabel.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+      phantom: true
+
+    Label
+      id: expAmount
+      text: 0
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #E638CB
+      text-shadow: #000000
+      margin-bottom: 10
+      text-align: center
+
+  UIWidget
+    id: splitSection
+    width: 110
+    height: 170
+    anchors.top: rewardLabel.bottom
+    anchors.left: expSection.right
+    margin-top: 30
+    margin-left: 15
+    background-color: #1a1a1a
+    border: 3 #333333
+    cursor: pointer
+
+    Label
+      id: splitLabel
+      text: 50/50 Split
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-top: 10
+      text-align: center
+
+    UIWidget
+      id: splitIcon
+      image-source: /images/game/prey/50-50.png
+      width: 50
+      height: 95
+      anchors.top: splitLabel.bottom
+      anchors.horizontalCenter: parent.horizontalCenter
+      margin-top: 3
+      phantom: true
+
+    Label
+      id: splitGoldAmount
+      text: 0 Gold
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-bottom: 22
+      text-align: center
+
+    Label
+      id: splitExpAmount
+      text: 0 Exp
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #E638CB
+      text-shadow: #000000
+      margin-bottom: 8
+      text-align: center
+
+  Panel
+    id: taskPointsPanel
+    anchors.top: goldSection.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 75
+    margin-top: 25
+    margin-left: 25
+    margin-right: 25
+    background-color: #1a1a1a
+    border: 2 #FFE81F
+
+    Label
+      id: taskPointsTitle
+      text: Task Points Earned
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFE81F
+      text-shadow: #000000
+      margin-top: 12
+      text-align: center
+
+    Label
+      id: taskPointsAmount
+      text: + 0
+      anchors.top: taskPointsTitle.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFE81F
+      text-shadow: #000000
+      margin-top: 5
+      text-align: center
+
+    Label
+      id: taskPointsDesc
+      text: (Always earned regardless of selection)
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #AAAAAA
+      text-shadow: #000000
+      text-align: center
+
+  Label
+    id: pzWarningLabel
+    text: You cannot claim rewards while in combat
+    anchors.bottom: buttonPanel.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    font: verdana-11px-rounded
+    text-shadow: #000000
+    margin-bottom: 10
+    text-align: center
+    visible: false
+
+  Panel
+    id: buttonPanel
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 50
+    margin: 0 15 15 15
+
+    Button
+      id: cancelButton
+      text: Cancel
+      width: 175
+      height: 35
+      anchors.left: parent.left
+      anchors.bottom: parent.bottom
+      @onClick: self:getParent():getParent():destroy()
+
+    Button
+      id: claimButton
+      text: Confirm
+      width: 175
+      height: 35
+      anchors.left: cancelButton.right
+      anchors.bottom: parent.bottom
+      margin-left: 10
+      color: #FFD700
+      font: verdana-11px-rounded
+      @onClick: TaskUI.confirmClaimReward()
+      enabled: false

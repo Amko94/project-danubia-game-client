@@ -67,7 +67,7 @@ SkillPanel < Panel
   UIWidget
     id: shop
     anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter    
+    anchors.verticalCenter: parent.verticalCenter
     image-source: /images/game/topbar/boost
     size: 76 14
     @onClick: modules.game_shop.show()

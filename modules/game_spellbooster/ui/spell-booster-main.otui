@@ -1,6 +1,6 @@
 SpellBoosterDialog < MainWindow
   id: spellBoosterDialog
-  size: 450 400
+  size: 650 600
   text: Select Spell to Boost
   @onEscape: self:destroy()
 
@@ -10,33 +10,52 @@ SpellBoosterDialog < MainWindow
     anchors.left: parent.left
     anchors.right: parent.right
     height: 40
-    margin: 5
 
     layout:
       type: grid
       num-columns: 4
-      cell-size: 100 30
-      cell-spacing: 5
+      cell-size: 150 20
+      cell-spacing: 1
 
-    Button
+    TabButton
       id: all
       text: All
+      color: #B8B8B8
+      font: verdana-11px-rounded
       @onClick: SpellBoosterUI.filterByCategory(0)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
 
-    Button
+    TabButton
       id: attack
       text: Attack
+      color: #B8B8B8
+      font: verdana-11px-rounded
       @onClick: SpellBoosterUI.filterByCategory(1)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
 
-    Button
+    TabButton
       id: healing
       text: Healing
+      color: #B8B8B8
+      font: verdana-11px-rounded
       @onClick: SpellBoosterUI.filterByCategory(2)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
 
-    Button
+    TabButton
       id: support
       text: Support
+      color: #B8B8B8
+      font: verdana-11px-rounded
       @onClick: SpellBoosterUI.filterByCategory(3)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
 
   ScrollablePanel
     id: spellList
@@ -44,17 +63,14 @@ SpellBoosterDialog < MainWindow
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: closeButton.top
-    margin: 5
-    margin-top: 10
+    margin-top: 2
+    margin-bottom: 10
     vertical-scrollbar: spellListScrollBar
-    background-color: #111111
-    border-width: 1
-    border-color: #333333
 
     layout:
       type: grid
       num-columns: 1
-      cell-size: 400 48
+      cell-size: 600 53
       spacing: 5
 
   VerticalScrollBar
@@ -73,5 +89,4 @@ SpellBoosterDialog < MainWindow
     text: Close
     width: 100
     height: 30
-    margin: 5
     @onClick: SpellBoosterUI.closeDialog()

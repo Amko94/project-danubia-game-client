@@ -78,7 +78,7 @@ PurseButton < UIButton
   !tooltip: tr('Open purse')
   icon-source: /images/game/slots/purse
   icon-clip: 0 0 34 12
-  
+
   $on:
     icon-clip: 0 12 34 12
 
@@ -109,7 +109,7 @@ SoulCapLabel < GameLabel
   width: 36
   height: 20
   icon-source: /images/game/slots/soulcap
-      
+
 FightOffensiveBox < CombatBox
   image-source: /images/game/combatmodes/fightoffensive
 FightBalancedBox < CombatBox
@@ -122,7 +122,7 @@ SafeFightBox < CombatBox
   image-source: /images/game/combatmodes/safefight
 
 MountButton < CombatBox
-  image-source: /images/game/combatmodes/mount    
+  image-source: /images/game/combatmodes/mount
 
 InventoryWindow < MiniWindow
   icon: /images/topbuttons/inventory
@@ -134,13 +134,13 @@ InventoryWindow < MiniWindow
 
   MiniWindowContents
     anchors.left: parent.left
-        
+
     Panel
       id: inventoryPanel
       margin-right: 63
       margin-top: 2
       anchors.fill: parent
-      
+
       HeadSlot
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
@@ -176,7 +176,7 @@ InventoryWindow < MiniWindow
         anchors.top: prev.bottom
         anchors.horizontalCenter: prev.horizontalCenter
         margin-top: 3
-        
+
       BackSlot
         anchors.top: slot1.top
         anchors.left: slot1.right
@@ -197,7 +197,7 @@ InventoryWindow < MiniWindow
         id: soulLabel
         anchors.top: slot10.bottom
         anchors.horizontalCenter: slot10.horizontalCenter
-        
+
       SoulCapLabel
         id: capLabel
         anchors.top: slot9.bottom
@@ -205,9 +205,9 @@ InventoryWindow < MiniWindow
 
       PurseButton
         anchors.left: slot3.left
-        anchors.bottom: slot3.top        
+        anchors.bottom: slot3.top
         margin-bottom: 3
-  
+
       Panel
         id: conditionPanel
         layout:
@@ -221,16 +221,16 @@ InventoryWindow < MiniWindow
         border-width: 1
         border-color: #00000077
         background-color: #ffffff22
-        
+
     Panel
       margin-top: 5
       anchors.fill: parent
       anchors.left: prev.right
-        
+
       FightOffensiveBox
         id: fightOffensiveBox
         anchors.left: parent.left
-        anchors.top: parent.top        
+        anchors.top: parent.top
         margin-left: 8
 
       ChaseModeBox
@@ -244,7 +244,7 @@ InventoryWindow < MiniWindow
         anchors.left: parent.left
         anchors.top: parent.top
         margin-left: 8
-        
+
       SafeFightBox
         id: safeFightBox
         margin-top: 22
@@ -257,13 +257,13 @@ InventoryWindow < MiniWindow
         anchors.left: parent.left
         anchors.top: parent.top
         margin-left: 8
-        
+
       MountButton
         id: mountButton
         margin-top: 44
         anchors.left: prev.right
         anchors.top: parent.top
-        
+
       Panel
         id: buttonsPanel
         margin-top: 4
@@ -272,7 +272,7 @@ InventoryWindow < MiniWindow
         anchors.top: prev.bottom
         layout:
           type: verticalBox
-        
+
         UIButton
           id: buttonPvp
           height: 20
@@ -281,7 +281,7 @@ InventoryWindow < MiniWindow
 
           $on:
             icon-clip: 0 20 42 20
-        
+
         InventoryButton
           !text: tr('Stop')
           @onClick: g_game.stop(); g_game.cancelAttackAndFollow()

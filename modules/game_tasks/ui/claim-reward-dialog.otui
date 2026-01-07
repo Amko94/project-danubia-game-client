@@ -43,8 +43,6 @@ ClaimRewardDialog < MainWindow
     UIWidget
       id: goldIcon
       image-source: /images/game/prey/prey_bigloot.png
-      width: 50
-      height: 95
       anchors.top: goldLabel.bottom
       anchors.horizontalCenter: parent.horizontalCenter
       margin-top: 3

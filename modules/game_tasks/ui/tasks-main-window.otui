@@ -31,7 +31,7 @@ TaskWindow < MainWindow
       cell-size: 101 20
       cell-spacing: 1
 
-    Button
+    TabButton
       id: categoryAll
       text: All
       font: verdana-11px-rounded
@@ -43,7 +43,7 @@ TaskWindow < MainWindow
         background-color: #444444
         color: #FFFFFF
 
-    Button
+    TabButton
       id: categoryLow
       text: Low
       font: verdana-11px-rounded
@@ -55,7 +55,7 @@ TaskWindow < MainWindow
         background-color: #444444
         color: #FFFFFF
 
-    Button
+    TabButton
       id: categoryMedium
       text: Medium
       font: verdana-11px-rounded
@@ -67,7 +67,7 @@ TaskWindow < MainWindow
         background-color: #444444
         color: #FFFFFF
 
-    Button
+    TabButton
       id: categoryHard
       text: Hard
       font: verdana-11px-rounded
@@ -79,7 +79,7 @@ TaskWindow < MainWindow
         background-color: #444444
         color: #FFFFFF
 
-    Button
+    TabButton
       id: categoryVeryHard
       text: Very Hard
       font: verdana-11px-rounded

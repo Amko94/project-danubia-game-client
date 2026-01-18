@@ -1,6 +1,6 @@
 SpellBoosterDialog < MainWindow
   id: spellBoosterDialog
-  size: 650 600
+  size: 480 600
   text: Select Spell to Boost
   @onEscape: self:destroy()
 
@@ -14,7 +14,7 @@ SpellBoosterDialog < MainWindow
     layout:
       type: grid
       num-columns: 4
-      cell-size: 150 20
+      cell-size: 110 20
       cell-spacing: 1
 
     TabButton
@@ -70,7 +70,7 @@ SpellBoosterDialog < MainWindow
     layout:
       type: grid
       num-columns: 1
-      cell-size: 600 53
+      cell-size: 430 80
       spacing: 5
 
   VerticalScrollBar

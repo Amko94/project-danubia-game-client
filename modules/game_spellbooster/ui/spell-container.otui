@@ -1,120 +1,87 @@
 SpellContainer < UIWidget
-  margin-bottom: 5
+  height: 60
   margin: 2 0 2 4
   focusable: true
-  background-color: #111111
 
   Panel
-    id: iconPanel
-    anchors.top: parent.top
+    id: leftColumn
     anchors.left: parent.left
-    width: 48
-    height: 48
-    background-color: #00000066
-    phantom: true
+    anchors.top: parent.top
+    anchors.bottom: parent.bottom
+    width: 52
     margin-left: -2
 
-    UIWidget
-      id: spellIcon
+    Panel
+      id: iconPanel
+      anchors.top: parent.top
+      anchors.horizontalCenter: parent.horizontalCenter
+      width: 48
+      height: 48
+      background-color: #00000066
+      phantom: true
+
+      UIWidget
+        id: spellIcon
+        anchors.fill: parent
+
+    Button
+      id: boostButton
+      text: Boost
+      width: 48
+      height: 20
+      anchors.top: iconPanel.bottom
+      anchors.horizontalCenter: iconPanel.horizontalCenter
+      margin-top: 5
+      background-color: #00ff00
+      z: 10
+      @onClick: SpellBoosterProtocol.SendSpellPriceRequest(self:getParent():getParent():getId())
 
   Label
     id: spellName
     anchors.top: parent.top
-    anchors.left: iconPanel.right
+    anchors.left: leftColumn.right
     width: 120
+    margin-left: 6
+    margin-top: 2
     color: #ffffff
     font: cipsoftFont
-    margin-left: 4
-    margin-top: 2
     text-align: left
     z: 10
 
   Label
     id: spellWords
     anchors.top: spellName.bottom
-    anchors.left: iconPanel.right
-    width: 150
+    anchors.left: spellName.left
+    width: 100
+    margin-top: 1
     color: #88aa88
     font: verdana-11px-antialised
-    margin-left: 4
-    margin-top: 1
     text-align: left
     z: 10
 
   Panel
-    id: boostLevels
+    id: boostArea
     anchors.top: parent.top
     anchors.bottom: parent.bottom
-    anchors.left: spellName.right
-    anchors.right: boostButton.left
+    anchors.left: spellWords.right
+    anchors.right: parent.right
+    margin-top: 15
+
 
     UIWidget
       id: spellProgressBar
       image-source: /images/custom-vegura/spell-progress
-      width: 320
-      height: 180
-      anchors.verticalCenter: parent.verticalCenter
-      anchors.left: parent.left
-
-    UIWidget
-      id: boostLevel1
-      image-source: /images/custom-vegura/boostStep1
-      width: 57
-      height: 16
-      anchors.top: parent.top
-      anchors.left: parent.left
-      margin-left: 54
-      margin-top: 16
-      z: 2
-
-    UIWidget
-      id: boostLevel2
-      image-source: /images/custom-vegura/boostStep2
-      width: 57
-      height: 16
-      anchors.top: boostLevel1.top
-      anchors.left: boostLevel1.right
-      margin-left: -4
-      z: 3
-
-    UIWidget
-      id: boostLevel3
-      image-source: /images/custom-vegura/boostStep3
-      width: 42
-      height: 16
-      anchors.top: boostLevel2.top
-      anchors.left: boostLevel2.right
-      margin-left: -13
-      z: 4
-
-    UIWidget
-      id: boostLevel4
-      image-source: /images/custom-vegura/boostStep4
-      width: 42
-      height: 16
-      anchors.top: boostLevel3.top
-      anchors.left: boostLevel3.right
-      z: 5
-
-    UIWidget
-      id: boostLevel5
-      image-source: /images/custom-vegura/boostStep5
-      width: 40
-      height: 16
-      anchors.top: boostLevel4.top
-      anchors.left: boostLevel4.right
-      margin-left: -3
-      z: 6
+      width: 250
+      height: 35
+      anchors.top: spellWords.top
+      anchors.left: spellWords.right
 
 
-
-
-  Button
-    id: boostButton
-    text: Boost
-    width: 80
+  HorizontalSeparator
+    id: bottomSeparator
+    height: 1
+    anchors.left: parent.left
     anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    margin-right: 20
-    background-color: #00ff00
-    z: 10
+    anchors.bottom: parent.bottom
+    margin: 2 2 2 2
+    background-color: #00000088

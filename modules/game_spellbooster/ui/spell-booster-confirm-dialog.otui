@@ -1,0 +1,78 @@
+SpellBoosterConfirmDialog < MainWindow
+  id: spellBoosterConfirmDialog
+  size: 350 180
+  text: "Confirm Spell Boost"
+  draggable: true
+  @onEscape: self:destroy()
+
+  Label
+    id: confirmLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 10
+    text-align: center
+    text: "Do you want to boost this spell?"
+    font: cipsoftFont
+    color: #ffffff
+
+  Label
+    id: spellNameLabel
+    anchors.top: confirmLabel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 5 10 0 10
+    text-align: center
+    text: "placeholder"
+    color: #88aa88
+    font: verdana-11px-antialised
+
+  Label
+    id: costLabel
+    anchors.top: spellNameLabel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 3 10 0 10
+    text-align: center
+    text: "Cost: placeholder gold coins"
+    color: #ffff00
+    font: verdana-11px-antialised
+
+  Panel
+    id: buttonPanel
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 40
+
+    Label
+      id: errorMessage
+      anchors.left: buttonPanel.left
+      anchors.right: buttonPanel.right
+      anchors.top: buttonPanel.top
+      margin-top: 5
+
+    Button
+      id: cancelButton
+      text: "Cancel"
+      width: 150
+      height: 28
+      anchors.left: parent.left
+      anchors.bottom: parent.bottom
+      margin-left: 10
+      margin-bottom: 5
+      @onClick: self:getParent():getParent():destroy()
+
+    Button
+      id: confirmButton
+      text: "Confirm Boost"
+      width: 150
+      height: 28
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin-right: 10
+      margin-bottom: 5
+      background-color: #00aa00
+      hover-color: #00cc00
+      font: verdana-11px-rounded
+      @onClick: SpellBoosterUI.confirmBoost(self:getParent():getParent():getId())

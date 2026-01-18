@@ -6,7 +6,7 @@ endif()
 
 project(otclient)
 
-set(VCPKG_TARGET_TRIPLET "x64-windows-static")
+set(VCPKG_TARGET_TRIPLET "x64-windows")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if (CMAKE_BASE_NAME STREQUAL "em++")

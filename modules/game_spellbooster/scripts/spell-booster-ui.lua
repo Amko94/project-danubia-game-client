@@ -1,11 +1,13 @@
 SpellBoosterUI = {}
 
 local mainWindow = nil
+local currentSpellName = nil
 local currentCategory = 0
 
 function SpellBoosterUI.init()
     g_ui.importStyle('/modules/game_spellbooster/ui/spell-booster-main')
     g_ui.importStyle('/modules/game_spellbooster/ui/spell-container')
+    g_ui.importStyle('/modules/game_spellbooster/ui/spell-booster-confirm-dialog')
 
     connect(g_game, {
         onGameEnd = SpellBoosterUI.onGameEnd,
@@ -28,10 +30,48 @@ end
 function SpellBoosterUI.closeDialog()
     if mainWindow then
         mainWindow:destroy()
+        currentSpellName = nil
         mainWindow = nil
     else
         print('false')
     end
+end
+
+function SpellBoosterUI.openBoostConfirmDialog(price)
+    local rootPanel = modules.game_interface.getRootPanel()
+
+    if not rootPanel then
+        print("ERROR: Could not get root panel")
+        return
+    end
+
+    if rootPanel:getChildById('spellBoosterConfirmDialog') then
+        return
+    end
+
+    local confirmDialog = g_ui.createWidget("SpellBoosterConfirmDialog", rootPanel)
+    if not confirmDialog then
+        print("ERROR: Could not create SpellBoosterConfirmDialog")
+        return
+    end
+
+    confirmDialog:getChildById("spellNameLabel"):setText(currentSpellName)
+    confirmDialog:getChildById("costLabel"):setText("Cost: " .. price .. " gold coins")
+    print('befehl vor setid...', currentSpellName)
+    confirmDialog:setId(currentSpellName)
+
+    confirmDialog:show()
+    confirmDialog:raise()
+    confirmDialog:focus()
+end
+
+function SpellBoosterUI.confirmBoost(spellName)
+    SpellBoosterManager.confirmBoostSpell(spellName)
+end
+
+function SpellBoosterUI.requestSpellPrice(spellName)
+    currentSpellName = spellName
+    SpellBoosterManager.requestSpellPrice(spellName)
 end
 
 function SpellBoosterUI.openDialog(spells)
@@ -61,18 +101,29 @@ function SpellBoosterUI.openDialog(spells)
     SpellBoosterUI.buildSpellContainers(spells)
 end
 
+function SpellBoosterUI.getEmptyProgressBar(spell)
+    local levels = #spell.spellBoostLevels
+    local basePath = "/images/custom-vegura/"
+
+    return basePath
+            .. "empty-"
+            .. levels
+            .. "level-bar.png"
+end
+
 function SpellBoosterUI.buildSpellContainers(spells)
     local spellList = mainWindow:getChildById('spellList')
     spellList:destroyChildren()
 
     for i, spell in ipairs(spells) do
 
+
         local success, spellData = pcall(function()
-            return Spells.getSpellByName(spell.name)
+            return Spells.getSpellByName(spell.spellName)
         end)
 
         if not success or not spellData then
-            print("WARNING: Spell '" .. spell.name .. "' nicht in SpellInfo gefunden - skippe")
+            print("WARNING: Spell '" .. spell.spellName .. "' nicht in SpellInfo gefunden - skippe")
             goto continue
         end
 
@@ -80,11 +131,15 @@ function SpellBoosterUI.buildSpellContainers(spells)
             local container = g_ui.createWidget("SpellContainer", spellList)
 
             if container then
-                -- Speichere den type auf dem container
-                container:setId(spell.name)  -- optional, für debugging
-                container.spellType = spell.type or "attack"  -- Speichere type direkt
+                container:setId(spell.spellName)
+                container.spellType = spell.group or "attack"
 
                 local iconWidget = container:recursiveGetChildById('spellIcon')
+                local progressBar = container:recursiveGetChildById('spellProgressBar')
+
+                local progressPngUrl = SpellBoosterUI.getEmptyProgressBar(spell)
+
+                progressBar:setImageSource(progressPngUrl)
 
                 if iconWidget and spellData.icon then
                     local iconKey = spellData.icon
@@ -99,14 +154,13 @@ function SpellBoosterUI.buildSpellContainers(spells)
                         iconWidget:setImageSource(iconFile)
                         iconWidget:setImageClip(imageClip)
                         iconWidget:setSize({ width = 48, height = 48 })
-
                     end
                 end
 
                 local nameLabel = container:getChildById('spellName')
                 local wordsLabel = container:getChildById('spellWords')
                 if nameLabel then
-                    nameLabel:setText(spell.name or "Unknown")
+                    nameLabel:setText(spell.spellName or "Unknown")
                 end
 
                 if wordsLabel then
@@ -121,10 +175,7 @@ function SpellBoosterUI.buildSpellContainers(spells)
 
         :: continue ::
     end
-
 end
-
-
 
 function SpellBoosterUI.animateBoost(container, fromValue, toValue, duration)
     local boostBar = container:recursiveGetChildById('boostBar')
@@ -165,6 +216,11 @@ function SpellBoosterUI.updateCategoryButtons()
             btn:setOn(currentCategory == catId)
         end
     end
+end
+
+function SpellBoosterUI.displayBuyError(errorMessage)
+    local errorLabel = mainWindow:recursiveGetChildById('errorMessage')
+    errorLabel:setText(errorMessage)
 end
 
 function SpellBoosterUI.updateFilterSpellList()

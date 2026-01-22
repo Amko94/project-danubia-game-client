@@ -1,0 +1,50 @@
+SpellBoosterLevelRow < UIWidget
+  height: 18
+  phantom: true
+  background-color: #00000000
+
+  $hover:
+    background-color: #ffffff0a
+
+  Label
+    id: levelLabel
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    width: 45
+    color: #c2b280
+    font: verdana-11px-antialised
+
+  Panel
+    id: iconBoostPanel
+    anchors.left: levelLabel.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 4
+    width: 16
+    height: 16
+    background-color: #00000000
+    phantom: true
+
+    UIWidget
+      id: boostIcon
+      anchors.fill: parent
+      phantom: true
+
+  Label
+    id: effectText
+    anchors.left: iconBoostPanel.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 6
+    color: #cccccc
+    font: verdana-11px-antialised
+
+  UIWidget
+    id: activeIndicator
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 4
+    width: 8
+    height: 8
+    background-color: #00d2ff
+    border-width: 1
+    border-color: #008eb3
+    visible: false

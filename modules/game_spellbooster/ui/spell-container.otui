@@ -2,6 +2,10 @@ SpellContainer < UIWidget
   height: 60
   margin: 2 0 2 4
   focusable: true
+  background-color: #00000000
+
+  $hover:
+    background-color: #ffffff11
 
   Panel
     id: leftColumn
@@ -24,17 +28,23 @@ SpellContainer < UIWidget
         id: spellIcon
         anchors.fill: parent
 
-    Button
+    UIWidget
       id: boostButton
-      text: Boost
+      text: ""
       width: 48
       height: 20
       anchors.top: iconPanel.bottom
       anchors.horizontalCenter: iconPanel.horizontalCenter
       margin-top: 5
-      background-color: #00ff00
+      @onClick: SpellBoosterUI.requestSpellPrice(self:getParent():getParent():getId())
+      cursor: pointer
+      image-source: /images/custom-vegura/boost_button
+      opacity: 1
       z: 10
-      @onClick: SpellBoosterProtocol.SendSpellPriceRequest(self:getParent():getParent():getId())
+
+      $hover:
+        image-source: /images/custom-vegura/boost_button_hover
+
 
   Label
     id: spellName
@@ -70,11 +80,11 @@ SpellContainer < UIWidget
 
     UIWidget
       id: spellProgressBar
-      image-source: /images/custom-vegura/spell-progress
       width: 250
       height: 35
       anchors.top: spellWords.top
       anchors.left: spellWords.right
+      phantom: true
 
 
   HorizontalSeparator

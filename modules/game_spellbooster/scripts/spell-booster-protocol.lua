@@ -1,13 +1,20 @@
 SpellBoosterProtocol = {}
 
+local playerSpellLevels = nil
+local spellDefinitions = nil
+
 local SEND_SPELL_BOOST_OPCODES = {
     SPELL_PRICE_REQUEST = 30,
     CONFIRM_BOOST_SPELL = 32
 }
 
 local RECEIVED_SPELL_BOOST_OPCODES = {
-    OPEN_BOOSTER_DIALOG = 200,
+    SPELL_BOOST_DEFINITION_LIST = 28,
+    OPEN_SPELL_BOOST_WINDOW = 29,
     SPELL_PRICE_RESPONSE = 31,
+    PLAYER_SPELL_LEVELS = 33,
+    UPGRADE_SUCCESSFUL = 34,
+
 
     NO_ENOUGH_MONEY = 103,
     MISSING_TOME_OF_SPELL_MASTERY = 104
@@ -45,40 +52,54 @@ function SpellBoosterProtocol.disconnect()
     if protocol then
         disconnect(protocol, { onExtendedOpcode = SpellBoosterProtocol.onExtendedOpcode })
     end
+    playerSpellLevels = nil
+    spellDefinitions = nil
 end
 
 function SpellBoosterProtocol.onExtendedOpcode(protocol, opcode, buffer)
-    if opcode == RECEIVED_SPELL_BOOST_OPCODES.OPEN_BOOSTER_DIALOG then
-        local spellData = json.decode(buffer)
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.SPELL_BOOST_DEFINITION_LIST then
+        spellDefinitions = json.decode(buffer)
+        return
+    end
 
-        for _, spell in ipairs(spellData) do
-            print("Id:", spell.id)
-            print("SpellName:", spell.spellName)
-            print("RequiredCharacterLevel:", spell.requiredLevel)
-            print("Group:", spell.group)
-            
-
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.OPEN_SPELL_BOOST_WINDOW then
+        local spellData = nil
+        if buffer and buffer ~= "" then
+            local ok, decoded = pcall(json.decode, buffer)
+            if ok then
+                spellData = decoded
+                spellDefinitions = decoded
+            end
         end
-
-        SpellBoosterManager.handleOpenDialog(spellData)
+        SpellBoosterManager.handleOpenDialog(spellData or spellDefinitions)
+        return
     end
 
     if opcode == RECEIVED_SPELL_BOOST_OPCODES.SPELL_PRICE_RESPONSE then
         local price = json.decode(buffer)
         SpellBoosterManager.handlePriceResponse(price)
+        return
     end
 
-    if opcode == RECEIVED_SPELL_BOOST_OPCODES.SPELL_PRICE_RESPONSE then
-        local price = json.decode(buffer)
-        SpellBoosterManager.handlePriceResponse(price)
-    end
-
-    if opcode == RECEIVED_SPELL_BOOST_OPCODES.NO_ENOUGH_MONEY then
-        SpellBoosterManager.handleBoostError('No enough gold')
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.PLAYER_SPELL_LEVELS then
+        playerSpellLevels = json.decode(buffer)
+        return
     end
 
     if opcode == RECEIVED_SPELL_BOOST_OPCODES.MISSING_TOME_OF_SPELL_MASTERY then
         SpellBoosterManager.handleBoostError('You need a tome of spell mastery in your backpack')
+        return
+    end
+
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.NO_ENOUGH_MONEY then
+        SpellBoosterManager.handleBoostError('You have no enough gold to boost your spell')
+        return
+    end
+
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.UPGRADE_SUCCESSFUL then
+        print('SUCCESS11')
+        SpellBoosterManager.handleCloseDialog()
+        return
     end
 end
 
@@ -90,7 +111,7 @@ function SpellBoosterProtocol.terminate()
     })
 end
 
-function SpellBoosterProtocol.SendSpellPriceRequest(spellName)
+function SpellBoosterProtocol.sendSpellPriceRequest(spellName)
     local protocol = g_game.getProtocolGame()
     if protocol then
 
@@ -98,11 +119,18 @@ function SpellBoosterProtocol.SendSpellPriceRequest(spellName)
     end
 end
 
-function SpellBoosterProtocol.ConfirmBoostSpell(spellName)
-    print(spellName, '<-- Spellname')
+function SpellBoosterProtocol.confirmBoostSpell(spellName)
     local protocol = g_game.getProtocolGame()
     if protocol then
 
         protocol:sendExtendedOpcode(SEND_SPELL_BOOST_OPCODES.CONFIRM_BOOST_SPELL, spellName)
     end
+end
+
+function SpellBoosterProtocol.getPlayerSpellLevels()
+    return playerSpellLevels
+end
+
+function SpellBoosterProtocol.getSpellDefinitions()
+    return spellDefinitions
 end

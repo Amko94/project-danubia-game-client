@@ -18,16 +18,6 @@ SpellBoosterDialog < MainWindow
       cell-spacing: 1
 
     TabButton
-      id: all
-      text: All
-      color: #B8B8B8
-      font: verdana-11px-rounded
-      @onClick: SpellBoosterUI.filterByCategory(0)
-      $on:
-        background-color: #444444
-        color: #FFFFFF
-
-    TabButton
       id: attack
       text: Attack
       color: #B8B8B8
@@ -53,6 +43,16 @@ SpellBoosterDialog < MainWindow
       color: #B8B8B8
       font: verdana-11px-rounded
       @onClick: SpellBoosterUI.filterByCategory(3)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
+
+    TabButton
+      id: conjure
+      text: Conjure
+      color: #B8B8B8
+      font: verdana-11px-rounded
+      @onClick: SpellBoosterUI.filterByCategory(4)
       $on:
         background-color: #444444
         color: #FFFFFF

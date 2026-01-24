@@ -1,56 +1,78 @@
 SpellBoosterConfirmDialog < MainWindow
   id: spellBoosterConfirmDialog
-  size: 350 180
+  size: 360 190
   text: "Confirm Spell Boost"
   draggable: true
   @onEscape: self:destroy()
 
-  Label
-    id: confirmLabel
+  Panel
+    id: contentPanel
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
+    anchors.bottom: buttonPanel.top
     margin: 10
-    text-align: center
-    text: "Do you want to boost this spell?"
-    font: cipsoftFont
-    color: #ffffff
+    padding: 8
+    image-source: /images/ui/dark_background
 
-  Label
-    id: spellNameLabel
-    anchors.top: confirmLabel.bottom
+    Label
+      id: confirmLabel
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      text-align: center
+      text: "Do you want to boost this spell?"
+      font: cipsoftFont
+      color: #ffffff
+
+    Label
+      id: spellNameLabel
+      anchors.top: confirmLabel.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 8
+      text-align: center
+      text: "placeholder"
+      color: #88aa88
+      font: verdana-11px-antialised
+
+    Label
+      id: costLabel
+      anchors.top: spellNameLabel.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 4
+      text-align: center
+      text: "Cost: placeholder gold coins"
+      color: #ffff66
+      font: verdana-11px-antialised
+
+  HorizontalSeparator
+    id: sep
     anchors.left: parent.left
     anchors.right: parent.right
-    margin: 5 10 0 10
-    text-align: center
-    text: "placeholder"
-    color: #88aa88
-    font: verdana-11px-antialised
-
-  Label
-    id: costLabel
-    anchors.top: spellNameLabel.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    margin: 3 10 0 10
-    text-align: center
-    text: "Cost: placeholder gold coins"
-    color: #ffff00
-    font: verdana-11px-antialised
+    anchors.bottom: buttonPanel.top
+    margin: 0 8 6 8
+    height: 1
+    background-color: #00000088
 
   Panel
     id: buttonPanel
-    anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    height: 40
+    anchors.bottom: parent.bottom
+    height: 56
+    margin: 8
 
     Label
       id: errorMessage
-      anchors.left: buttonPanel.left
-      anchors.right: buttonPanel.right
-      anchors.top: buttonPanel.top
-      margin-top: 5
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: parent.top
+      height: 16
+      text-align: center
+      color: #ff6666
+      font: verdana-11px-antialised
 
     Button
       id: cancelButton
@@ -59,8 +81,6 @@ SpellBoosterConfirmDialog < MainWindow
       height: 28
       anchors.left: parent.left
       anchors.bottom: parent.bottom
-      margin-left: 10
-      margin-bottom: 5
       @onClick: self:getParent():getParent():destroy()
 
     Button
@@ -70,8 +90,6 @@ SpellBoosterConfirmDialog < MainWindow
       height: 28
       anchors.right: parent.right
       anchors.bottom: parent.bottom
-      margin-right: 10
-      margin-bottom: 5
       background-color: #00aa00
       hover-color: #00cc00
       font: verdana-11px-rounded

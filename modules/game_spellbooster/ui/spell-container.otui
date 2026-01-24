@@ -28,32 +28,22 @@ SpellContainer < UIWidget
         id: spellIcon
         anchors.fill: parent
 
-    Button
+    UIWidget
       id: boostButton
-      text: BOOST
+      text: ""
       width: 48
       height: 20
       anchors.top: iconPanel.bottom
       anchors.horizontalCenter: iconPanel.horizontalCenter
       margin-top: 5
       @onClick: SpellBoosterUI.requestSpellPrice(self:getParent():getParent():getId())
-
-      font: verdana-11px-rounded
-      text-align: center
-      color: #ffffff
-
-      background-color: #caa54a
-      border: 2 #f2d77a
+      cursor: pointer
+      image-source: /images/custom-vegura/boost_button
       opacity: 1
       z: 10
 
       $hover:
-        background-color: #ffeaa1
-        border: 2 #ffffff
-
-      $pressed:
-        background-color: #a9852f
-        border: 2 #e6c86f
+        image-source: /images/custom-vegura/boost_button_hover
 
 
   Label

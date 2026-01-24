@@ -20,6 +20,30 @@ local boostTypeIcons = {
     [11] = "/images/custom-vegura/increase-conjure-amount.png"
 }
 
+local function normalizeCategory(group)
+    if type(group) == "number" then
+        return group
+    end
+
+    local num = tonumber(group)
+    if num then
+        return num
+    end
+
+    if type(group) ~= "string" then
+        return nil
+    end
+
+    local key = group:lower()
+    local map = {
+        attack = 1,
+        healing = 2,
+        support = 3,
+        conjure = 4
+    }
+    return map[key]
+end
+
 function SpellBoosterUI.init()
     g_ui.importStyle('/modules/game_spellbooster/ui/spell-booster-main')
     g_ui.importStyle('/modules/game_spellbooster/ui/spell-container')
@@ -332,6 +356,7 @@ function SpellBoosterUI.buildSpellContainers(spells)
 
         container:setId(spell.spellName)
         container.group = spell.group or "attack"
+        container.spellCategory = normalizeCategory(container.group) or 1
         container.spellBoostLevels = spell.spellBoostLevels
 
         local level = spellLevelMap[spell.spellName] or 0
@@ -449,16 +474,11 @@ function SpellBoosterUI.updateFilterSpellList()
     local spellList = mainWindow:getChildById('spellList')
     local containers = spellList:getChildren()
 
-    local typeToCategory = {
-        attack = 1,
-        healing = 2,
-        support = 3,
-        conjure = 4
-    }
-
     for _, container in ipairs(containers) do
-        local spellType = (container.group or 1)
-        local spellCategory = typeToCategory[spellType] or 1
+        local spellCategory = container.spellCategory
+        if not spellCategory then
+            spellCategory = normalizeCategory(container.group) or 1
+        end
 
         local shouldShow = currentCategory == 0 or
                 currentCategory == spellCategory

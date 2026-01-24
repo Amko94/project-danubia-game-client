@@ -17,7 +17,8 @@ local RECEIVED_SPELL_BOOST_OPCODES = {
 
 
     NO_ENOUGH_MONEY = 103,
-    MISSING_TOME_OF_SPELL_MASTERY = 104
+    MISSING_TOME_OF_SPELL_MASTERY = 104,
+    NO_PROTECT_ZONE = 105
 }
 
 SpellBoosterProtocol.SendOpcode = {
@@ -93,6 +94,11 @@ function SpellBoosterProtocol.onExtendedOpcode(protocol, opcode, buffer)
 
     if opcode == RECEIVED_SPELL_BOOST_OPCODES.NO_ENOUGH_MONEY then
         SpellBoosterManager.handleBoostError('You have no enough gold to boost your spell')
+        return
+    end
+
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.NO_PROTECT_ZONE then
+        SpellBoosterManager.handleBoostError('You can only use this feature in a protection zone.')
         return
     end
 

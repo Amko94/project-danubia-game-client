@@ -80,7 +80,13 @@ function SpellBoosterUI.closeDialog()
     currentSpellName = nil
 end
 
-SpellBoosterUI.tooltip = nil
+function SpellBoosterUI.toggle()
+    if mainWindow then
+        SpellBoosterUI.closeDialog()
+    else
+        SpellBoosterUI.openDialog()
+    end
+end
 
 function SpellBoosterUI.getTooltip()
     if SpellBoosterUI.tooltip then
@@ -247,6 +253,14 @@ function SpellBoosterUI.requestSpellPrice(spellName)
 end
 
 function SpellBoosterUI.openDialog(spells)
+    if not spells then
+        spells = SpellBoosterManager.getSpellDefinitions()
+    end
+    if not spells then
+        print('BOOST: spell list missing (not received yet)')
+        return
+    end
+
     local rootPanel = modules.game_interface.getRootPanel()
 
     if not rootPanel then

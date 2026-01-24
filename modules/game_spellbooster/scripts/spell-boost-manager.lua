@@ -9,9 +9,12 @@ function SpellBoosterManager.confirmBoostSpell(spellName)
 end
 
 function SpellBoosterManager.handleOpenDialog(spellData)
-    if spellData and SpellBoosterUI then
-        SpellBoosterUI.openDialog(spellData)
+    local data = spellData or SpellBoosterProtocol.getSpellDefinitions()
+    if data and SpellBoosterUI then
+        SpellBoosterUI.openDialog(data)
+        return
     end
+    print('BOOST: spell definitions are nil (Dialog noch nicht geladen?)')
 end
 
 function SpellBoosterManager.handlePriceResponse(price)
@@ -40,4 +43,8 @@ function SpellBoosterManager.getPlayerSpellLevels()
     end
 
     return SpellBoosterProtocol.getPlayerSpellLevels()
+end
+
+function SpellBoosterManager.getSpellDefinitions()
+    return SpellBoosterProtocol.getSpellDefinitions()
 end

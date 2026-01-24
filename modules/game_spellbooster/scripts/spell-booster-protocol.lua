@@ -1,6 +1,7 @@
 SpellBoosterProtocol = {}
 
 local playerSpellLevels = nil
+local spellDefinitions = nil
 
 local SEND_SPELL_BOOST_OPCODES = {
     SPELL_PRICE_REQUEST = 30,
@@ -8,7 +9,8 @@ local SEND_SPELL_BOOST_OPCODES = {
 }
 
 local RECEIVED_SPELL_BOOST_OPCODES = {
-    OPEN_BOOSTER_DIALOG = 200,
+    SPELL_BOOST_DEFINITION_LIST = 28,
+    OPEN_SPELL_BOOST_WINDOW = 29,
     SPELL_PRICE_RESPONSE = 31,
     PLAYER_SPELL_LEVELS = 33,
     UPGRADE_SUCCESSFUL = 34,
@@ -50,12 +52,26 @@ function SpellBoosterProtocol.disconnect()
     if protocol then
         disconnect(protocol, { onExtendedOpcode = SpellBoosterProtocol.onExtendedOpcode })
     end
+    playerSpellLevels = nil
+    spellDefinitions = nil
 end
 
 function SpellBoosterProtocol.onExtendedOpcode(protocol, opcode, buffer)
-    if opcode == RECEIVED_SPELL_BOOST_OPCODES.OPEN_BOOSTER_DIALOG then
-        local spellData = json.decode(buffer)
-        SpellBoosterManager.handleOpenDialog(spellData)
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.SPELL_BOOST_DEFINITION_LIST then
+        spellDefinitions = json.decode(buffer)
+        return
+    end
+
+    if opcode == RECEIVED_SPELL_BOOST_OPCODES.OPEN_SPELL_BOOST_WINDOW then
+        local spellData = nil
+        if buffer and buffer ~= "" then
+            local ok, decoded = pcall(json.decode, buffer)
+            if ok then
+                spellData = decoded
+                spellDefinitions = decoded
+            end
+        end
+        SpellBoosterManager.handleOpenDialog(spellData or spellDefinitions)
         return
     end
 
@@ -113,4 +129,8 @@ end
 
 function SpellBoosterProtocol.getPlayerSpellLevels()
     return playerSpellLevels
+end
+
+function SpellBoosterProtocol.getSpellDefinitions()
+    return spellDefinitions
 end

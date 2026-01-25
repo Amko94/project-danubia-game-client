@@ -103,7 +103,6 @@ function SpellBoosterProtocol.onExtendedOpcode(protocol, opcode, buffer)
     end
 
     if opcode == RECEIVED_SPELL_BOOST_OPCODES.UPGRADE_SUCCESSFUL then
-        print('SUCCESS11')
         SpellBoosterManager.handleCloseDialog()
         return
     end

@@ -141,18 +141,6 @@ ClaimRewardDialog < MainWindow
       phantom: true
 
     Label
-      id: splitGoldAmount
-      text: 0 Gold
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
-      anchors.right: parent.right
-      font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-bottom: 22
-      text-align: center
-
-    Label
       id: splitExpAmount
       text: 0 Exp
       anchors.bottom: parent.bottom
@@ -162,6 +150,18 @@ ClaimRewardDialog < MainWindow
       color: #E638CB
       text-shadow: #000000
       margin-bottom: 8
+      text-align: center
+
+    Label
+      id: splitGoldAmount
+      text: 0 Gold
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      font: verdana-11px-rounded
+      color: #FFD700
+      text-shadow: #000000
+      margin-bottom: 22
       text-align: center
 
   Panel

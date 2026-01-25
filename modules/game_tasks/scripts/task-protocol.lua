@@ -62,6 +62,7 @@ function TaskProtocol.onExtendedOpcode(protocol, opcode, buffer)
         local jsonData = parts[2]
 
         local data = json.decode(jsonData)
+
         TasksManager.updateActiveTasks(data, playerId)
 
     elseif opcode == TaskProtocol.RecvOpcode.TaskProgressUpdate then

@@ -4,6 +4,10 @@ local activeTasks = {}
 local availableTasks = {}
 local currentPlayerId = nil
 
+local function isFlagTrue(value)
+    return value == true or value == 1 or value == "1"
+end
+
 function TasksManager.init()
     TasksManager.clear()
 end
@@ -138,7 +142,7 @@ end
 
 function TasksManager.getTrackedTask()
     for _, task in ipairs(activeTasks) do
-        if task.active == 1 and task.paused == 0 then
+        if isFlagTrue(task.active) and not isFlagTrue(task.paused) then
             return task
         end
     end

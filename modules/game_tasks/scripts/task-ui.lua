@@ -27,6 +27,28 @@ local debounceEvent = nil
 local selectedActiveTask = nil
 local selectedPausedTask = nil
 
+local function isFlagTrue(value)
+    return value == true or value == 1 or value == "1"
+end
+
+local function getMonsterOutfit(monster)
+    if not monster or type(monster.lookType) ~= "number" or monster.lookType <= 0 then
+        return nil
+    end
+    local special = monster.name and PLAYER_OUTFIT_TYPES[monster.name] or nil
+    if special and special.type == monster.lookType then
+        return special
+    end
+    return { type = monster.lookType }
+end
+
+local function getFirstMonsterOutfit(taskData)
+    if not taskData or type(taskData.monsters) ~= "table" or #taskData.monsters == 0 then
+        return nil
+    end
+    return getMonsterOutfit(taskData.monsters[1])
+end
+
 function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/tasks-main-window')
     g_ui.importStyle('/modules/game_tasks/ui/active-task-panel')
@@ -167,7 +189,7 @@ function TaskUI.appendMissingTasks(available, currentCount)
             local box = g_ui.createWidget("TaskBox", currentPlayerTaskList)
             box.taskData = task
             box:getChildById("taskName"):setText(task.taskName)
-            TaskUI.createIconGrid(box, task.lookTypeIds)
+            TaskUI.createIconGrid(box)
             box:getChildById("progressPanel"):setVisible(false)
 
             local startBtn = box:getChildById("startTaskButton")
@@ -196,12 +218,11 @@ function TaskUI.updateFilterMonsterList()
         local isTracked = trackedTask and (trackedTask.taskId == task.id)
         local isPaused = false
         for _, aT in ipairs(active) do
-            if aT.taskId == task.id and aT.paused == 1 then
+            if aT.taskId == task.id and isFlagTrue(aT.paused) then
                 isPaused = true
                 break
             end
         end
-
         local categoryMatch = (currentCategory == 0 or task.category == currentCategory)
         local textMatch = (filterText == "" or task.taskName:lower():find(filterText, 1, true))
 
@@ -240,26 +261,22 @@ function TaskUI.updateActiveTaskPanel()
 
     if not tracked then
         selectedActiveTask = nil
+
         if emptyLabel then
             emptyLabel:setVisible(true)
         end
-
         if cancelBtn then
             cancelBtn:setEnabled(false)
         end
-
         if pauseBtn then
             pauseBtn:setEnabled(false)
         end
-
         if rewardBtn then
             rewardBtn:setEnabled(false)
         end
-
         if activeTitle then
             activeTitle:setColor("#666666")
         end
-
         return
     end
 
@@ -269,7 +286,7 @@ function TaskUI.updateActiveTaskPanel()
 
     selectedActiveTask = tracked
 
-    if selectedActiveTask.finished == 1 then
+    if isFlagTrue(tracked.finished) then
         if pauseBtn then
             pauseBtn:setEnabled(false)
         end
@@ -302,29 +319,45 @@ function TaskUI.updateActiveTaskPanel()
     local taskData = TasksManager.getTaskById(tracked.taskId)
     if taskData then
         display:getChildById("taskName"):setText(taskData.taskName)
-        if taskData.lookTypeIds and #taskData.lookTypeIds > 0 then
-            display:getChildById("monsterIcon"):setOutfit({ type = taskData.lookTypeIds[1] })
-        end
 
-        if taskData.monsterNames and #taskData.monsterNames > 0 then
-            local monsterList = table.concat(taskData.monsterNames, "\n")
-            display:getChildById("monsterIcon"):setTooltip(monsterList)
+        if taskData.monsters and #taskData.monsters > 0 then
+            local monsterIcon = display:getChildById("monsterIcon")
+            local outfit = getFirstMonsterOutfit(taskData)
+            if monsterIcon and outfit then
+                monsterIcon:setOutfit(outfit)
+            end
+
+            local names = {}
+            for _, monster in ipairs(taskData.monsters) do
+                table.insert(names, monster.name)
+            end
+
+            monsterIcon:setTooltip(table.concat(names, "\n"))
         end
     end
 
-    local percent = math.floor((tracked.progress / tracked.amount) * 100)
+    local percent = 0
+    if tracked.amount and tracked.amount > 0 then
+        percent = math.floor((tracked.progress / tracked.amount) * 100)
+    end
+
     local progressPanel = display:getChildById("progressPanel")
     if progressPanel then
         local progressBar = progressPanel:getChildById("progressBar")
         local progressLabel = progressPanel:getChildById("progressLabel")
 
         if progressBar then
-            local barWidth = math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100)))
+            local barWidth = math.max(
+                    0,
+                    math.floor((progressPanel:getWidth() - 2) * (percent / 100))
+            )
             progressBar:setWidth(barWidth)
         end
 
         if progressLabel then
-            progressLabel:setText(tracked.progress .. "/" .. tracked.amount .. " (" .. percent .. "%)")
+            progressLabel:setText(
+                    tracked.progress .. "/" .. tracked.amount .. " (" .. percent .. "%)"
+            )
         end
     end
 end
@@ -333,38 +366,49 @@ function TaskUI.updatePausedTasksList()
     if not tasksWindow then
         return
     end
+
     local pausedList = tasksWindow:recursiveGetChildById("pausedTaskContainer")
     local pausedTitle = tasksWindow:recursiveGetChildById("pausedTitle")
     if not pausedList then
+        return
     end
 
     pausedList:destroyChildren()
-    local active = TasksManager.getActiveTasks()
+    local active = TasksManager.getActiveTasks() or {}
 
     local pausedTasks = {}
     for _, task in ipairs(active) do
-        if task.paused == 1 and task.active == 1 then
+        if isFlagTrue(task.paused) and isFlagTrue(task.active) then
             task.cachedName = TasksManager.getTaskNameById(task.taskId)
             table.insert(pausedTasks, task)
         end
     end
 
     table.sort(pausedTasks, function(a, b)
-        return a.cachedName:lower() < b.cachedName:lower()
+        return (a.cachedName or ""):lower() < (b.cachedName or ""):lower()
     end)
 
     local pausedCount = #pausedTasks
+
     for _, task in ipairs(pausedTasks) do
         local item = g_ui.createWidget("PausedTaskListItem", pausedList)
         item.taskData = task
-        item:getChildById("taskName"):setText(task.cachedName)
+
+        item:getChildById("taskName"):setText(task.cachedName or "")
 
         local taskData = TasksManager.getTaskById(task.taskId)
-        if taskData and taskData.lookTypeIds then
-            item:getChildById("monsterIcon"):setOutfit({ type = taskData.lookTypeIds[1] })
+        if taskData and taskData.monsters and #taskData.monsters > 0 then
+            local outfit = getFirstMonsterOutfit(taskData)
+            if outfit then
+                item:getChildById("monsterIcon"):setOutfit(outfit)
+            end
         end
 
-        local percent = math.floor((task.progress / task.amount) * 100)
+        local percent = 0
+        if task.amount and task.amount > 0 then
+            percent = math.floor((task.progress / task.amount) * 100)
+        end
+
         local pLabel = item:recursiveGetChildById("progressLabel")
         if pLabel then
             pLabel:setText(task.progress .. "/" .. task.amount)
@@ -374,9 +418,13 @@ function TaskUI.updatePausedTasksList()
         local progressPanel = item:getChildById("progressPanel")
         if bar and progressPanel then
             bar:setBackgroundColor("#ff9900")
+
             scheduleEvent(function()
                 if bar and progressPanel then
-                    local barWidth = math.max(0, math.floor((progressPanel:getWidth() - 2) * (percent / 100)))
+                    local barWidth = math.max(
+                            0,
+                            math.floor((progressPanel:getWidth() - 2) * (percent / 100))
+                    )
                     bar:setWidth(barWidth)
                 end
             end, 10)
@@ -445,42 +493,40 @@ function TaskUI.updateCategoryButtons()
     end
 end
 
-function TaskUI.createIconGrid(box, lookTypeIds)
+function TaskUI.createIconGrid(box)
     local container = box:getChildById("iconContainer")
-    if not container or not lookTypeIds or #lookTypeIds == 0 then
+    if not container then
         return
     end
+
     container:destroyChildren()
 
     local taskData = box.taskData
-    local taskName = taskData and taskData.taskName or ""
-    local monsterNames = (taskData and type(taskData.monsterNames) == 'table') and taskData.monsterNames or {}
+    if not taskData or type(taskData.monsters) ~= 'table' then
+        return
+    end
 
-    local cols = (#lookTypeIds == 4) and 2 or math.min(#lookTypeIds, 3)
+    local monsters = taskData.monsters
+    if #monsters == 0 then
+        return
+    end
+
+    local cols = (#monsters == 4) and 2 or math.min(#monsters, 3)
     container:getLayout():setNumColumns(cols)
+
     local cellSize, spacing = 64, -18
     container:setWidth((cols * cellSize) + ((cols - 1) * spacing))
 
-    for idx, id in ipairs(lookTypeIds) do
-        if type(id) == "number" and id > 0 then
+    for _, monster in ipairs(monsters) do
+        if type(monster.lookType) == "number" and monster.lookType > 0 then
             local icon = g_ui.createWidget("UICreature", container)
             icon:setSize({ width = cellSize, height = cellSize })
 
-            local finalOutfit = { type = id }
+            local finalOutfit = { type = monster.lookType }
 
-            if idx <= #monsterNames then
-                local mName = monsterNames[idx]
-                local special = PLAYER_OUTFIT_TYPES[mName]
-                if special and special.type == id then
-                    finalOutfit = special
-                end
-            end
-
-            if not finalOutfit.head and taskName ~= "" then
-                local special = PLAYER_OUTFIT_TYPES[taskName]
-                if special and special.type == id then
-                    finalOutfit = special
-                end
+            local special = PLAYER_OUTFIT_TYPES[monster.name]
+            if special and special.type == monster.lookType then
+                finalOutfit = special
             end
 
             icon:setOutfit(finalOutfit)
@@ -644,7 +690,7 @@ function TaskUI.openStartTaskDialog(task)
     dialog.taskCategory = task.category
     dialog.taskExperience = task.experience
 
-    if task.lookTypeIds and #task.lookTypeIds > 0 then
+    if task.monsters and #task.monsters > 0 then
         local iconContainer = dialog:recursiveGetChildById("iconContainer")
         if iconContainer then
             TaskUI.createIconGridForDialog(iconContainer, task)
@@ -777,42 +823,24 @@ function TaskUI.confirmStartTask()
 end
 
 function TaskUI.createIconGridForDialog(container, task)
-    if not container or not task.lookTypeIds or #task.lookTypeIds == 0 then
+    if not container then
         return
     end
     container:destroyChildren()
 
-    local monsterNames = task.monsterNames or {}
-    local taskName = task.taskName or ""
     local cellSize = 64
     local spacing = -15
-    local numIcons = #task.lookTypeIds
+    local numIcons = #task.monsters
 
     local totalWidth = (numIcons * cellSize) + ((numIcons - 1) * spacing)
     container:setWidth(totalWidth)
 
-    for idx, id in ipairs(task.lookTypeIds) do
-        if type(id) == "number" and id > 0 then
+    for _, monster in ipairs(task.monsters) do
+        local outfit = getMonsterOutfit(monster)
+        if outfit then
             local icon = g_ui.createWidget("UICreature", container)
             icon:setSize({ width = cellSize, height = cellSize })
-            local finalOutfit = { type = id }
-
-            if monsterNames and idx <= #monsterNames then
-                local mName = monsterNames[idx]
-                local special = PLAYER_OUTFIT_TYPES[mName]
-                if special and special.type == id then
-                    finalOutfit = special
-                end
-            end
-
-            if not finalOutfit.head and taskName ~= "" then
-                local special = PLAYER_OUTFIT_TYPES[taskName]
-                if special and special.type == id then
-                    finalOutfit = special
-                end
-            end
-
-            icon:setOutfit(finalOutfit)
+            icon:setOutfit(outfit)
             icon:setPhantom(true)
         end
     end
@@ -889,7 +917,7 @@ function TaskUI.showClaimRewardDialog(goldStr, expStr, pointsStr)
     dialog.pointsValue = points
     dialog.selectedReward = "gold"
 
-    if selectedActiveTask.finished == 1 then
+    if isFlagTrue(selectedActiveTask.finished) then
         claimButton:setEnabled(true)
     end
 
@@ -986,4 +1014,3 @@ function TaskUI.checkPlayerPz(isClaimReward)
     end
     return false
 end
-

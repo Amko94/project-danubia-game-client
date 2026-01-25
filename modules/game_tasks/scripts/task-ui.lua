@@ -31,6 +31,24 @@ local function isFlagTrue(value)
     return value == true or value == 1 or value == "1"
 end
 
+local function getMonsterOutfit(monster)
+    if not monster or type(monster.lookType) ~= "number" or monster.lookType <= 0 then
+        return nil
+    end
+    local special = monster.name and PLAYER_OUTFIT_TYPES[monster.name] or nil
+    if special and special.type == monster.lookType then
+        return special
+    end
+    return { type = monster.lookType }
+end
+
+local function getFirstMonsterOutfit(taskData)
+    if not taskData or type(taskData.monsters) ~= "table" or #taskData.monsters == 0 then
+        return nil
+    end
+    return getMonsterOutfit(taskData.monsters[1])
+end
+
 function TaskUI.init()
     g_ui.importStyle('/modules/game_tasks/ui/tasks-main-window')
     g_ui.importStyle('/modules/game_tasks/ui/active-task-panel')
@@ -205,7 +223,6 @@ function TaskUI.updateFilterMonsterList()
                 break
             end
         end
-
         local categoryMatch = (currentCategory == 0 or task.category == currentCategory)
         local textMatch = (filterText == "" or task.taskName:lower():find(filterText, 1, true))
 
@@ -305,10 +322,10 @@ function TaskUI.updateActiveTaskPanel()
 
         if taskData.monsters and #taskData.monsters > 0 then
             local monsterIcon = display:getChildById("monsterIcon")
-
-            monsterIcon:setOutfit({
-                type = taskData.monsters[1].lookType
-            })
+            local outfit = getFirstMonsterOutfit(taskData)
+            if monsterIcon and outfit then
+                monsterIcon:setOutfit(outfit)
+            end
 
             local names = {}
             for _, monster in ipairs(taskData.monsters) do
@@ -381,9 +398,10 @@ function TaskUI.updatePausedTasksList()
 
         local taskData = TasksManager.getTaskById(task.taskId)
         if taskData and taskData.monsters and #taskData.monsters > 0 then
-            item:getChildById("monsterIcon"):setOutfit({
-                type = taskData.monsters[1].lookType
-            })
+            local outfit = getFirstMonsterOutfit(taskData)
+            if outfit then
+                item:getChildById("monsterIcon"):setOutfit(outfit)
+            end
         end
 
         local percent = 0
@@ -810,8 +828,6 @@ function TaskUI.createIconGridForDialog(container, task)
     end
     container:destroyChildren()
 
-    local monsterNames = task.monsterNames or {}
-    local taskName = task.taskName or ""
     local cellSize = 64
     local spacing = -15
     local numIcons = #task.monsters
@@ -819,28 +835,12 @@ function TaskUI.createIconGridForDialog(container, task)
     local totalWidth = (numIcons * cellSize) + ((numIcons - 1) * spacing)
     container:setWidth(totalWidth)
 
-    for idx, monster in ipairs(task.monsters) do
-        if type(monster.lookType) == "number" and monster.lookType > 0 then
+    for _, monster in ipairs(task.monsters) do
+        local outfit = getMonsterOutfit(monster)
+        if outfit then
             local icon = g_ui.createWidget("UICreature", container)
             icon:setSize({ width = cellSize, height = cellSize })
-            local finalOutfit = { type = monster.lookType }
-
-            if monsterNames and idx <= #monsterNames then
-                local mName = monsterNames[idx]
-                local special = PLAYER_OUTFIT_TYPES[mName]
-                if special and special.type == monster.lookType then
-                    finalOutfit = special
-                end
-            end
-
-            if not finalOutfit.head and taskName ~= "" then
-                local special = PLAYER_OUTFIT_TYPES[taskName]
-                if special and special.type == monster.lookType then
-                    finalOutfit = special
-                end
-            end
-
-            icon:setOutfit(finalOutfit)
+            icon:setOutfit(outfit)
             icon:setPhantom(true)
         end
     end

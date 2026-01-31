@@ -328,7 +328,7 @@ SpellIcons = {
     ['ultimatehealing'] = { 1, 3 },
     ['intensehealing'] = { 7, 2 },
     ['lighthealing'] = { 6, 1 },
-    ['strike'] = { 12, 8 },
+    ['strike'] = { 140, 8 },
 }
 
 VocationNames = {

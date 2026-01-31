@@ -7,7 +7,7 @@ ClaimRewardDialog < MainWindow
   Label
     id: rewardLabel
     text: Select Your Reward
-    font: verdana-13px-rounded
+    font: verdana-11px-rounded
     color: #dfdfdf
     text-shadow: #000000
     anchors.top: parent.top
@@ -61,7 +61,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-14px-rounded
+      font: verdana-11px-rounded
       color: #FFD700
       text-shadow: #000000
       margin-bottom: 10
@@ -114,7 +114,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-14px-rounded
+      font: verdana-11px-rounded
       color: #E638CB
       text-shadow: #000000
       margin-bottom: 10
@@ -168,7 +168,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-12px-rounded
+      font: verdana-11px-rounded
       color: #E638CB
       text-shadow: #000000
       margin-bottom: 26
@@ -180,7 +180,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-12px-rounded
+      font: verdana-11px-rounded
       color: #FFD700
       text-shadow: #000000
       margin-bottom: 8
@@ -215,7 +215,7 @@ ClaimRewardDialog < MainWindow
       anchors.top: prev.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-13px-rounded
+      font: verdana-11px-rounded
       color: #FFE81F
       text-shadow: #000000
       margin-top: 4
@@ -226,7 +226,7 @@ ClaimRewardDialog < MainWindow
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-10px-rounded
+      font: verdana-11px-rounded
       color: #AAAAAA
       text-shadow: #000000
       margin-bottom: 6
@@ -261,7 +261,7 @@ ClaimRewardDialog < MainWindow
       height: 35
       anchors.left: parent.left
       anchors.bottom: parent.bottom
-      @onClick: claimRewardDialog:destroy()
+      @onClick: self:getParent():getParent():destroy()
 
     Button
       id: claimButton

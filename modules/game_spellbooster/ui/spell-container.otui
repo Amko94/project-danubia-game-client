@@ -12,10 +12,8 @@ SpellContainer < UIWidget
     anchors.left: parent.left
     anchors.top: parent.top
     anchors.bottom: parent.bottom
-    width: 60
-    margin-left: 2
-    phantom: true
-    z: 10
+    width: 52
+    margin-left: -2
 
     Panel
       id: iconPanel
@@ -25,12 +23,10 @@ SpellContainer < UIWidget
       height: 48
       background-color: #00000066
       phantom: true
-      z: 10
 
       UIWidget
         id: spellIcon
         anchors.fill: parent
-        z: 10
 
     UIWidget
       id: boostButton
@@ -73,27 +69,13 @@ SpellContainer < UIWidget
     text-align: left
     z: 10
 
-  Panel
-    id: boostArea
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    anchors.left: leftColumn.right
-    anchors.right: parent.right
-    margin-left: 5
-    phantom: true
-    z: 5
-
-
   UIWidget
     id: spellProgressBar
-    width: 250
-    height: 35
     anchors.verticalCenter: parent.verticalCenter
     anchors.right: parent.right
     margin-right: 20
+    size: 250 35
     phantom: true
-    z: 20
-
 
   HorizontalSeparator
     id: bottomSeparator

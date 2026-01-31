@@ -309,6 +309,7 @@ function SpellBoosterUI.openDialog(spells)
 
     SpellBoosterUI.updateCategoryButtons()
     SpellBoosterUI.buildSpellContainers(spells)
+    SpellBoosterUI.updateFilterSpellList()
 end
 
 function SpellBoosterUI.getProgressBar(spell, level)

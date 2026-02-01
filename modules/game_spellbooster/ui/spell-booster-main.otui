@@ -73,6 +73,14 @@ SpellBoosterDialog < MainWindow
       cell-size: 500 80
       spacing: 5
 
+  Label
+    id: emptyList
+    visible: false
+    text: No spells found.
+    color: #aaaaaa
+    text-align: center
+    anchors.fill: spellList
+
   VerticalScrollBar
     id: spellListScrollBar
     width: 14

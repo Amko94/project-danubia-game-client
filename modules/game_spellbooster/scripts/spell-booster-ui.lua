@@ -323,7 +323,7 @@ function SpellBoosterUI.getProgressBar(spell, level)
     end
 
     if level == #spell.spellBoostLevels then
-        return basePath .. levels .. 'level-bar-completed.png'
+        return basePath .. 'bar-completed.png'
     end
 
     return basePath .. levels .. 'level-bar-progress-' .. level .. '.png'
@@ -332,7 +332,15 @@ end
 
 function SpellBoosterUI.buildSpellContainers(spells)
     local spellList = mainWindow:getChildById('spellList')
+    if not spellList then
+        return
+    end
     spellList:destroyChildren()
+
+    local emptyLabel = mainWindow:getChildById('emptyList')
+    if emptyLabel then
+        emptyLabel:setVisible(false)
+    end
 
     local spellLevels = SpellBoosterManager.getPlayerSpellLevels() or {}
 
@@ -341,6 +349,7 @@ function SpellBoosterUI.buildSpellContainers(spells)
         spellLevelMap[entry.spell] = entry.level
     end
 
+    local hasSpell = false
     for _, spell in ipairs(spells) do
         local success, spellData = pcall(function()
             return Spells.getSpellByName(spell.spellName)
@@ -353,6 +362,7 @@ function SpellBoosterUI.buildSpellContainers(spells)
         if not container then
             goto continue
         end
+        hasSpell = true
 
         container:setId(spell.spellName)
         container.group = spell.group or "attack"
@@ -371,8 +381,11 @@ function SpellBoosterUI.buildSpellContainers(spells)
         if boostButton then
             local maxLevel = #spell.spellBoostLevels
             local completed = (level >= maxLevel)
-            boostButton:setVisible(not completed)
-            boostButton:setEnabled(not completed)
+            if completed then
+                boostButton:setImageSource('/images/custom-vegura/boost_button_disabled')
+                boostButton:setEnabled(false)
+            end
+
         end
 
         local iconWidget = container:recursiveGetChildById('spellIcon')
@@ -406,6 +419,10 @@ function SpellBoosterUI.buildSpellContainers(spells)
         end
 
         :: continue ::
+    end
+
+    if emptyLabel then
+        emptyLabel:setVisible(not hasSpell)
     end
 end
 
@@ -473,6 +490,7 @@ function SpellBoosterUI.updateFilterSpellList()
 
     local spellList = mainWindow:getChildById('spellList')
     local containers = spellList:getChildren()
+    local visibleCount = 0
 
     for _, container in ipairs(containers) do
         local spellCategory = container.spellCategory
@@ -484,5 +502,13 @@ function SpellBoosterUI.updateFilterSpellList()
                 currentCategory == spellCategory
 
         container:setVisible(shouldShow)
+        if shouldShow then
+            visibleCount = visibleCount + 1
+        end
+    end
+
+    local emptyLabel = mainWindow:getChildById('emptyList')
+    if emptyLabel then
+        emptyLabel:setVisible(visibleCount == 0)
     end
 end

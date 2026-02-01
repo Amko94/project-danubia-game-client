@@ -62,30 +62,20 @@ SpellContainer < UIWidget
     id: spellWords
     anchors.top: spellName.bottom
     anchors.left: spellName.left
-    width: 100
+    width: 150
     margin-top: 1
     color: #88aa88
     font: verdana-11px-antialised
     text-align: left
     z: 10
 
-  Panel
-    id: boostArea
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
-    anchors.left: spellWords.right
+  UIWidget
+    id: spellProgressBar
+    anchors.verticalCenter: parent.verticalCenter
     anchors.right: parent.right
-    margin-top: 15
-
-
-    UIWidget
-      id: spellProgressBar
-      width: 250
-      height: 35
-      anchors.top: spellWords.top
-      anchors.left: spellWords.right
-      phantom: true
-
+    margin-right: 20
+    size: 250 35
+    phantom: true
 
   HorizontalSeparator
     id: bottomSeparator

@@ -224,6 +224,12 @@ function SpellBoosterUI.hideTooltip()
     end
 end
 
+function SpellBoosterUI.onDialogDestroy(dialog)
+    if mainWindow then
+        mainWindow:show()
+    end
+end
+
 function SpellBoosterUI.openBoostConfirmDialog(price)
     local rootPanel = modules.game_interface.getRootPanel()
     if not rootPanel or confirmDialog then
@@ -237,6 +243,11 @@ function SpellBoosterUI.openBoostConfirmDialog(price)
 
     confirmDialog.onDestroy = function()
         confirmDialog = nil
+        SpellBoosterUI.onDialogDestroy()
+    end
+
+    if mainWindow then
+        mainWindow:hide()
     end
 
     local spellNameLabel = confirmDialog:recursiveGetChildById("spellNameLabel")

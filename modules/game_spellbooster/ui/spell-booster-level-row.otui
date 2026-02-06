@@ -1,18 +1,16 @@
 SpellBoosterLevelRow < UIWidget
-  height: 18
+  height: 20
   phantom: true
   background-color: #00000000
-
-  $hover:
-    background-color: #ffffff0a
 
   Label
     id: levelLabel
     anchors.left: parent.left
     anchors.verticalCenter: parent.verticalCenter
     width: 45
-    color: #c2b280
-    font: verdana-11px-antialised
+    color: #dfba69
+    font: verdana-11px-rounded
+    phantom: true
 
   Panel
     id: iconBoostPanel
@@ -34,17 +32,18 @@ SpellBoosterLevelRow < UIWidget
     anchors.left: iconBoostPanel.right
     anchors.verticalCenter: parent.verticalCenter
     margin-left: 6
-    color: #cccccc
+    color: #e8e8e8
     font: verdana-11px-antialised
+    text-auto-resize: true
+    phantom: true
 
-  UIWidget
+  Label
     id: activeIndicator
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
-    margin-right: 4
-    width: 8
-    height: 8
-    background-color: #00d2ff
-    border-width: 1
-    border-color: #008eb3
+    text: x
+    color: #00ff00
+    font: verdana-11px-rounded
+    text-auto-resize: true
     visible: false
+    phantom: true

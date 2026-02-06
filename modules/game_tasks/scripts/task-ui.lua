@@ -95,6 +95,12 @@ function TaskUI.toggle()
     end
 end
 
+function TaskUI.onDialogDestroy(dialog)
+    if tasksWindow then
+        tasksWindow:show()
+    end
+end
+
 function TaskUI.show()
     if not tasksWindow then
         tasksWindow = g_ui.createWidget("TaskWindow", modules.game_interface.getRootPanel())
@@ -543,6 +549,8 @@ function TaskUI.cancelTask()
             return
         end
         local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
+        noTask.onDestroy = TaskUI.onDialogDestroy
+        if tasksWindow then tasksWindow:hide() end
         noTask:show()
         noTask:raise()
         noTask:focus()
@@ -558,6 +566,8 @@ function TaskUI.cancelTask()
     end
 
     local confirm = g_ui.createWidget("ConfirmDialog", rootPanel)
+    confirm.onDestroy = TaskUI.onDialogDestroy
+    if tasksWindow then tasksWindow:hide() end
     confirm:getChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
             TasksManager.getTaskNameById(selectedActiveTask.taskId),
             selectedActiveTask.progress,
@@ -578,6 +588,8 @@ function TaskUI.cancelPausedTask()
             return
         end
         local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
+        noTask.onDestroy = TaskUI.onDialogDestroy
+        if tasksWindow then tasksWindow:hide() end
         noTask:show()
         noTask:raise()
         noTask:focus()
@@ -593,6 +605,8 @@ function TaskUI.cancelPausedTask()
     end
 
     local confirm = g_ui.createWidget("ConfirmDialog", rootPanel)
+    confirm.onDestroy = TaskUI.onDialogDestroy
+    if tasksWindow then tasksWindow:hide() end
     confirm:getChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
             TasksManager.getTaskNameById(selectedPausedTask.taskId),
             selectedPausedTask.progress,
@@ -634,6 +648,8 @@ function TaskUI.showStartTaskError()
     end
 
     local errorDialog = g_ui.createWidget("ErrorStartTaskDialog", rootPanel)
+    errorDialog.onDestroy = TaskUI.onDialogDestroy
+    if tasksWindow then tasksWindow:hide() end
     errorDialog:show()
     errorDialog:raise()
     errorDialog:focus()
@@ -646,6 +662,8 @@ function TaskUI.pauseTask()
             return
         end
         local noTask = g_ui.createWidget("NoTaskWarningDialog", rootPanel)
+        noTask.onDestroy = TaskUI.onDialogDestroy
+        if tasksWindow then tasksWindow:hide() end
         noTask:show()
         noTask:raise()
         noTask:focus()
@@ -685,6 +703,8 @@ function TaskUI.openStartTaskDialog(task)
         print("ERROR: Could not create StartTaskDialog")
         return
     end
+    dialog.onDestroy = TaskUI.onDialogDestroy
+    if tasksWindow then tasksWindow:hide() end
     dialog:setText(task.taskName)
     dialog.taskId = task.id
     dialog.taskCategory = task.category
@@ -891,6 +911,9 @@ function TaskUI.showClaimRewardDialog(goldStr, expStr, pointsStr)
         return
     end
 
+    dialog.onDestroy = TaskUI.onDialogDestroy
+    if tasksWindow then tasksWindow:hide() end
+
     if selectedActiveTask then
         dialog.taskId = selectedActiveTask.id
     end
@@ -997,6 +1020,8 @@ function TaskUI.showPzBlockDialog()
     end
 
     local dialog = g_ui.createWidget("PzBlockDialog", rootPanel)
+    dialog.onDestroy = TaskUI.onDialogDestroy
+    if tasksWindow then tasksWindow:hide() end
     dialog:show()
     dialog:raise()
     dialog:focus()

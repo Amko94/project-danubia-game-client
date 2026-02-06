@@ -128,6 +128,7 @@ function SpellBoosterUI.getTooltip()
     )
 
     SpellBoosterUI.tooltip:hide()
+    SpellBoosterUI.tooltip:setPhantom(true)
     return SpellBoosterUI.tooltip
 end
 
@@ -157,6 +158,7 @@ function SpellBoosterUI.buildLevelDescriptions(tooltip, container, currentLevel)
         end
     end
 
+    local maxWidth = 0
     for i, levelData in ipairs(container.spellBoostLevels) do
         local row = g_ui.createWidget('SpellBoosterLevelRow', levelContent)
 
@@ -186,16 +188,30 @@ function SpellBoosterUI.buildLevelDescriptions(tooltip, container, currentLevel)
             effectText:setText(levelData.description or "No description")
         end
 
-        local isActive = (t ~= nil) and (highestLevelPerType[t] == levelIndex)
+        local isActive = (t ~= nil) and (highestLevelPerType[t] == levelIndex) and (levelIndex > 0)
+
         if activeIndicator then
             activeIndicator:setVisible(isActive)
         end
+
+        local textWidth = effectText:getTextSize().width
+        local rowWidth = 45 + 4 + 16 + 6 + textWidth + 8 + 12 + 2
+        if rowWidth > maxWidth then
+            maxWidth = rowWidth
+        end
     end
 
-    tooltip:setHeight(60 + (#container.spellBoostLevels * 21))
+    -- Add padding (8*2) to the max content width
+    tooltip:setWidth(maxWidth + 16)
+    tooltip:setHeight(55 + (#container.spellBoostLevels * 25))
 end
 
 function SpellBoosterUI.showTooltip(container, currentLevel)
+    if not mainWindow or not mainWindow:isVisible() then
+        SpellBoosterUI.hideTooltip()
+        return
+    end
+
     local tooltip = SpellBoosterUI.getTooltip()
     if not tooltip then
         return
@@ -224,6 +240,13 @@ function SpellBoosterUI.hideTooltip()
     end
 end
 
+function SpellBoosterUI.onDialogDestroy(dialog)
+    if mainWindow then
+        mainWindow:show()
+    end
+    SpellBoosterUI.hideTooltip()
+end
+
 function SpellBoosterUI.openBoostConfirmDialog(price)
     local rootPanel = modules.game_interface.getRootPanel()
     if not rootPanel or confirmDialog then
@@ -237,6 +260,11 @@ function SpellBoosterUI.openBoostConfirmDialog(price)
 
     confirmDialog.onDestroy = function()
         confirmDialog = nil
+        SpellBoosterUI.onDialogDestroy()
+    end
+
+    if mainWindow then
+        mainWindow:hide()
     end
 
     local spellNameLabel = confirmDialog:recursiveGetChildById("spellNameLabel")
@@ -303,12 +331,21 @@ function SpellBoosterUI.openDialog(spells)
         return
     end
 
+    mainWindow.onDestroy = function()
+        if SpellBoosterUI.tooltip then
+            SpellBoosterUI.tooltip:destroy()
+            SpellBoosterUI.tooltip = nil
+        end
+        mainWindow = nil
+    end
+
     mainWindow:show()
     mainWindow:raise()
     mainWindow:focus()
 
     SpellBoosterUI.updateCategoryButtons()
     SpellBoosterUI.buildSpellContainers(spells)
+    SpellBoosterUI.filterByCategory(1)
 end
 
 function SpellBoosterUI.getProgressBar(spell, level)

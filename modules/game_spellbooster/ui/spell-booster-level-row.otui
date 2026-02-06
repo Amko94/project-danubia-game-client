@@ -16,7 +16,6 @@ SpellBoosterLevelRow < UIWidget
     id: iconBoostPanel
     anchors.left: levelLabel.right
     anchors.verticalCenter: parent.verticalCenter
-    margin-left: 4
     width: 16
     height: 16
     background-color: #00000000

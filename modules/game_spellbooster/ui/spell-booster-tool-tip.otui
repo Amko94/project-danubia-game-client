@@ -23,7 +23,7 @@ SpellBoosterTooltip < UIWidget
       id: spellName
       anchors.horizontalCenter: parent.horizontalCenter
       anchors.top: parent.top
-      margin-top: 2
+      margin-top: -5
       color: #dfba69
       font: verdana-11px-rounded
       text-auto-resize: true
@@ -45,8 +45,7 @@ SpellBoosterTooltip < UIWidget
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    margin-top: 2
-    padding: 6
+    padding: 3
     phantom: true
 
     Panel

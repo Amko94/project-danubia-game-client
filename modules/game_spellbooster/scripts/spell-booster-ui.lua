@@ -194,16 +194,6 @@ function SpellBoosterUI.buildLevelDescriptions(tooltip, container, currentLevel)
             activeIndicator:setVisible(isActive)
         end
 
-        if isActive then
-            effectText:setColor("#ffffff")
-            levelLabel:setColor("#ffffff")
-        else
-            effectText:setColor("#e8e8e8")
-            levelLabel:setColor("#dfba69")
-        end
-
-        -- Calculate dynamic width for this row
-        -- Formula: Label(45) + margin(4) + Icon(16) + margin(6) + TextWidth + margin(8) + Indicator(12) + 2px offset
         local textWidth = effectText:getTextSize().width
         local rowWidth = 45 + 4 + 16 + 6 + textWidth + 8 + 12 + 2
         if rowWidth > maxWidth then

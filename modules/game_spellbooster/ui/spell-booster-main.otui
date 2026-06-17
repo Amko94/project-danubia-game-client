@@ -1,0 +1,100 @@
+SpellBoosterDialog < MainWindow
+  id: spellBoosterDialog
+  size: 550 500
+  text: Select Spell to Boost
+  @onEscape: self:destroy()
+
+  Panel
+    id: categoryPanel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 40
+
+    layout:
+      type: grid
+      num-columns: 4
+      cell-size: 130 20
+      cell-spacing: 1
+
+    TabButton
+      id: attack
+      text: Attack
+      color: #B8B8B8
+      font: verdana-11px-rounded
+      @onClick: SpellBoosterUI.filterByCategory(1)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
+
+    TabButton
+      id: healing
+      text: Healing
+      color: #B8B8B8
+      font: verdana-11px-rounded
+      @onClick: SpellBoosterUI.filterByCategory(2)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
+
+    TabButton
+      id: support
+      text: Support
+      color: #B8B8B8
+      font: verdana-11px-rounded
+      @onClick: SpellBoosterUI.filterByCategory(3)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
+
+    TabButton
+      id: conjure
+      text: Conjure
+      color: #B8B8B8
+      font: verdana-11px-rounded
+      @onClick: SpellBoosterUI.filterByCategory(4)
+      $on:
+        background-color: #444444
+        color: #FFFFFF
+
+  ScrollablePanel
+    id: spellList
+    anchors.top: categoryPanel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: closeButton.top
+    margin-top: 2
+    margin-bottom: 10
+    vertical-scrollbar: spellListScrollBar
+
+    layout:
+      type: grid
+      num-columns: 1
+      cell-size: 500 80
+      spacing: 5
+
+  Label
+    id: emptyList
+    visible: false
+    text: No spells found.
+    color: #aaaaaa
+    text-align: center
+    anchors.fill: spellList
+
+  VerticalScrollBar
+    id: spellListScrollBar
+    width: 14
+    anchors.top: spellList.top
+    anchors.bottom: spellList.bottom
+    anchors.right: spellList.right
+    step: 50
+    pixels-scroll: true
+
+  Button
+    id: closeButton
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    text: Close
+    width: 100
+    height: 30
+    @onClick: SpellBoosterUI.closeDialog()

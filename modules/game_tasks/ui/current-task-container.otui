@@ -1,0 +1,49 @@
+CurrentTaskContainer < Panel
+  anchors.fill: parent
+  padding: 5
+
+  UICreature
+    id: monsterIcon
+    size: 48 48
+    anchors.top: parent.top
+    anchors.left: parent.left
+    margin-top: 5
+
+  Label
+    id: taskName
+    font: verdana-11px-rounded
+    color: #ffffff
+    anchors.top: parent.top
+    anchors.left: monsterIcon.right
+    anchors.right: parent.right
+    margin-left: 10
+    margin-top: 8
+    text-align: left
+
+  Panel
+    id: progressPanel
+    height: 16
+    anchors.top: taskName.bottom
+    anchors.left: monsterIcon.right
+    anchors.right: parent.right
+    margin-left: 10
+    margin-top: 5
+    margin-right: 5
+    background-color: #00000066
+    border-width: 1
+    border-color: #333333
+
+    Panel
+      id: progressBar
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      anchors.left: parent.left
+      width: 0
+      margin: 1
+      background-color: #125400
+
+    Label
+      id: progressLabel
+      color: #ffffff
+      anchors.centerIn: parent
+      text-align: center

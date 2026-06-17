@@ -1,0 +1,54 @@
+ConfirmDialog < MainWindow
+  id: confirmDialog
+  size: 300 150
+  text: "Confirm Cancellation"
+  draggable: true
+  @onEscape: self:destroy()
+
+  Label
+    id: confirmLabel
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 10
+    text-align: center
+    text: "Are you sure to cancel your task?"
+
+  Label
+    id: taskNameAndProcess
+    anchors.top: confirmLabel.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin: 5 10 0 10
+    text-align: center
+    text: "placeholder"
+    color: #ffffff
+
+  Panel
+    id: buttonPanel
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: 38
+
+    Button
+      id: abortButton
+      text: "Close"
+      width: 130
+      height: 28
+      anchors.left: parent.left
+      anchors.bottom: parent.bottom
+      @onClick: self:getParent():getParent():destroy()
+
+    Button
+      id: confirmButton
+      text: "Cancel Task!"
+      width: 130
+      height: 28
+      anchors.left: abortButton.right
+      anchors.bottom: parent.bottom
+      margin-left: 5
+      color: #ff6347
+      hover-color: #cc0000
+      font: verdana-11px-rounded
+      @onClick: TaskUI.confirmCancel()

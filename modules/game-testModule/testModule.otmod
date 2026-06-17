@@ -1,8 +1,0 @@
-Module
-  name: game-testModule
-  description: test module
-  author: Amko94
-  sandboxed: true
-  scripts: [ testModule ]
-  @onLoad: init()
-  @onUnload: terminate()

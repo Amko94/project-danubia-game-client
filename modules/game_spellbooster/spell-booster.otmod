@@ -1,7 +1,0 @@
-Module
-  name: game_spellbooster
-  description: Spell Booster
-  author: Amko94
-  scripts: [ scripts/spell-booster, scripts/spell-booster-protocol, scripts/spell-booster-ui, scripts/spell-boost-manager ]
-  @onLoad: init()
-  @onUnload: terminate()

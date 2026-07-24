@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## Project overview
 
@@ -10,8 +10,8 @@ bindings, windowing), while nearly all game UI, screens, and feature logic are i
 at runtime. This particular checkout ("project-danubia") is a custom server client build (custom outfits, custom
 minimap, etc.), not vanilla OTClientV8.
 
-- `src/framework/` and `src/client/` — the C++ engine. See `.claude/rules/cpp-engine.md` for architecture and the networking model.
-- `modules/`, `mods/`, `layouts/`, `data/` — the Lua/UI content layer. See `.claude/rules/content-system.md` for structure.
+- `src/framework/` and `src/client/` — the C++ engine. See `.Codex/rules/cpp-engine.md` for architecture and the networking model.
+- `modules/`, `mods/`, `layouts/`, `data/` — the Lua/UI content layer. See `.Codex/rules/content-system.md` for structure.
 
 When a task is about UI, HUD, chat, inventory, minimap, hotkeys, or similar user-facing behavior, you almost always
 want to edit `modules/` (or `mods/`), not `src/`.

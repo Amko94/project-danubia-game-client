@@ -297,6 +297,10 @@ function doCreatureFitFilters(creature)
   if creature:getHealthPercent() <= 0 then
     return false
   end
+  -- Hide & Seek: disguised hidden players must not appear in the battle list
+  if modules.game_hideandseek and modules.game_hideandseek.HideAndSeekIsHidden(creature:getId()) then
+    return false
+  end
 
   local pos = creature:getPosition()
   if not pos then return false end

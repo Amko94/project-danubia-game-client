@@ -534,6 +534,8 @@ void Client::registerLuaFunctions()
     g_lua.bindClassMemberFunction<Creature>("setIconTexture", &Creature::setIconTexture);
     g_lua.bindClassMemberFunction<Creature>("showStaticSquare", &Creature::showStaticSquare);
     g_lua.bindClassMemberFunction<Creature>("hideStaticSquare", &Creature::hideStaticSquare);
+    g_lua.bindClassMemberFunction<Creature>("hideInformation", &Creature::hideInformation);
+    g_lua.bindClassMemberFunction<Creature>("isInformationHidden", &Creature::isInformationHidden);
     g_lua.bindClassMemberFunction<Creature>("isWalking", &Creature::isWalking);
     g_lua.bindClassMemberFunction<Creature>("isInvisible", &Creature::isInvisible);
     g_lua.bindClassMemberFunction<Creature>("isDead", &Creature::isDead);

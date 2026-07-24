@@ -135,6 +135,9 @@ void Creature::drawOutfit(const Rect& destRect, Otc::Direction direction, const 
 
 void Creature::drawInformation(const Point& point, bool useGray, const Rect& parentRect, int drawFlags)
 {
+    if (m_hideInformation)  // e.g. a Hide & Seek player disguised as an object
+        return;
+
     if (!g_game.getFeature(Otc::GameOldInformationBar) && g_game.getClientVersion() >= 760) {
         if (m_healthPercent < 1)  // creature is dead, we get rid of its information bar
             return;

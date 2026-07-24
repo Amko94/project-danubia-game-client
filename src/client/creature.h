@@ -82,6 +82,9 @@ public:
     void showStaticSquare(const Color& color) { m_showStaticSquare = true; m_staticSquareColor = color; }
     void hideStaticSquare() { m_showStaticSquare = false; }
 
+    void hideInformation(bool hide) { m_hideInformation = hide; }
+    bool isInformationHidden() { return m_hideInformation; }
+
     void setInformationColor(const Color& color) { m_useCustomInformationColor = true; m_informationColor = color; }
     void resetInformationColor() { m_useCustomInformationColor = false; setHealthPercent(getHealthPercent());  }
 
@@ -237,6 +240,7 @@ protected:
     Color m_nameColor;
     stdext::boolean<false> m_showTimedSquare;
     stdext::boolean<false> m_showStaticSquare;
+    stdext::boolean<false> m_hideInformation;
     stdext::boolean<true> m_removed;
     CachedText m_nameCache;
     Color m_informationColor;

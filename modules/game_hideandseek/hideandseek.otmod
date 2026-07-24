@@ -1,0 +1,8 @@
+Module
+  name: game_hideandseek
+  description: Hide & Seek Event Module
+  author: Amko94
+  sandboxed: true
+  scripts: [ scripts/hideandseek-protocol ]
+  @onLoad: HideAndSeekProtocol.init()
+  @onUnload: HideAndSeekProtocol.terminate()

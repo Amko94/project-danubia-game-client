@@ -483,7 +483,10 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
     else
       local localPosition = localPlayer:getPosition()
       if not classic and not g_app.isMobile() then shortcut = '(Alt)' else shortcut = nil end
-      if creatureThing:getPosition().z == localPosition.z then
+      -- Hide & Seek: don't offer Attack on a disguised hidden player — they
+      -- can only be hit by aiming a rune at their tile, not locked onto
+      local isHideAndSeekHidden = modules.game_hideandseek and modules.game_hideandseek.HideAndSeekIsHidden(creatureThing:getId())
+      if creatureThing:getPosition().z == localPosition.z and not isHideAndSeekHidden then
         if g_game.getAttackingCreature() ~= creatureThing then
           menu:addOption(tr('Attack'), function() g_game.attack(creatureThing) end, shortcut)
         else

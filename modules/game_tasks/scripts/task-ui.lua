@@ -305,7 +305,8 @@ function TaskUI.updateActiveTaskPanel()
         end
     else
         if rewardBtn then
-            rewardBtn:setEnabled(true)
+            rewardBtn:setEnabled(false)
+            rewardBtn:setColor("#777777")
         end
         if cancelBtn then
             cancelBtn:setEnabled(true)

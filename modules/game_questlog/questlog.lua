@@ -282,5 +282,8 @@ function save()
       return g_logger.error(
                  "Something went wrong, file is above 100MB, won't be saved")
   end
+  if not g_resources.directoryExists("/settings/") then
+    g_resources.makeDir("/settings/")
+  end
   g_resources.writeFileContents(file, result)
 end

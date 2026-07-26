@@ -404,7 +404,11 @@ std::string ResourceManager::readFileContents(const std::string& fileName, bool 
     static std::string unencryptedExtensions[] = { ".otml", ".otmm", ".dmp", ".log", ".txt", ".dll", ".exe", ".zip" };
 
     if (!decryptBuffer(buffer)) {
-        bool ignore = (m_customEncryption == 0);
+        // encrypt() only ever walks data/modules/mods/layouts (see below) -
+        // files under things/ (Tibia's own .dat/.spr/.otb/.otfi assets) are
+        // never ENC3-encrypted, so failing to decrypt them is expected, not
+        // an error
+        bool ignore = (m_customEncryption == 0) || fullPath.find("/things/") != std::string::npos;
         for (auto& it : unencryptedExtensions) {
             if (fileName.find(it) == fileName.size() - it.size()) {
                 ignore = true;

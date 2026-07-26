@@ -188,10 +188,11 @@ namespace {
 void spawnRestartProcess(const std::string& binary, const std::vector<std::string>* args)
 {
     // Windows Defender (and similar on-access scanners) can hold an exclusive
-    // scan lock on a freshly-written, unsigned exe for several seconds before
-    // releasing it - worth waiting out rather than failing the update.
-    constexpr int MAX_ATTEMPTS = 30;
-    constexpr auto RETRY_DELAY = std::chrono::milliseconds(500);
+    // scan lock on a freshly-written, unsigned exe - observed to take up to
+    // ~110s in the wild - so it's worth waiting out rather than failing the
+    // update. Total budget: 120 attempts * 1s = 2 minutes.
+    constexpr int MAX_ATTEMPTS = 120;
+    constexpr auto RETRY_DELAY = std::chrono::milliseconds(1000);
 
     std::string lastError;
     for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {

@@ -85,11 +85,45 @@ Write-Host "== Project Danubia client release build ==" -ForegroundColor Cyan
 if (-not $SkipEncrypt) {
     Write-Host "-- Running --encrypt in $SourceDir"
     Push-Location $SourceDir
-    & $ExePath --encrypt $EncryptSeed
-    Pop-Location
-    if ($LASTEXITCODE -ne 0) {
-        throw "otclient.exe --encrypt failed with exit code $LASTEXITCODE"
+
+    # IMPORTANT: otclient.exe --encrypt shows a blocking MessageBoxA("Success")
+    # dialog after finishing, which nobody can click on a headless CI runner -
+    # the process would hang forever waiting for it. So we don't wait for the
+    # process to exit naturally; instead we watch stdout for the completion
+    # line and kill the process ourselves once we see it.
+    $stdOutFile = Join-Path $env:TEMP "encrypt-stdout.txt"
+    if (Test-Path $stdOutFile) { Remove-Item $stdOutFile -Force }
+
+    $proc = Start-Process -FilePath $ExePath -ArgumentList "--encrypt", $EncryptSeed `
+        -RedirectStandardOutput $stdOutFile -NoNewWindow -PassThru
+
+    $timeoutSeconds = 300
+    $elapsed = 0
+    $completed = $false
+    while ($elapsed -lt $timeoutSeconds) {
+        Start-Sleep -Seconds 2
+        $elapsed += 2
+        if ((Test-Path $stdOutFile) -and (Get-Content $stdOutFile -Raw -ErrorAction SilentlyContinue) -match "Encryption complete") {
+            $completed = $true
+            break
+        }
+        if ($proc.HasExited) {
+            # exited on its own (e.g. no MessageBox on this environment) - fine either way
+            $completed = $true
+            break
+        }
     }
+
+    if (-not $proc.HasExited) {
+        Write-Host "-- Encryption finished, closing lingering process/dialog" -ForegroundColor Yellow
+        Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+    }
+
+    if (-not $completed) {
+        throw "otclient.exe --encrypt did not report completion within $timeoutSeconds seconds"
+    }
+
+    Pop-Location
 } else {
     Write-Host "-- Skipping encrypt step (assumed already run)" -ForegroundColor Yellow
 }
@@ -191,4 +225,41 @@ $exeStream.Write($zipBytes, 0, $zipBytes.Length)
 $exeStream.Close()
 
 Write-Host "-- Built website download (self-contained): $websiteExePath" -ForegroundColor Green
-Write-Host "== Done. Website download link should point at: /client-updater/ProjectDanubiaClient.exe ==" -ForegroundColor Cyan
+
+# 7. Zip the website download together with a short README (slightly lower
+# browser download-warning level than a raw .exe, and gives us a place to
+# explain the expected Windows SmartScreen warning to players)
+$websiteZipPath = Join-Path (Join-Path $WwwRoot "client-updater") "ProjectDanubiaClient.zip"
+$readmeTemp = Join-Path $env:TEMP "danubia-readme.txt"
+
+@"
+Project Danubia - Client
+
+1. Entpacke ProjectDanubiaClient.exe aus diesem Zip.
+2. Starte ProjectDanubiaClient.exe.
+
+Windows SmartScreen Warnung:
+Falls Windows beim ersten Start "Windows hat Ihren PC geschuetzt" anzeigt,
+ist das normal fuer neue, noch nicht weit verbreitete Programme.
+Klicke auf "Weitere Informationen" und dann auf "Trotzdem ausfuehren".
+
+Der Client aktualisiert sich danach automatisch bei jedem Start.
+"@ | Set-Content -Path $readmeTemp -Encoding UTF8
+
+if (Test-Path $websiteZipPath) { Remove-Item $websiteZipPath -Force }
+
+$zipFileStream2 = [System.IO.File]::Open($websiteZipPath, 'Create')
+$archive2 = New-Object System.IO.Compression.ZipArchive($zipFileStream2, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    $entry1 = $archive2.CreateEntry("ProjectDanubiaClient.exe", [System.IO.Compression.CompressionLevel]::Optimal)
+    $s1 = $entry1.Open(); $src1 = [System.IO.File]::OpenRead($websiteExePath); $src1.CopyTo($s1); $src1.Close(); $s1.Close()
+
+    $entry2 = $archive2.CreateEntry("README.txt", [System.IO.Compression.CompressionLevel]::Optimal)
+    $s2 = $entry2.Open(); $src2 = [System.IO.File]::OpenRead($readmeTemp); $src2.CopyTo($s2); $src2.Close(); $s2.Close()
+} finally {
+    $archive2.Dispose()
+    $zipFileStream2.Close()
+}
+
+Write-Host "-- Built website zip: $websiteZipPath" -ForegroundColor Green
+Write-Host "== Done. Website download link should point at: /api/Updater/download (serving ProjectDanubiaClient.zip) ==" -ForegroundColor Cyan

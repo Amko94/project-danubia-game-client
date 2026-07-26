@@ -675,7 +675,25 @@ std::string ResourceManager::selfChecksum() {
     std::string buffer(std::istreambuf_iterator<char>(file), {});
     file.close();
 
-    checksum = g_crypt.crc32(buffer, false);
+    // if this is a self-contained build (data.zip appended, see
+    // updateExecutable/loadDataFromSelf), only checksum the engine bytes
+    // before the appended zip - the server's manifest checksum is computed
+    // over the bare engine exe, before any data ever gets appended to it,
+    // so including the appended zip here would never match and would make
+    // the updater think the binary always needs updating
+    size_t engineSize = buffer.size();
+    if (buffer.size() > 128) {
+        for (size_t i = 0, end = buffer.size() - 128; i < end; ++i) {
+            if ((uint8_t)buffer[i] == 0x50 && (uint8_t)buffer[i + 1] == 0x4b &&
+                (uint8_t)buffer[i + 2] == 0x03 && (uint8_t)buffer[i + 3] == 0x04 &&
+                (uint8_t)buffer[i + 4] == 0x14) {
+                engineSize = i;
+                break;
+            }
+        }
+    }
+
+    checksum = g_crypt.crc32(buffer.substr(0, engineSize), false);
     return checksum;
 #endif
 }

@@ -184,7 +184,7 @@ void Application::restart()
     // bare binary name would otherwise resolve back to the OLD executable
     std::string binary = g_resources.getNewBinaryPath();
     if (binary.empty())
-        binary = g_resources.getBinaryName();
+        binary = g_resources.getBinaryPath();
     boost::process::child c(binary);
     std::error_code ec2;
     const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
@@ -203,7 +203,7 @@ void Application::restartArgs(const std::vector<std::string>& args)
 #ifndef FREE_VERSION
     std::string binary = g_resources.getNewBinaryPath();
     if (binary.empty())
-        binary = g_resources.getBinaryName();
+        binary = g_resources.getBinaryPath();
     boost::process::child c(binary, boost::process::args(args));
     std::error_code ec2;
     const bool exited = c.wait_for(std::chrono::seconds(1), ec2);

@@ -68,10 +68,12 @@ public:
 #ifdef ANDROID
     std::string getWriteDir() { return "/"; }
     std::string getBinaryName() { return "otclientv8.apk"; }
+    std::string getBinaryPath() { return "otclientv8.apk"; }
     std::string getNewBinaryPath() { return ""; }
 #else
     std::string getWriteDir() { return m_writeDir.string(); }
     std::string getBinaryName() { return m_binaryPath.filename().string(); }
+    std::string getBinaryPath() { return m_binaryPath.string(); }
     std::string getNewBinaryPath() { return m_newBinaryPath.string(); }
 #endif
 

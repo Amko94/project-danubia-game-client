@@ -187,10 +187,11 @@ void Application::restart()
         binary = g_resources.getBinaryName();
     boost::process::child c(binary);
     std::error_code ec2;
-    if (c.wait_for(std::chrono::seconds(1), ec2)) {
+    const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
+    if (exited && c.exit_code() != 0)
         g_logger.fatal("Updater restart error. Please restart application");
-    }
-    c.detach();
+    if (!exited)
+        c.detach();
     quick_exit();
 #else
     exit();
@@ -205,10 +206,11 @@ void Application::restartArgs(const std::vector<std::string>& args)
         binary = g_resources.getBinaryName();
     boost::process::child c(binary, boost::process::args(args));
     std::error_code ec2;
-    if (c.wait_for(std::chrono::seconds(1), ec2)) {
+    const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
+    if (exited && c.exit_code() != 0)
         g_logger.fatal("Updater restart error. Please restart application");
-    }
-    c.detach();
+    if (!exited)
+        c.detach();
     quick_exit();
 #else
     exit();

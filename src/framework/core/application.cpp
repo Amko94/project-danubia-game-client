@@ -39,6 +39,7 @@
 #endif
 #include <boost/process/v1/args.hpp>
 #include <boost/process/v1/child.hpp>
+#include <thread>
 #endif
 
 #include <locale>
@@ -177,6 +178,43 @@ void Application::close()
         exit();
 }
 
+#ifndef FREE_VERSION
+namespace {
+// A binary that was just written to disk by the updater can be briefly
+// locked by antivirus/real-time-scan (e.g. Windows Defender), which makes
+// launching it right away fail with a transient error. Retry a few times
+// before giving up, and surface the real error message instead of letting
+// it bubble up as an opaque "C++ call failed" lua error.
+void spawnRestartProcess(const std::string& binary, const std::vector<std::string>* args)
+{
+    constexpr int MAX_ATTEMPTS = 8;
+    constexpr auto RETRY_DELAY = std::chrono::milliseconds(300);
+
+    std::string lastError;
+    for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+        try {
+            boost::process::child c = args ? boost::process::child(binary, boost::process::args(*args))
+                                            : boost::process::child(binary);
+            std::error_code ec2;
+            const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
+            if (exited && c.exit_code() != 0) {
+                g_logger.fatal(stdext::format("Updater restart error, new process exited with code %i. Please restart application", c.exit_code()));
+                return;
+            }
+            if (!exited)
+                c.detach();
+            return;
+        } catch (const std::exception& e) {
+            lastError = e.what();
+            if (attempt < MAX_ATTEMPTS)
+                std::this_thread::sleep_for(RETRY_DELAY);
+        }
+    }
+    g_logger.fatal(stdext::format("Updater restart error, failed to launch %s: %s", binary, lastError));
+}
+}
+#endif
+
 void Application::restart()
 {
 #ifndef FREE_VERSION
@@ -185,13 +223,7 @@ void Application::restart()
     std::string binary = g_resources.getNewBinaryPath();
     if (binary.empty())
         binary = g_resources.getBinaryPath();
-    boost::process::child c(binary);
-    std::error_code ec2;
-    const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
-    if (exited && c.exit_code() != 0)
-        g_logger.fatal("Updater restart error. Please restart application");
-    if (!exited)
-        c.detach();
+    spawnRestartProcess(binary, nullptr);
     quick_exit();
 #else
     exit();
@@ -204,13 +236,7 @@ void Application::restartArgs(const std::vector<std::string>& args)
     std::string binary = g_resources.getNewBinaryPath();
     if (binary.empty())
         binary = g_resources.getBinaryPath();
-    boost::process::child c(binary, boost::process::args(args));
-    std::error_code ec2;
-    const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
-    if (exited && c.exit_code() != 0)
-        g_logger.fatal("Updater restart error. Please restart application");
-    if (!exited)
-        c.detach();
+    spawnRestartProcess(binary, &args);
     quick_exit();
 #else
     exit();

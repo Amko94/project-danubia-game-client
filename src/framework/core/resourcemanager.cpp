@@ -805,6 +805,7 @@ void ResourceManager::updateExecutable(std::string fileName)
     PHYSFS_close(file);
 
     std::filesystem::path newBinaryPath(std::filesystem::u8path(PHYSFS_getWriteDir()));
+    m_newBinaryPath = newBinaryPath / newBinary;
 #if defined(WIN32) && !defined(FREE_VERSION)
     installDlls(newBinaryPath);
 #endif

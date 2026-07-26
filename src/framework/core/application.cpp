@@ -180,7 +180,12 @@ void Application::close()
 void Application::restart()
 {
 #ifndef FREE_VERSION
-    boost::process::child c(g_resources.getBinaryName());
+    // prefer the exact binary just downloaded by the updater (if any) - the
+    // bare binary name would otherwise resolve back to the OLD executable
+    std::string binary = g_resources.getNewBinaryPath();
+    if (binary.empty())
+        binary = g_resources.getBinaryName();
+    boost::process::child c(binary);
     std::error_code ec2;
     if (c.wait_for(std::chrono::seconds(1), ec2)) {
         g_logger.fatal("Updater restart error. Please restart application");
@@ -195,7 +200,10 @@ void Application::restart()
 void Application::restartArgs(const std::vector<std::string>& args)
 {
 #ifndef FREE_VERSION
-    boost::process::child c(g_resources.getBinaryName(), boost::process::args(args));
+    std::string binary = g_resources.getNewBinaryPath();
+    if (binary.empty())
+        binary = g_resources.getBinaryName();
+    boost::process::child c(binary, boost::process::args(args));
     std::error_code ec2;
     if (c.wait_for(std::chrono::seconds(1), ec2)) {
         g_logger.fatal("Updater restart error. Please restart application");

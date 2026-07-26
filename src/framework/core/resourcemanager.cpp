@@ -821,6 +821,23 @@ void ResourceManager::updateExecutable(std::string fileName)
         return g_logger.fatal(stdext::format("can't write new executable to %s", m_binaryPath.string()));
     }
     out.write((const char*)dFile->response.data(), dFile->response.size());
+
+    // append data.zip so the written exe is self-contained (loadDataFromSelf),
+    // same as the website download. getCompactName() has to find data/init.lua
+    // right next to the exe (or embedded in it) *before* it can even determine
+    // the app name and thus the AppData write dir - it can't assume that dir
+    // exists or is discoverable yet, so the write dir alone isn't enough here
+    PHYSFS_File* dataZip = PHYSFS_openRead("data.zip");
+    if (dataZip) {
+        int zipSize = PHYSFS_fileLength(dataZip);
+        std::vector<char> zipBuffer(zipSize);
+        PHYSFS_readBytes(dataZip, zipBuffer.data(), zipSize);
+        PHYSFS_close(dataZip);
+        out.write(zipBuffer.data(), zipBuffer.size());
+    } else {
+        g_logger.error("data.zip not found while updating executable - new binary won't be self-contained");
+    }
+
     out.close();
     std::filesystem::remove(oldPath, ec); // best effort cleanup, ok if this fails
 

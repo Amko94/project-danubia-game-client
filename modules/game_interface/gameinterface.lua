@@ -1047,14 +1047,6 @@ function updateSize()
       gameMapPanel:setMarginLeft(margin)
       gameMapPanel:setMarginRight(margin)
     end
-      
-    if modules.game_bot then
-      for i, child in ipairs(gameMapPanel:getChildren()) do
-        if child.botIcon and child.onGeometryChange then
-          child.onGeometryChange(child)
-        end
-      end
-    end
   else
     if modules.game_stats then
       modules.game_stats.ui:setMarginTop(0)

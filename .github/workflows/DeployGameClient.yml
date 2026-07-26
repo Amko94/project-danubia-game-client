@@ -1,0 +1,47 @@
+name: Update Content
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_version:
+        description: "APP_VERSION for this release (must match init.lua)"
+        required: true
+        default: "1"
+
+jobs:
+  package-and-deploy:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # otclient.exe liegt fest im Repo (ihr committet sie selbst nach
+      # lokalem Neukompilieren) - kein Build-Schritt hier nötig
+      - name: Verify otclient.exe exists
+        run: |
+          if (-not (Test-Path ".\otclient.exe")) {
+            throw "otclient.exe nicht im Repo-Root gefunden - bitte committen"
+          }
+
+      # --- Packaging: encrypt, Manifest bauen, Dateien mirrorn, Website-exe bauen ---
+      - name: Run release script
+        env:
+          ENCRYPT_SEED: ${{ secrets.CLIENT_ENCRYPT_SEED }}
+        run: |
+          .\build-release.ps1 `
+            -SourceDir "$PWD\data" `
+            -ExePath "$PWD\otclient.exe" `
+            -WwwRoot "$PWD\release-staging" `
+            -EncryptSeed "$env:ENCRYPT_SEED" `
+            -AppVersion ${{ inputs.app_version }}
+
+      # --- Upload zum Server ---
+      - name: Upload client-updater files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "release-staging/client-updater/*"
+          target: "/root/project-danubia-webservice/wwwroot/"
+          strip_components: 2

@@ -178,7 +178,12 @@ local function updateFiles(data, keepCurrentFiles)
     updaterWindow.downloadStatus:hide() 
     scheduledEvent = scheduleEvent(function()
       local restart = binary or (not loadModulesFunction and reloadModules) or forceRestart
-      if newFiles then
+      -- the freshly downloaded binary has no data embedded (unlike the
+      -- self-contained website download) and no loose data/ folder next to
+      -- it, so it can only load via a data.zip written next to it - write
+      -- one even if no data files changed this update, or the new process
+      -- has nothing to load from and dies with "data.zip fehlt"
+      if newFiles or binary then
         g_resources.updateData(finalFiles, not restart)
       end
       if binary then

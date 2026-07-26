@@ -1,6 +1,11 @@
 name: Update Content
 
 on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "src/**"
   workflow_dispatch:
     inputs:
       app_version:
@@ -27,13 +32,16 @@ jobs:
       - name: Run release script
         env:
           ENCRYPT_SEED: ${{ secrets.CLIENT_ENCRYPT_SEED }}
+          # bei manuellem Trigger: der eingegebene Wert. Bei normalem Push
+          # (kein Input verfügbar): fortlaufende GitHub-Run-Nummer als Fallback
+          APP_VERSION: ${{ inputs.app_version || github.run_number }}
         run: |
           .\build-release.ps1 `
-            -SourceDir "$PWD\data" `
+            -SourceDir "$PWD" `
             -ExePath "$PWD\otclient.exe" `
             -WwwRoot "$PWD\release-staging" `
             -EncryptSeed "$env:ENCRYPT_SEED" `
-            -AppVersion ${{ inputs.app_version }}
+            -AppVersion $env:APP_VERSION
 
       # --- Upload zum Server ---
       - name: Upload client-updater files to server

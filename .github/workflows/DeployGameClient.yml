@@ -88,4 +88,4 @@ jobs:
             "${env:SERVER_USER}@${env:SERVER_HOST}" `
             "cd /root/project-danubia-webservice/wwwroot && rm -rf client-updater && unzip -o -q upload.zip -d client-updater && rm upload.zip"
 
-          Remove-Item $keyPath -Force
+          Remove-Item $keyPath -Force -ErrorAction SilentlyContinue

@@ -22,6 +22,16 @@ jobs:
         with:
           lfs: true
 
+      # GitHub-hosted Windows runners scan every file I/O in real-time via
+      # Windows Defender by default - with ~1500 small files being encrypted
+      # one by one, this adds massive overhead (minutes instead of seconds
+      # locally, where Defender exclusions are often already configured).
+      # Excluding the workspace folder brings this back down to local speed.
+      - name: Exclude workspace from Windows Defender
+        shell: powershell
+        run: |
+          Add-MpPreference -ExclusionPath "$env:GITHUB_WORKSPACE"
+
       # otclient.exe liegt fest im Repo (ihr committet sie selbst nach
       # lokalem Neukompilieren) - kein Build-Schritt hier nötig
       - name: Verify otclient.exe exists
@@ -46,12 +56,20 @@ jobs:
             -AppVersion $env:APP_VERSION
 
       # --- Upload zum Server ---
+      # appleboy/scp-action ist eine Docker-Container-Action und läuft nur
+      # auf Linux-Runnern - wir sind hier auf windows-latest, deshalb nutzen
+      # wir stattdessen Windows' eingebauten OpenSSH-scp-Client direkt.
       - name: Upload client-updater files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "release-staging/client-updater/*"
-          target: "/root/project-danubia-webservice/wwwroot/"
-          strip_components: 2
+        env:
+          SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          $keyPath = Join-Path $env:RUNNER_TEMP "deploy_key"
+          Set-Content -Path $keyPath -Value $env:SSH_KEY -NoNewline
+
+          scp -o StrictHostKeyChecking=no -i "$keyPath" -r `
+            "release-staging\client-updater\*" `
+            "${env:SERVER_USER}@${env:SERVER_HOST}:/root/project-danubia-webservice/wwwroot/client-updater/"
+
+          Remove-Item $keyPath -Force

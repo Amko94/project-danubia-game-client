@@ -799,19 +799,35 @@ void ResourceManager::updateExecutable(std::string fileName)
     if (!dFile)
         g_logger.fatal(stdext::format("Cannot find executable: %s in downloads", fileName));
 
-    std::filesystem::path path(m_binaryPath);
-    auto newBinary = path.stem().string() + "-" + std::to_string(time(nullptr)) + path.extension().string();
-    g_logger.info(stdext::format("Updating binary file: %s", newBinary));
-    PHYSFS_file* file = PHYSFS_openWrite(newBinary.c_str());
-    if (!file)
-        return g_logger.fatal(stdext::format("can't open %s for writing: %s", newBinary, PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode())));
-    PHYSFS_writeBytes(file, dFile->response.data(), dFile->response.size());
-    PHYSFS_close(file);
+    // overwrite the exe we're currently running from, in place. Windows
+    // allows replacing a running executable's on-disk file (rename it out of
+    // the way, then write a new file under the original name - the already
+    // loaded image stays valid in memory for this session), so the update
+    // takes effect the next time the user launches this same file/shortcut.
+    // We deliberately don't spawn the new binary ourselves anymore (see
+    // updater.lua) - freshly written, unsigned exes get held up by Windows
+    // Defender/SmartScreen for an unpredictable amount of time.
+    std::error_code ec;
+    std::filesystem::path oldPath = m_binaryPath;
+    oldPath += ".old";
+    std::filesystem::remove(oldPath, ec);
+    std::filesystem::rename(m_binaryPath, oldPath, ec);
+    if (ec)
+        return g_logger.fatal(stdext::format("can't move current executable out of the way: %s", ec.message()));
 
-    std::filesystem::path newBinaryPath(std::filesystem::u8path(PHYSFS_getWriteDir()));
-    m_newBinaryPath = newBinaryPath / newBinary;
+    std::ofstream out(m_binaryPath, std::ios::binary | std::ios::trunc);
+    if (!out.is_open()) {
+        std::filesystem::rename(oldPath, m_binaryPath, ec); // best effort restore
+        return g_logger.fatal(stdext::format("can't write new executable to %s", m_binaryPath.string()));
+    }
+    out.write((const char*)dFile->response.data(), dFile->response.size());
+    out.close();
+    std::filesystem::remove(oldPath, ec); // best effort cleanup, ok if this fails
+
+    g_logger.info(stdext::format("Updated binary file: %s", m_binaryPath.string()));
+
 #if defined(WIN32) && !defined(FREE_VERSION)
-    installDlls(newBinaryPath);
+    installDlls(m_binaryPath.parent_path());
 #endif
 #endif
 }

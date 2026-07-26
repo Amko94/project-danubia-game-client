@@ -190,7 +190,14 @@ local function updateFiles(data, keepCurrentFiles)
         g_resources.updateExecutable(binary)
       end
       if restart then
-        g_app.restart()
+        -- don't spawn the freshly downloaded binary ourselves: a fresh,
+        -- unsigned exe gets held up by Windows Defender/SmartScreen for an
+        -- unpredictable amount of time (seconds to minutes) before it can
+        -- actually run, which made an automatic restart here unreliable.
+        -- Let the user close and relaunch on their own schedule instead.
+        displayInfoBox("Update completed", "The client has been updated. Please restart the application to apply the changes.").onOk = function()
+          g_app.exit()
+        end
       else
         if reloadModules then
           g_modules.reloadModules()

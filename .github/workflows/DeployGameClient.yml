@@ -56,10 +56,15 @@ jobs:
             -AppVersion $env:APP_VERSION
 
       # --- Upload zum Server ---
-      # appleboy/scp-action ist eine Docker-Container-Action und läuft nur
-      # auf Linux-Runnern - wir sind hier auf windows-latest, deshalb nutzen
-      # wir stattdessen Windows' eingebauten OpenSSH-scp-Client direkt.
-      - name: Upload client-updater files to server
+      # 1500+ einzelne Dateien per scp -r ist extrem langsam/unzuverlässig
+      # (Wildcard-Handling, SSH-Handshake-Overhead pro Datei). Stattdessen:
+      # einmal zippen, EINE Datei übertragen, auf dem Server entpacken.
+      - name: Zip release output for transfer
+        run: |
+          Compress-Archive -Path "release-staging\client-updater\*" `
+            -DestinationPath "release-staging\upload.zip" -Force
+
+      - name: Upload zip to server
         env:
           SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
@@ -68,8 +73,12 @@ jobs:
           $keyPath = Join-Path $env:RUNNER_TEMP "deploy_key"
           Set-Content -Path $keyPath -Value $env:SSH_KEY -NoNewline
 
-          scp -o StrictHostKeyChecking=no -i "$keyPath" -r `
-            "release-staging\client-updater\*" `
-            "${env:SERVER_USER}@${env:SERVER_HOST}:/root/project-danubia-webservice/wwwroot/client-updater/"
+          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$keyPath" `
+            "release-staging\upload.zip" `
+            "${env:SERVER_USER}@${env:SERVER_HOST}:/root/project-danubia-webservice/wwwroot/upload.zip"
+
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$keyPath" `
+            "${env:SERVER_USER}@${env:SERVER_HOST}" `
+            "cd /root/project-danubia-webservice/wwwroot && rm -rf client-updater && unzip -o -q upload.zip -d client-updater && rm upload.zip"
 
           Remove-Item $keyPath -Force

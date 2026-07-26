@@ -39,7 +39,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$includedDirs = @("data", "modules", "mods", "layouts")
+$includedDirs = @("data", "modules", "mods", "layouts", "things")
 $includedRootFiles = @("init.lua")
 
 $filesOut     = Join-Path $WwwRoot "client-updater/files"

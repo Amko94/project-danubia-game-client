@@ -73,6 +73,12 @@ jobs:
           $keyPath = Join-Path $env:RUNNER_TEMP "deploy_key"
           Set-Content -Path $keyPath -Value $env:SSH_KEY -NoNewline
 
+          # OpenSSH weigert sich, Keys mit zu offenen Berechtigungen zu nutzen -
+          # ohne diesen Fix hängt scp/ssh lautlos an einer nie erscheinenden
+          # Passwort-Abfrage, statt einen klaren Fehler zu zeigen.
+          icacls $keyPath /inheritance:r | Out-Null
+          icacls $keyPath /grant:r "$($env:USERNAME):(R)" | Out-Null
+
           scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$keyPath" `
             "release-staging\upload.zip" `
             "${env:SERVER_USER}@${env:SERVER_HOST}:/root/project-danubia-webservice/wwwroot/upload.zip"

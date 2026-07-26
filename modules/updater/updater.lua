@@ -108,7 +108,17 @@ local function updateFiles(data, keepCurrentFiles)
   
   local newFiles = false
   local finalFiles = {}
-  local localFiles = g_resources.filesChecksums()
+  -- g_resources.filesChecksums() keys are prefixed with "/" (PHYSFS root-relative
+  -- paths), but the server manifest's file keys are not - normalize so the
+  -- checksum comparison below actually finds matches instead of treating
+  -- every single file as missing/changed
+  local localFiles = {}
+  for file, checksum in pairs(g_resources.filesChecksums()) do
+    if file:sub(1, 1) == "/" then
+      file = file:sub(2)
+    end
+    localFiles[file] = checksum
+  end
   local toUpdate = {}
   -- keep all files or files from data/things
   for file, checksum in pairs(localFiles) do

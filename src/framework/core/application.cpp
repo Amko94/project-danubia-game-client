@@ -37,7 +37,8 @@
 #ifndef BOOST_PROCESS_VERSION
 #define BOOST_PROCESS_VERSION 1
 #endif
-#include <boost/process/v1.hpp>
+#include <boost/process/v1/args.hpp>
+#include <boost/process/v1/child.hpp>
 #endif
 
 #include <locale>
@@ -218,4 +219,3 @@ std::string Application::getOs()
     return "unknown";
 #endif
 }
-

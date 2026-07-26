@@ -285,8 +285,7 @@ namespace Fw
         AlternateState = 1024,
         DraggingState = 2048,
         HiddenState = 4096,
-        MobileState = 8192,
-        LastWidgetState = 16384
+        LastWidgetState = 8192
     };
 
     enum DrawPane {

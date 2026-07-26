@@ -69,11 +69,6 @@ public:
     std::string getOs();
     std::string getStartupOptions() { return m_startupOptions; }
 
-    bool isMobile()
-    {
-        return m_mobile;
-    }
-
 protected:
     void registerLuaFunctions();
 
@@ -85,7 +80,6 @@ protected:
     stdext::boolean<false> m_running;
     stdext::boolean<false> m_stopping;
     stdext::boolean<false> m_terminated;
-    stdext::boolean<false> m_mobile;
 };
 
 #ifdef FW_GRAPHICS

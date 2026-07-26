@@ -146,7 +146,6 @@ void Application::registerLuaFunctions()
     g_lua.bindSingletonFunction("g_app", "getStartupOptions", &Application::getStartupOptions, static_cast<Application*>(&g_app));
     g_lua.bindSingletonFunction("g_app", "exit", &Application::exit, static_cast<Application*>(&g_app));
     g_lua.bindSingletonFunction("g_app", "quick_exit", &Application::quick_exit, static_cast<Application*>(&g_app));
-    g_lua.bindSingletonFunction("g_app", "isMobile", &Application::isMobile, static_cast<Application*>(&g_app));
     g_lua.bindSingletonFunction("g_app", "restart", &Application::restart, static_cast<Application*>(&g_app));
     g_lua.bindSingletonFunction("g_app", "restartArgs", &Application::restartArgs, static_cast<Application*>(&g_app));
 

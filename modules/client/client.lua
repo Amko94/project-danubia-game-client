@@ -62,11 +62,7 @@ function init()
   end
 
   if not Updater then
-    if g_resources.getLayout() == "mobile" then
-      g_window.setMinimumSize({ width = 640, height = 360 })
-    else
-      g_window.setMinimumSize({ width = 800, height = 640 })  
-    end
+    g_window.setMinimumSize({ width = 800, height = 640 })
 
     -- window size
     local size = { width = 1024, height = 600 }

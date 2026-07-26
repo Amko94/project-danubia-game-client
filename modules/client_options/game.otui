@@ -3,9 +3,6 @@ OptionPanel
     id: classicControl
     !text: tr('Classic control')
 
-    $mobile:
-      visible: false
-
   OptionCheckBox
     id: autoChaseOverride
     !text: tr('Allow auto chase override')
@@ -18,8 +15,6 @@ OptionPanel
     id: wsadWalking
     !text: tr('Enable WSAD walking')
     !tooltip: tr('Disable chat and allow walk using WSAD keys')
-    $mobile:
-      visible: false
 
   OptionCheckBox
     id: dash
@@ -52,17 +47,11 @@ OptionPanel
       local value = modules.client_options.getOption('walkFirstStepDelay')
       self:setText(tr('Walk delay after first step: %s ms', value))
 
-    $mobile:
-      visible: false
-
   OptionScrollbar
     id: walkFirstStepDelay
     margin-top: 3
     minimum: 50
     maximum: 300
-
-    $mobile:
-      visible: false
 
   Label
     id: walkTurnDelayLabel
@@ -71,23 +60,15 @@ OptionPanel
       local value = modules.client_options.getOption('walkTurnDelay')
       self:setText(tr('Walk delay after turn: %s ms', value))
 
-    $mobile:
-      visible: false
-
   OptionScrollbar
     id: walkTurnDelay
     margin-top: 3
     minimum: 0
     maximum: 300
 
-    $mobile:
-      visible: false
-
   Label
     id: walkCtrlTurnDelayLabel
     margin-top: 10
-    $mobile:
-      visible: false
     @onSetup: |
       local value = modules.client_options.getOption('walkTurnDelay')
       self:setText(tr('Walk delay after ctrl turn: %s ms', value))
@@ -96,9 +77,7 @@ OptionPanel
     id: walkCtrlTurnDelay
     margin-top: 3
     minimum: 0
-    maximum: 300    
-    $mobile:
-      visible: false
+    maximum: 300
 
   Label
     id: walkStairsDelayLabel
@@ -106,16 +85,12 @@ OptionPanel
     @onSetup: |
       local value = modules.client_options.getOption('walkStairsDelay')
       self:setText(tr('Walk delay after floor change: %s ms', value))
-    $mobile:
-      visible: false
 
   OptionScrollbar
     id: walkStairsDelay
     margin-top: 3
     minimum: 0
     maximum: 300
-    $mobile:
-      visible: false
 
   Label
     id: walkTeleportDelayLabel
@@ -123,17 +98,13 @@ OptionPanel
     @onSetup: |
       local value = modules.client_options.getOption('walkTeleportDelay')
       self:setText(tr('Walk delay after teleport: %s ms', value))
-    $mobile:
-      visible: false
 
   OptionScrollbar
     id: walkTeleportDelay
     margin-top: 3
     minimum: 0
     maximum: 300
-    $mobile:
-      visible: false
-      
+
   Panel
     height: 30
     margin-top: 10

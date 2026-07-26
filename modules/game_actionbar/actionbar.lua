@@ -985,27 +985,7 @@ function setupAction(widget)
     end
   elseif widget.type == TYPE.SPELL then
     widget.callback = function()
-      if g_app.isMobile() then -- turn to direction of targer
-        local target = g_game.getAttackingCreature()
-        if target then
-          local pos = g_game.getLocalPlayer():getPosition()
-          local tpos = target:getPosition()
-          if pos and tpos then
-            local offx = tpos.x - pos.x
-            local offy = tpos.y - pos.y
-            if offy < 0 and offx <= 0 and math.abs(offx) < math.abs(offy) then
-              g_game.turn(Directions.North)
-            elseif offy > 0 and offx >= 0 and math.abs(offx) < math.abs(offy) then
-              g_game.turn(Directions.South)
-            elseif offx < 0 and offy <= 0 and math.abs(offx) > math.abs(offy) then
-              g_game.turn(Directions.West)
-            elseif offx > 0 and offy >= 0 and math.abs(offx) > math.abs(offy) then
-              g_game.turn(Directions.East)
-            end
-          end
-        end
-      end
-      local paramText 
+      local paramText
       if widget.spellData.param and widget.spellData.param:len() > 0 then
         paramText = ' "'.. widget.spellData.param ..'"' 
       else 

@@ -96,5 +96,3 @@ OptionPanel
     text-align: left
     text-wrap: true
     !text: tr("If you have FPS issues:\n- Use OpenGL version (_gl)\n- Disable vertical synchronization\n- Set higher optimization level\n- Lower screen resolution\nOr report it on forum: http://otclient.net")
-    $mobile:
-      visible: false

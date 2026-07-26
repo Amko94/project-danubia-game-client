@@ -8,10 +8,7 @@ GameSidePanel < UIMiniWindowContainer
   on: true
   layout:
     type: verticalBox
-  $mobile:
-    padding: 0
-    width: 200
-  
+
 
 GameMapPanel < UIGameMap
   padding: 4
@@ -52,45 +49,11 @@ UIWidget
     focusable: false    
     
   Panel
-    id: gameLeftActions
-    focusable: false
-    anchors.bottom: parent.bottom
-    anchors.left: parent.left
-    width: 64
-    
-    $!mobile:
-      visible: false
-      width: 0
-    
-    layout:
-      type: verticalBox
-      fit-children: true
-      
-    GameAction
-      id: use
-      @onSetup: self.image:setImageSource("/images/game/mobile/use")
-    GameAction
-      id: attack
-      @onSetup: self.image:setImageSource("/images/game/mobile/attack")
-    GameAction
-      id: follow
-      @onSetup: self.image:setImageSource("/images/game/mobile/follow")
-    GameAction
-      id: look
-      @onSetup: self.image:setImageSource("/images/game/mobile/look")
-    GameAction
-      id: chat
-      @onSetup: self.image:setImageSource("/images/game/mobile/chat")
-    
-  Panel
     id: gameLeftPanels
     focusable: false
     anchors.top: parent.top
-    anchors.bottom: parent.bottom    
-    $!mobile:
-      anchors.left: parent.left
-    $mobile:
-      anchors.left: gameLeftActions.right
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
 
     layout:
       type: horizontalBox
@@ -106,13 +69,10 @@ UIWidget
     anchors.bottom: bottomSplitter.top
     margin-top: 3
 
-    $mobile:
-      visible: false
-      
     layout:
       type: horizontalBox
       fit-children: true
-      
+
   Panel
     id: gameRightPanels
     anchors.right: parent.right
@@ -133,13 +93,10 @@ UIWidget
     anchors.bottom: bottomSplitter.top
     margin-top: 3
 
-    $mobile:
-      visible: false
-      
     layout:
       type: horizontalBox
       fit-children: true
-    
+
   Splitter
     id: bottomSplitter
     anchors.left: gameLeftPanels.right
@@ -150,43 +107,28 @@ UIWidget
     margin-bottom: 150
     @canUpdateMargin: function(self, newMargin) if modules.client_options.getOption('dontStretchShrink') then return self:getMarginBottom() end return math.max(math.min(newMargin, self:getParent():getHeight() - 150), 80) end
     @onGeometryChange: function(self) self:setMarginBottom(math.min(math.max(self:getParent():getHeight() - 150, 80), self:getMarginBottom())) end
-    
-    $mobile:
-      visible: false
-      
+
   Panel
     id: gameBottomActionPanel
     phantom: true
     focusable: false
 
-    $!mobile:
-      anchors.left: bottomSplitter.left
-      anchors.right: bottomSplitter.right
-      anchors.top: bottomSplitter.top
-      margin-top: 3
+    anchors.left: bottomSplitter.left
+    anchors.right: bottomSplitter.right
+    anchors.top: bottomSplitter.top
+    margin-top: 3
 
-    $mobile:
-      anchors.left: gameLeftPanels.right
-      anchors.right: gameRightPanels.left
-      anchors.bottom: gameBottomPanel.top    
-      
     layout:
       type: verticalBox
       fit-children: true
-    
-  Panel
-    id: gameBottomPanel    
-    $!mobile:
-      anchors.left: gameBottomActionPanel.left
-      anchors.right: gameBottomActionPanel.right
-      anchors.top: gameBottomActionPanel.bottom
-      anchors.bottom: parent.bottom
 
-    $mobile:
-      anchors.left: gameLeftPanels.right
-      anchors.right: gameRightPanels.left
-      anchors.bottom: parent.bottom
-      
+  Panel
+    id: gameBottomPanel
+    anchors.left: gameBottomActionPanel.left
+    anchors.right: gameBottomActionPanel.right
+    anchors.top: gameBottomActionPanel.bottom
+    anchors.bottom: parent.bottom
+
   UIWidget
     id: mouseGrabber
     focusable: false
@@ -199,9 +141,6 @@ UIWidget
     anchors.left: gameBottomActionPanel.left
     anchors.right: gameBottomActionPanel.right
     focusable: false
-
-    $mobile:
-      height: 0
 
     layout:
       type: verticalBox

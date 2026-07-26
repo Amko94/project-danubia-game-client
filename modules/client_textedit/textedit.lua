@@ -120,9 +120,6 @@ function show(text, options, callback) -- callback = function(newText)
   window.text.onTextChange = function(widget, text)
     if validate(text) then
       window.buttons.ok:enable()
-      if g_app.isMobile() then
-        doneFunc()
-      end
     else
       window.buttons.ok:disable()
     end
@@ -135,14 +132,6 @@ function show(text, options, callback) -- callback = function(newText)
   activeWindow = window
   activeWindow:raise()
   activeWindow:focus()
-  if g_app.isMobile() then
-    window.text:focus()
-    local flags = 0
-    if options.multiline then
-      flags = 1
-    end
-    g_window.showTextEditor(window:getText(), window.description:getText(), window.text:getText(), flags)
-  end
   return activeWindow
 end
 

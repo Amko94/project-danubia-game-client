@@ -50,11 +50,7 @@ function init()
   
   if not healthInfoWindow.forceOpen then
     healthInfoButton = modules.client_topmenu.addRightGameToggleButton('healthInfoButton', tr('Health Information'), '/images/topbuttons/healthinfo', toggle)
-    if g_app.isMobile() then
-      healthInfoButton:hide()
-    else
-      healthInfoButton:setOn(true)
-    end
+    healthInfoButton:setOn(true)
   end
 
   healthBar = healthInfoWindow:recursiveGetChildById('healthBar')
@@ -93,11 +89,6 @@ function init()
   hideExperience()
 
   healthInfoWindow:setup()
-  
-  if g_app.isMobile() then
-    healthInfoWindow:close()
-    healthInfoButton:setOn(false)  
-  end
 end
 
 function terminate()
@@ -284,17 +275,7 @@ function setExperienceTooltip(tooltip)
   end
 end
 
-function onOverlayGeometryChange() 
-  if g_app.isMobile() then
-    topHealthBar:setMarginTop(35)
-    topManaBar:setMarginTop(35)
-    local width = overlay:getWidth() 
-    local margin = width / 3 + 10
-    topHealthBar:setMarginLeft(margin)
-    topManaBar:setMarginRight(margin)    
-    return
-  end
-
+function onOverlayGeometryChange()
   local classic = g_settings.getBoolean("classicView")
   local minMargin = 40
   if classic then

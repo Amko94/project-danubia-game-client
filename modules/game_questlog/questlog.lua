@@ -16,10 +16,8 @@ function init()
   trackerWindow:setup()
   trackerWindow:hide()
   
-  if not g_app.isMobile() then
-    questLogButton = modules.client_topmenu.addLeftGameButton('questLogButton', tr('Quest Log'), '/images/topbuttons/questlog', function() g_game.requestQuestLog() end, false, 8)
-    questTrackerButton = modules.client_topmenu.addLeftGameButton('questTrackerButton', tr('Quest Tracker'), '/images/topbuttons/quest_tracker', toggle, false, 9)
-  end
+  questLogButton = modules.client_topmenu.addLeftGameButton('questLogButton', tr('Quest Log'), '/images/topbuttons/questlog', function() g_game.requestQuestLog() end, false, 8)
+  questTrackerButton = modules.client_topmenu.addLeftGameButton('questTrackerButton', tr('Quest Tracker'), '/images/topbuttons/quest_tracker', toggle, false, 9)
   
   connect(g_game, { onQuestLog = onGameQuestLog,
                     onQuestLine = onGameQuestLine,

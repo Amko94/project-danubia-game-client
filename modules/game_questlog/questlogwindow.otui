@@ -102,8 +102,6 @@ QuestLogWindow < MainWindow
   !text: tr('Quest Log')
   size: 330 405
   @onEscape: modules.game_questlog.back()
-  $mobile:
-    size: 330 350
 
   QuestLog
     id: questlog

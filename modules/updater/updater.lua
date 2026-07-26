@@ -19,11 +19,7 @@ local function onLog(level, message, time)
 end
 
 local function initAppWindow()
-  if g_resources.getLayout() == "mobile" then
-    g_window.setMinimumSize({ width = 640, height = 360 })
-  else
-    g_window.setMinimumSize({ width = 800, height = 640 })  
-  end
+  g_window.setMinimumSize({ width = 800, height = 640 })
 
   -- window size
   local size = { width = 1024, height = 600 }
@@ -45,12 +41,6 @@ local function initAppWindow()
 
   g_window.setTitle(g_app.getName())
   g_window.setIcon('/images/clienticon')
-  
-  if g_app.isMobile() then
-    scheduleEvent(function()
-      g_app.scale(5.0)
-    end, 10)
-  end
 end
 
 local function loadModules()
@@ -233,7 +223,7 @@ function Updater.check(args)
     if value == 100 then
       return Updater.error(tr("Timeout"))
     end
-    if updateData and (value > 60 or (not g_app.isMobile() or not ALLOW_CUSTOM_SERVERS or not loadModulesFunc)) then -- gives 3s to set custom updater for mobile version
+    if updateData then
       return updateFiles(updateData)
     end
     scheduledEvent = scheduleEvent(function() progressUpdater(value + 1) end, 50)

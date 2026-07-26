@@ -17,8 +17,6 @@ MainWindow
   id: optionsWindow
   !text: tr('Options')
   size: 490 500
-  $mobile:
-    size: 490 360
 
   @onEnter: modules.client_options.hide()
   @onEscape: modules.client_options.hide()

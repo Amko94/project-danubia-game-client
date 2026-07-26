@@ -36,9 +36,6 @@ MainWindow
   size: 550 460
   @onEscape: modules.game_npctrade.closeNpcTrade()
 
-  $mobile:
-    size: 550 360
-
   TabButton
     id: buyTab
     !tooltip: tr("List of items that you're able to buy")
@@ -64,9 +61,6 @@ MainWindow
     anchors.right: parent.right
     anchors.top: prev.bottom
     margin-top: 5
-
-    $mobile:
-      height: 150
 
     VerticalScrollBar
       id: itemsPanelListScrollBar

@@ -194,7 +194,6 @@ function toggleChat()
 end
 
 function enableChat(temporarily)
-  if g_app.isMobile() then return end
   if consoleToggleChat:isChecked() then
     return consoleToggleChat:setChecked(false)
   end
@@ -226,7 +225,6 @@ function enableChat(temporarily)
 end
 
 function disableChat(temporarily)
-  if g_app.isMobile() then return end
   if not consoleToggleChat:isChecked() then
     return consoleToggleChat:setChecked(true)
   end

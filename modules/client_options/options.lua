@@ -4,9 +4,9 @@ local defaultOptions = {
   showFps = true,
   showPing = true,
   fullscreen = false,
-  classicView = not g_app.isMobile(),
-  cacheMap = g_app.isMobile(),
-  classicControl = not g_app.isMobile(),
+  classicView = true,
+  cacheMap = false,
+  classicControl = true,
   smartWalk = false,
   dash = false,
   autoChaseOverride = true,
@@ -18,7 +18,7 @@ local defaultOptions = {
   showPrivateMessagesInConsole = true,
   showPrivateMessagesOnScreen = true,
   rightPanels = 1,
-  leftPanels = g_app.isMobile() and 1 or 2,
+  leftPanels = 2,
   containerPanel = 8,
   backgroundFrameRate = 60,
   enableAudio = true,
@@ -125,7 +125,7 @@ function init()
     extrasButton:setText(g_extras.getDescription(v))
     extrasPanel:addChild(extrasButton)
   end
-  if not g_game.getFeature(GameNoDebug) and not g_app.isMobile() then
+  if not g_game.getFeature(GameNoDebug) then
     optionsTabBar:addTab(tr('Extras'), extrasPanel, '/images/optionstab/extras')
   end
 
@@ -134,10 +134,7 @@ function init()
 
   optionsButton = modules.client_topmenu.addLeftButton('optionsButton', tr('Options'), '/images/topbuttons/options', toggle)
   audioButton = modules.client_topmenu.addLeftButton('audioButton', tr('Audio'), '/images/topbuttons/audio', function() toggleOption('enableAudio') end)
-  if g_app.isMobile() then
-    audioButton:hide()
-  end
-  
+
   addEvent(function() setup() end)
   
   connect(g_game, { onGameStart = online,

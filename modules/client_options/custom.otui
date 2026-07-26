@@ -31,8 +31,6 @@ OptionPanel
   OptionCheckBox
     id: showHealthManaCircle
     !text: tr('Show health and mana circle')
-    $mobile:
-      visible: false
 
   Label
     margin-top: 5
@@ -61,15 +59,10 @@ OptionPanel
 
   Label
     text: Show Left Action Bars:
-    $mobile:
-      visible: false
 
   Panel
     margin-top: 2
     height: 16
-
-    $mobile:
-      visible: false
 
     layout:
       type: horizontalBox
@@ -91,17 +84,12 @@ OptionPanel
 
   Label
     text: Show Right Action Bars:
-    $mobile:
-      visible: false
 
   Panel
     margin-top: 2
     height: 16
     layout:
       type: horizontalBox
-
-    $mobile:
-      visible: false
 
     OptionCheckBox
       id: actionbar7

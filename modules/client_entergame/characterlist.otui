@@ -46,8 +46,6 @@ StaticMainWindow
   !text: tr('Character List')
   visible: false
   size: 350 400
-  $mobile:
-    size: 350 280
   @onEnter: CharacterList.doLogin()
   @onEscape: CharacterList.hide(true)
   @onSetup: |

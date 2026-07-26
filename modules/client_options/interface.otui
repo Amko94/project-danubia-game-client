@@ -3,16 +3,12 @@ OptionPanel
     width: 130
     id: layoutLabel
     !text: tr("Layout (change requries client restart)")
-    $mobile:
-      visible: false
-  
+
   ComboBox
     id: layout
     margin-top: 3
     margin-right: 2
     margin-left: 2
-    $mobile:
-      visible: false
     @onOptionChange: modules.client_options.setOption(self:getId(), self:getCurrentOption().text)
     @onSetup: |
       self:addOption("Default")
@@ -26,17 +22,11 @@ OptionPanel
     id: classicView
     !text: tr('Classic view')
     margin-top: 5
-    
-    $mobile:
-      visible: false
 
   OptionCheckBox
     id: cacheMap
     !text: tr('Cache map (for non-classic view)')
 
-    $mobile:
-      visible: false
-    
   OptionCheckBox
     id: showPing
     !text: tr('Show connection ping')
@@ -53,8 +43,6 @@ OptionPanel
   OptionCheckBox
     id: displayHealthOnTop
     !text: tr('Display creature health bars above texts')
-    $mobile:
-      visible: false
 
   OptionCheckBox
     id: hidePlayerBars
@@ -63,8 +51,6 @@ OptionPanel
   OptionCheckBox
     id: displayMana
     !text: tr('Show player mana bar')
-    $mobile:
-      visible: false
 
   OptionCheckBox
     id: highlightThingsUnderCursor

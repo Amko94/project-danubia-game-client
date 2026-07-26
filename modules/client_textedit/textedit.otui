@@ -47,14 +47,10 @@ SinglelineTextEditWindow < TextEditWindow
 
 MultilineTextEditWindow < TextEditWindow
   width: 600
-  $mobile:
-    width: 500
 
   Panel
     id: textPanel
     height: 400
-    $mobile:
-      height: 300
 
     MultilineTextEdit
       id: text

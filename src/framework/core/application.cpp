@@ -33,8 +33,11 @@
 #include <framework/platform/platform.h>
 #include <framework/http/http.h>
 
-#if not(defined(ANDROID) || defined(FREE_VERSION))
-#include <boost/process.hpp>
+#ifndef FREE_VERSION
+#ifndef BOOST_PROCESS_VERSION
+#define BOOST_PROCESS_VERSION 1
+#endif
+#include <boost/process/v1.hpp>
 #endif
 
 #include <locale>
@@ -63,9 +66,6 @@ Application::Application()
     m_appVersion = "none";
     m_charset = "cp1252";
     m_stopping = false;
-#ifdef ANDROID
-    m_mobile = true;
-#endif
 }
 
 void Application::init(std::vector<std::string>& args)
@@ -92,10 +92,6 @@ void Application::init(std::vector<std::string>& args)
         g_logger.info(stdext::format("Startup options: %s", startupOptions));
 
     m_startupOptions = startupOptions;
-
-    // mobile testing
-    if (startupOptions.find("-mobile") != std::string::npos)
-        m_mobile = true;
 
     // initialize configs
     g_configs.init();
@@ -182,7 +178,7 @@ void Application::close()
 
 void Application::restart()
 {
-#if not(defined(ANDROID) || defined(FREE_VERSION))
+#ifndef FREE_VERSION
     boost::process::child c(g_resources.getBinaryName());
     std::error_code ec2;
     if (c.wait_for(std::chrono::seconds(1), ec2)) {
@@ -197,7 +193,7 @@ void Application::restart()
 
 void Application::restartArgs(const std::vector<std::string>& args)
 {
-#if not(defined(ANDROID) || defined(FREE_VERSION))
+#ifndef FREE_VERSION
     boost::process::child c(g_resources.getBinaryName(), boost::process::args(args));
     std::error_code ec2;
     if (c.wait_for(std::chrono::seconds(1), ec2)) {
@@ -212,9 +208,7 @@ void Application::restartArgs(const std::vector<std::string>& args)
 
 std::string Application::getOs()
 {
-#if defined(ANDROID)
-    return "android";
-#elif defined(WIN32)
+#if defined(WIN32)
     return "windows";
 #elif defined(__APPLE__)
     return "mac";

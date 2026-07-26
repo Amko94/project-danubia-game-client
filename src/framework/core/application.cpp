@@ -187,8 +187,11 @@ namespace {
 // it bubble up as an opaque "C++ call failed" lua error.
 void spawnRestartProcess(const std::string& binary, const std::vector<std::string>* args)
 {
-    constexpr int MAX_ATTEMPTS = 8;
-    constexpr auto RETRY_DELAY = std::chrono::milliseconds(300);
+    // Windows Defender (and similar on-access scanners) can hold an exclusive
+    // scan lock on a freshly-written, unsigned exe for several seconds before
+    // releasing it - worth waiting out rather than failing the update.
+    constexpr int MAX_ATTEMPTS = 30;
+    constexpr auto RETRY_DELAY = std::chrono::milliseconds(500);
 
     std::string lastError;
     for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {

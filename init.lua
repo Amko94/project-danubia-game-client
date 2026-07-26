@@ -1,34 +1,27 @@
 -- CONFIG
-APP_NAME = "otclientv8"  -- important, change it, it's name for config dir and files in appdata
-APP_VERSION = 1341       -- client version for updater and login to identify outdated client
-DEFAULT_LAYOUT = "retro" -- on android it's forced to "mobile", check code bellow
+APP_NAME = "danubia"          -- war "otclientv8" -- WICHTIG (siehe Kommentar im Original)
+APP_VERSION = 1                -- war 1341, sinnvoller Startwert für euch
+DEFAULT_LAYOUT = "retro"       -- unverändert lassen
 
 -- If you don't use updater or other service, set it to updater = ""
 Services = {
-  website = "http://otclient.ovh", -- currently not used
-  updater = "",
+  website = "https://projectdanubia.com",
+  updater = "https://projectdanubia.com/api/Updater",  -- war "" -- DAS ist der wichtige
   stats = "",
-  crash = "http://otclient.ovh/api/crash.php",
-  feedback = "http://otclient.ovh/api/feedback.php",
+  crash = "",                    -- otclient.ovh-Crash-Reporter würdet ihr sonst mitnutzen, eher nicht gewünscht
+  feedback = "",                 -- gleicher Grund
 }
 
--- Servers accept http login url, websocket login url or ip:port:version
 Servers = {
---[[  OTClientV8 = "http://otclient.ovh/api/login.php",
-  OTClientV8proxy = "http://otclient.ovh/api/login.php?proxy=1",
-  OTClientV8c = "otclient.ovh:7171:1099:25:30:80:90",
-  OTClientV8Test = "http://otclient.ovh/api/login2.php",
-  Evoulinia = "evolunia.net:7171:1098",
-  GarneraTest = "garnera-global.net:7171:1100",
-  LocalTestServ = "127.0.0.1:7171:1098:110:30:93"  ]]
+  ProjectDanubia = "65.109.62.62:7171:800",  -- oder wie euer Login-Endpoint heißt/aussieht
 }
 
 --Server = "ws://otclient.ovh:3000/"
 --Server = "ws://127.0.0.1:88/"
 --USE_NEW_ENERGAME = true -- uses entergamev2 based on websockets instead of entergame
-ALLOW_CUSTOM_SERVERS = true -- if true it shows option ANOTHER on server list
+ALLOW_CUSTOM_SERVERS = false -- if true it shows option ANOTHER on server list
 
-g_app.setName("OTCv8")
+g_app.setName("ProjectDanubia")
 -- CONFIG END
 
 -- print first terminal message

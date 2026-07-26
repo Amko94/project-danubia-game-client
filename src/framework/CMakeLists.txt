@@ -242,34 +242,33 @@ add_definitions(-D"WITH_ENCRYPTION")
 if (NOT WASM)
     # find boost
     set(Boost_FOUND TRUE)
-    set(Boost_INCLUDE_DIRS "C:/vcpkg/installed/x64-windows/include")
+    set(Boost_INCLUDE_DIRS "C:/vcpkg/installed/x64-windows-static/include")
     set(Boost_LIBRARIES
-            "C:/vcpkg/installed/x64-windows/lib/boost_system-vc143-mt-x64-1_88.lib"
-            "C:/vcpkg/installed/x64-windows/lib/boost_filesystem-vc143-mt-x64-1_88.lib"
+            "C:/vcpkg/installed/x64-windows-static/lib/boost_filesystem-vc143-mt-x64-1_89.lib"
     )
     set(Boost_SYSTEM_LIBRARY "${Boost_LIBRARIES}")
     set(Boost_FILESYSTEM_LIBRARY "${Boost_LIBRARIES}")
     #find zip
     set(ZLIB_FOUND TRUE)
-    set(ZLIB_INCLUDE_DIR "C:/vcpkg/installed/x64-windows/include")
-    set(ZLIB_LIBRARY "C:/vcpkg/installed/x64-windows/lib/zlib.lib")
+    set(ZLIB_INCLUDE_DIR "C:/vcpkg/installed/x64-windows-static/include")
+    set(ZLIB_LIBRARY "C:/vcpkg/installed/x64-windows-static/lib/zlib.lib")
 
     # LibZip manuell setzen
     set(LIBZIP_FOUND TRUE)
-    set(LIBZIP_INCLUDE_DIR_ZIP "C:/vcpkg/installed/x64-windows/include")
-    set(LIBZIP_INCLUDE_DIR_ZIPCONF "C:/vcpkg/installed/x64-windows/include")
-    set(LIBZIP_LIBRARY "C:/vcpkg/installed/x64-windows/lib/zip.lib")
+    set(LIBZIP_INCLUDE_DIR_ZIP "C:/vcpkg/installed/x64-windows-static/include")
+    set(LIBZIP_INCLUDE_DIR_ZIPCONF "C:/vcpkg/installed/x64-windows-static/include")
+    set(LIBZIP_LIBRARY "C:/vcpkg/installed/x64-windows-static/lib/zip.lib")
 
     # BZip2 manuell setzen
     set(BZIP2_FOUND TRUE)
-    set(BZIP2_INCLUDE_DIR "C:/vcpkg/installed/x64-windows/include")
-    set(BZIP2_LIBRARIES "C:/vcpkg/installed/x64-windows/lib/bz2.lib")
+    set(BZIP2_INCLUDE_DIR "C:/vcpkg/installed/x64-windows-static/include")
+    set(BZIP2_LIBRARIES "C:/vcpkg/installed/x64-windows-static/lib/bz2.lib")
 
     #find lua
     if (LUAJIT)
         set(LUAJIT_FOUND TRUE)
-        set(LUAJIT_INCLUDE_DIR "C:/vcpkg/installed/x64-windows/include/luajit")
-        set(LUAJIT_LIBRARY "C:/vcpkg/installed/x64-windows/lib/lua51.lib")
+        set(LUAJIT_INCLUDE_DIR "C:/vcpkg/installed/x64-windows-static/include/luajit")
+        set(LUAJIT_LIBRARY "C:/vcpkg/installed/x64-windows-static/lib/lua51.lib")
         set(LUA_INCLUDE_DIR ${LUAJIT_INCLUDE_DIR})
         set(LUA_LIBRARY ${LUAJIT_LIBRARY})
 
@@ -282,13 +281,13 @@ if (NOT WASM)
     message(STATUS "LuaJIT: " ${LUAJIT})
 
     set(PHYSFS_FOUND TRUE)
-    set(PHYSFS_INCLUDE_DIR "C:/vcpkg/installed/x64-windows/include")
-    set(PHYSFS_LIBRARY "C:/vcpkg/installed/x64-windows/lib/physfs.lib")
+    set(PHYSFS_INCLUDE_DIR "C:/vcpkg/installed/x64-windows-static/include")
+    set(PHYSFS_LIBRARY "C:/vcpkg/installed/x64-windows-static/lib/physfs-static.lib")
     set(OPENSSL_FOUND TRUE)
-    set(OPENSSL_INCLUDE_DIR "C:/vcpkg/installed/x64-windows/include")
+    set(OPENSSL_INCLUDE_DIR "C:/vcpkg/installed/x64-windows-static/include")
     set(OPENSSL_LIBRARIES
-            "C:/vcpkg/installed/x64-windows/lib/libssl.lib"
-            "C:/vcpkg/installed/x64-windows/lib/libcrypto.lib"
+            "C:/vcpkg/installed/x64-windows-static/lib/libssl.lib"
+            "C:/vcpkg/installed/x64-windows-static/lib/libcrypto.lib"
     )
     find_package(ZLIB REQUIRED)
 
@@ -304,7 +303,10 @@ if (NOT WASM)
     )
 
     if (WIN32)
-        set(framework_LIBRARIES ${framework_LIBRARIES} -lbcrypt -ldbghelp -lshlwapi -liphlpapi -lpsapi)
+        # MSVC's linker ignores the gcc-style -l flags below (see the other -l entries here),
+        # so crypt32 needs the MSVC .lib spelling; it's required by static OpenSSL and isn't
+        # part of MSVC's default library set.
+        set(framework_LIBRARIES ${framework_LIBRARIES} -lbcrypt -ldbghelp -lshlwapi -liphlpapi -lpsapi crypt32.lib)
     endif ()
 
     set(framework_INCLUDE_DIRS ${framework_INCLUDE_DIRS}
@@ -412,10 +414,13 @@ if (FRAMEWORK_GRAPHICS)
         endif ()
         set(USE_STATIC_LIBS OFF)
         set(GLEW_FOUND TRUE)
-        set(GLEW_INCLUDE_DIR "C:/vcpkg/installed/x64-windows/include")
-        set(GLEW_LIBRARY "C:/vcpkg/installed/x64-windows/lib/glew32.lib")
+        set(GLEW_INCLUDE_DIR "C:/vcpkg/installed/x64-windows-static/include")
+        set(GLEW_LIBRARY "C:/vcpkg/installed/x64-windows-static/lib/glew32.lib")
         set(USE_STATIC_LIBS ON)
         set(framework_LIBRARIES ${framework_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
+        if (WIN32)
+            add_definitions(-DGLEW_STATIC)
+        endif ()
         MESSAGE(${framework_LIBRARIES})
     endif ()
     message(STATUS "OpenGL ES: " ${OPENGLES})

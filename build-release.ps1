@@ -235,15 +235,7 @@ $readmeTemp = Join-Path $env:TEMP "danubia-readme.txt"
 @"
 Project Danubia - Client
 
-1. Entpacke ProjectDanubiaClient.exe aus diesem Zip.
-2. Starte ProjectDanubiaClient.exe.
-
-Windows SmartScreen Warnung:
-Falls Windows beim ersten Start "Windows hat Ihren PC geschuetzt" anzeigt,
-ist das normal fuer neue, noch nicht weit verbreitete Programme.
-Klicke auf "Weitere Informationen" und dann auf "Trotzdem ausfuehren".
-
-Der Client aktualisiert sich danach automatisch bei jedem Start.
+Halt dein schniessn
 "@ | Set-Content -Path $readmeTemp -Encoding UTF8
 
 if (Test-Path $websiteZipPath) { Remove-Item $websiteZipPath -Force }

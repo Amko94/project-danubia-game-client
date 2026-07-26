@@ -71,7 +71,8 @@ jobs:
           SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
           $keyPath = Join-Path $env:RUNNER_TEMP "deploy_key"
-          Set-Content -Path $keyPath -Value $env:SSH_KEY -NoNewline
+          $normalizedKey = ($env:SSH_KEY -replace "`r`n", "`n").Trim() + "`n"
+          [System.IO.File]::WriteAllText($keyPath, $normalizedKey)
 
           # OpenSSH weigert sich, Keys mit zu offenen Berechtigungen zu nutzen -
           # ohne diesen Fix hängt scp/ssh lautlos an einer nie erscheinenden

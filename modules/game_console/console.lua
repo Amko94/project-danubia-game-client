@@ -549,6 +549,10 @@ function addPrivateText(text, speaktype, name, isPrivateCommand, creatureName)
   elseif focus then
     consoleTabBar:selectTab(privateTab)
   end
+  -- Preserve the NPC identity even when an existing tab is reused.
+  if speaktype.npcChat then
+    privateTab.npcChat = true
+  end
   addTabText(text, speaktype, privateTab, creatureName)
 end
 
@@ -943,8 +947,12 @@ function sendMessage(message, tab)
   end
 
   local speaktypedesc
-  if (channel or tab == defaultTab) and not chatCommandPrivateReady then
-    if tab == defaultTab then
+  -- the NPCs tab only ever *receives* privately (NPC replies now use the private
+  -- TALKTYPE_PRIVATE_NP talktype server-side); there's no outgoing private-to-npc path, so
+  -- typing here must still go out as a normal public say, exactly like the default tab, or
+  -- NPCs never hear you at all.
+  if (channel or tab == defaultTab or tab.npcChat) and not chatCommandPrivateReady then
+    if tab == defaultTab or tab.npcChat then
       speaktypedesc = chatCommandSayMode or SayModes[consolePanel:getChildById('sayModeButton').sayMode].speakTypeDesc
       if speaktypedesc ~= 'say' then sayModeChange(2) end -- head back to say mode
     else

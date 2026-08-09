@@ -1,22 +1,18 @@
 TaskBox < UIWidget
-  size: 160 160
-  margin: 4
+  size: 160 150
   background-color: #1a1a1a
   border-width: 1
   border-color: #444444
   focusable: true
   clipping: true
 
-  layout:
-    type: anchor
-
   Panel
     id: header
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    height: 22
-    background-color: #00000066
+    height: 24
+    background-color: #00000077
     phantom: true
 
   Label
@@ -24,46 +20,46 @@ TaskBox < UIWidget
     font: verdana-11px-rounded
     color: #ffffff
     text-align: center
-    anchors.top: parent.top
-    anchors.horizontalCenter: parent.horizontalCenter
-    margin-top: 3
+    anchors.fill: header
+    margin-left: 4
+    margin-right: 4
+    phantom: true
 
   Panel
     id: iconContainer
     anchors.top: header.bottom
-    anchors.bottom: progressPanel.top
+    anchors.bottom: startTaskButton.top
     anchors.horizontalCenter: parent.horizontalCenter
-    margin-top: 10
+    margin-top: 7
+    margin-bottom: 4
     background-color: #00000000
     phantom: true
 
     layout:
       type: grid
       cell-size: 64 64
-      cell-spacing: -35
+      cell-spacing: -18
       num-columns: 3
 
   Button
     id: startTaskButton
     text: Start Task
-    width: 75
-    height: 20
+    size: 76 20
     anchors.bottom: parent.bottom
-    anchors.right: parent.right
-    margin-right: 4
-    margin-bottom: 4
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-bottom: 8
     @onClick: TaskUI.openStartTaskDialog()
     visible: false
 
   Panel
     id: progressPanel
-    size: 130 16
-    background-color: #000000aa
+    size: 132 16
+    background-color: #090909cc
     border-width: 1
-    border-color: #333333
+    border-color: #3d3d3d
     anchors.bottom: parent.bottom
     anchors.horizontalCenter: parent.horizontalCenter
-    margin-bottom: 10
+    margin-bottom: 8
 
     Panel
       id: progressBar
@@ -71,8 +67,9 @@ TaskBox < UIWidget
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       width: 0
-      background-color: #00ff00
-      opacity: 0.6
+      margin: 1
+      background-color: #2f7d3a
+      opacity: 0.8
 
     Label
       id: progressLabel
@@ -81,6 +78,10 @@ TaskBox < UIWidget
       text-align: center
       anchors.fill: parent
 
+  $hover !on:
+    background-color: #252525
+    border-color: #666666
+
   $on:
-    background-color: #333333
-    border-color: #FFFFFF
+    background-color: #2c4055
+    border-color: #74a9dd

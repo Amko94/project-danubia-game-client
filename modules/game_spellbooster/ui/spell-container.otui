@@ -1,41 +1,47 @@
 SpellContainer < UIWidget
-  height: 60
-  margin: 2 0 2 4
+  size: 570 76
   focusable: true
-  background-color: #00000000
+  clipping: true
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #3d3d3d
 
   $hover:
-    background-color: #ffffff11
+    background-color: #252525
+    border-color: #666666
 
   Panel
     id: leftColumn
     anchors.left: parent.left
     anchors.top: parent.top
     anchors.bottom: parent.bottom
-    width: 52
-    margin-left: -2
+    width: 58
+    background-color: #00000044
+    border-width: 0
 
     Panel
       id: iconPanel
+      size: 40 40
       anchors.top: parent.top
       anchors.horizontalCenter: parent.horizontalCenter
-      width: 48
-      height: 48
-      background-color: #00000066
+      margin-top: 5
+      background-color: #090909cc
+      border-width: 1
+      border-color: #444444
       phantom: true
 
       UIWidget
         id: spellIcon
         anchors.fill: parent
+        margin: 4
+        phantom: true
 
     UIWidget
       id: boostButton
-      text: ""
-      width: 48
-      height: 20
+      size: 48 18
       anchors.top: iconPanel.bottom
       anchors.horizontalCenter: iconPanel.horizontalCenter
-      margin-top: 5
+      margin-top: 4
       @onClick: SpellBoosterUI.requestSpellPrice(self:getParent():getParent():getId())
       cursor: pointer
       image-source: /images/custom-vegura/boost_button
@@ -45,14 +51,15 @@ SpellContainer < UIWidget
       $hover:
         image-source: /images/custom-vegura/boost_button_hover
 
-
   Label
     id: spellName
     anchors.top: parent.top
     anchors.left: leftColumn.right
-    width: 120
-    margin-left: 6
-    margin-top: 2
+    anchors.right: spellProgressBar.left
+    margin-left: 10
+    margin-right: 10
+    margin-top: 13
+    height: 18
     color: #ffffff
     font: cipsoftFont
     text-align: left
@@ -62,9 +69,9 @@ SpellContainer < UIWidget
     id: spellWords
     anchors.top: spellName.bottom
     anchors.left: spellName.left
-    width: 150
-    margin-top: 1
-    color: #88aa88
+    anchors.right: spellName.right
+    margin-top: 5
+    color: #8fbd8f
     font: verdana-11px-antialised
     text-align: left
     z: 10
@@ -73,15 +80,6 @@ SpellContainer < UIWidget
     id: spellProgressBar
     anchors.verticalCenter: parent.verticalCenter
     anchors.right: parent.right
-    margin-right: 20
-    size: 250 35
+    margin-right: 12
+    size: 220 30
     phantom: true
-
-  HorizontalSeparator
-    id: bottomSeparator
-    height: 1
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom
-    margin: 2 2 2 2
-    background-color: #00000088

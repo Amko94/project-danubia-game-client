@@ -4,6 +4,7 @@ local mainWindow = nil
 local confirmDialog = nil
 local currentSpellName = nil
 local currentCategory = 1
+local currentSearch = ''
 SpellBoosterUI.tooltip = nil
 
 local boostTypeIcons = {
@@ -102,6 +103,7 @@ function SpellBoosterUI.closeDialog()
     end
 
     currentSpellName = nil
+    currentSearch = ''
 end
 
 function SpellBoosterUI.toggle()
@@ -368,13 +370,13 @@ function SpellBoosterUI.getProgressBar(spell, level)
 end
 
 function SpellBoosterUI.buildSpellContainers(spells)
-    local spellList = mainWindow:getChildById('spellList')
+    local spellList = mainWindow:recursiveGetChildById('spellList')
     if not spellList then
         return
     end
     spellList:destroyChildren()
 
-    local emptyLabel = mainWindow:getChildById('emptyList')
+    local emptyLabel = mainWindow:recursiveGetChildById('emptyList')
     if emptyLabel then
         emptyLabel:setVisible(false)
     end
@@ -405,6 +407,7 @@ function SpellBoosterUI.buildSpellContainers(spells)
         container.group = spell.group or "attack"
         container.spellCategory = normalizeCategory(container.group) or 1
         container.spellBoostLevels = spell.spellBoostLevels
+        container.searchText = ((spell.spellName or '') .. ' ' .. (spell.words or '')):lower()
 
         local level = spellLevelMap[spell.spellName] or 0
 
@@ -491,11 +494,16 @@ function SpellBoosterUI.filterByCategory(cat)
     SpellBoosterUI.updateFilterSpellList()
 end
 
+function SpellBoosterUI.onSearchTextChange(text)
+    currentSearch = (text or ''):trim():lower()
+    SpellBoosterUI.updateFilterSpellList()
+end
+
 function SpellBoosterUI.updateCategoryButtons()
     if not mainWindow then
         return
     end
-    local buttonMap = { [1] = "attack", [2] = "healing", [3] = "support", [4] = 'conjure' }
+    local buttonMap = { [0] = "all", [1] = "attack", [2] = "healing", [3] = "support", [4] = 'conjure' }
     for catId, objId in pairs(buttonMap) do
         local btn = mainWindow:recursiveGetChildById(objId)
         if btn then
@@ -525,7 +533,7 @@ function SpellBoosterUI.updateFilterSpellList()
         return
     end
 
-    local spellList = mainWindow:getChildById('spellList')
+    local spellList = mainWindow:recursiveGetChildById('spellList')
     local containers = spellList:getChildren()
     local visibleCount = 0
 
@@ -535,8 +543,10 @@ function SpellBoosterUI.updateFilterSpellList()
             spellCategory = normalizeCategory(container.group) or 1
         end
 
-        local shouldShow = currentCategory == 0 or
-                currentCategory == spellCategory
+        local categoryMatches = currentCategory == 0 or currentCategory == spellCategory
+        local searchMatches = currentSearch == '' or
+                (container.searchText and container.searchText:find(currentSearch, 1, true) ~= nil)
+        local shouldShow = categoryMatches and searchMatches
 
         container:setVisible(shouldShow)
         if shouldShow then
@@ -544,7 +554,7 @@ function SpellBoosterUI.updateFilterSpellList()
         end
     end
 
-    local emptyLabel = mainWindow:getChildById('emptyList')
+    local emptyLabel = mainWindow:recursiveGetChildById('emptyList')
     if emptyLabel then
         emptyLabel:setVisible(visibleCount == 0)
     end

@@ -4,6 +4,7 @@ Module
   author: andrefaramir, baxnie
   website: https://github.com/edubart/otclient
   sandboxed: true
-  scripts: [ npctrade ]
+  dependencies: [ game_console ]
+  scripts: [ npcshopdata, npctrade ]
   @onLoad: init()
   @onUnload: terminate()

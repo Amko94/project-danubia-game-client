@@ -48,17 +48,29 @@ local function applyHiddenState(creatureId, hidden)
     end
 end
 
+local function clearAllHiddenStates()
+    for creatureId in pairs(hiddenIds) do
+        applyHiddenState(creatureId, false)
+    end
+    hiddenIds = {}
+    originalNames = {}
+end
+
 function HideAndSeekProtocol.isHiddenCreature(creatureId)
     return hiddenIds[creatureId] == true
 end
 
--- A hider can enter view *after* HiddenPlayersUpdate was already processed
--- (e.g. a seeker walking closer) — g_map.getCreatureById would have found
--- nothing at broadcast time, so re-apply once the creature actually appears.
+-- A creature's hidden state can change (in either direction) while it's out of
+-- this client's view: a hider can enter view after HiddenPlayersUpdate/RoleCleared
+-- already fired (e.g. a seeker walking closer, or a hidden player un-hiding while
+-- out of sight) — g_map.getCreatureById would have found nothing at broadcast
+-- time, so applyHiddenState(..., false) was a no-op and the *next* Creature object
+-- for that id starts life with m_hideInformation still true, permanently hiding
+-- its name/health/mana bar for this client until reconnect. Re-sync to the
+-- current authoritative state (hidden or not) every time a creature appears,
+-- instead of only ever re-applying "hidden".
 local function onCreatureAppear(creature)
-    if HideAndSeekProtocol.isHiddenCreature(creature:getId()) then
-        applyHiddenState(creature:getId(), true)
-    end
+    applyHiddenState(creature:getId(), HideAndSeekProtocol.isHiddenCreature(creature:getId()))
 end
 
 -- Cross-module entry point. Sandboxed modules only expose bare top-level
@@ -104,11 +116,7 @@ function HideAndSeekProtocol.disconnect()
     g_keyboard.unbindKeyDown('Shift+Left', gameRootPanel)
     g_keyboard.unbindKeyDown('Shift+Right', gameRootPanel)
 
-    for creatureId in pairs(hiddenIds) do
-        applyHiddenState(creatureId, false)
-    end
-    hiddenIds = {}
-    originalNames = {}
+    clearAllHiddenStates()
     myRole = nil
 end
 
@@ -123,6 +131,10 @@ function HideAndSeekProtocol.onExtendedOpcode(protocol, opcode, buffer)
 
     elseif opcode == HideAndSeekProtocol.RecvOpcode.RoleCleared then
         myRole = nil
+        -- RoleCleared is the authoritative end-of-event signal. Clear the
+        -- visual disguise state here as well, so names and health/mana bars
+        -- recover even if the following empty hidden-player update is lost.
+        clearAllHiddenStates()
 
     elseif opcode == HideAndSeekProtocol.RecvOpcode.HiddenPlayersUpdate then
         local newIds = {}

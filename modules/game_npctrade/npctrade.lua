@@ -2,46 +2,85 @@ BUY = 1
 SELL = 2
 CURRENCY = 'gold'
 CURRENCY_DECIMAL = false
-WEIGHT_UNIT = 'oz'
-LAST_INVENTORY = 10
+MAX_AMOUNT = 100
+-- Matches the server's NPC default talkRadius (game-server/data/npc/lib/npcsystem/npchandler.lua:73):
+-- trade should only be reachable within the same range NPC conversation itself works in.
+TALK_RADIUS = 3
+
+-- Must match game-server/data/creaturescripts/scripts/others/extendedopcode.lua's
+-- NPCTRADE_EXTENDED_OPCODES table -- these numbers share one flat namespace with every other
+-- feature using the extended-opcode channel (tasks, spell booster, hide and seek), so they
+-- can't be picked independently on either side.
+NPCTRADE_OPCODES = {
+  REQUEST_ITEM_COUNT = 60,
+  ITEM_COUNT_RESPONSE = 61,
+}
 
 npcWindow = nil
 itemsPanel = nil
-radioTabs = nil
-radioItems = nil
 searchText = nil
 setupPanel = nil
-quantity = nil
 quantityScroll = nil
-idLabel = nil
-nameLabel = nil
-priceLabel = nil
-moneyLabel = nil
-weightDesc = nil
-weightLabel = nil
-capacityDesc = nil
-capacityLabel = nil
+totalLabel = nil
 tradeButton = nil
 buyTab = nil
 sellTab = nil
+radioTabs = nil
+radioItems = nil
 initialized = false
 
-showWeight = true
-buyWithBackpack = nil
-ignoreCapacity = nil
-ignoreEquipped = nil
-showAllItems = nil
-sellAllButton = nil
-sellAllWithDelayButton = nil
-playerFreeCapacity = 0
-playerMoney = 0
 tradeItems = {}
-playerItems = {}
 selectedItem = nil
 
-cancelNextRelease = nil
+shopDataByLowerName = {}
+currentNpcName = nil
 
-sellAllWithDelayEvent = nil
+-- Fluid subtype values used by GameNewFluids (protocol 8.00).
+local FLUID_SUBTYPES = {
+  water = 1,
+  mana = 2,
+  beer = 3,
+  oil = 4,
+  blood = 5,
+  slime = 6,
+  mud = 7,
+  lemonade = 8,
+  milk = 9,
+  wine = 10,
+  life = 11,
+  health = 11,
+  rum = 13,
+  juice = 14,
+  coconut = 15,
+  tea = 16,
+  mead = 17
+}
+
+local function createShopItem(entry)
+  -- Allow an explicit subtype in npcshopdata.lua and otherwise infer common vial
+  -- contents from their display name/keyword. Empty vials keep subtype 0.
+  if entry.id == 2006 or entry.id == 7490 then
+    local subType = entry.subType
+    if subType == nil then
+      local description = ((entry.name or '') .. ' ' .. (entry.keyword or '')):lower()
+      subType = 0
+      for fluidName, fluidSubType in pairs(FLUID_SUBTYPES) do
+        if description:find(fluidName, 1, true) then
+          subType = fluidSubType
+          break
+        end
+      end
+    end
+    return Item.create(entry.clientId, subType)
+  end
+
+  return Item.create(entry.clientId)
+end
+currentNpcCreature = nil
+
+-- This module talks to NPCs purely via chat (the server's NPC shops use the classic
+-- keyword system, not the binary shop protocol): opening the dialog and confirming a
+-- trade send the exact same text a player would type manually ("trade", "buy 1 x", "yes").
 
 function init()
   npcWindow = g_ui.displayUI('npctrade')
@@ -52,22 +91,17 @@ function init()
 
   setupPanel = npcWindow:recursiveGetChildById('setupPanel')
   quantityScroll = setupPanel:getChildById('quantityScroll')
-  idLabel = setupPanel:getChildById('id')
-  nameLabel = setupPanel:getChildById('name')
-  priceLabel = setupPanel:getChildById('price')
-  moneyLabel = setupPanel:getChildById('money')
-  weightDesc = setupPanel:getChildById('weightDesc')
-  weightLabel = setupPanel:getChildById('weight')
-  capacityDesc = setupPanel:getChildById('capacityDesc')
-  capacityLabel = setupPanel:getChildById('capacity')
+  quantityScroll.onMousePress = onQuantitySliderPress
+  g_mouse.bindPressMove(quantityScroll, function(mousePos, mouseMoved)
+    onQuantitySliderDrag(quantityScroll, mousePos, mouseMoved)
+  end)
+  local quantityValueDisplay = quantityScroll:getChildById('valueLabel')
+  if quantityValueDisplay then
+    quantityValueDisplay:setPhantom(true)
+  end
+  totalLabel = setupPanel:getChildById('total')
   tradeButton = npcWindow:recursiveGetChildById('tradeButton')
 
-  buyWithBackpack = npcWindow:recursiveGetChildById('buyWithBackpack')
-  ignoreCapacity = npcWindow:recursiveGetChildById('ignoreCapacity')
-  ignoreEquipped = npcWindow:recursiveGetChildById('ignoreEquipped')
-  showAllItems = npcWindow:recursiveGetChildById('showAllItems')
-  sellAllButton = npcWindow:recursiveGetChildById('sellAllButton')
-  sellAllWithDelayButton = npcWindow:recursiveGetChildById('sellAllWithDelayButton')
   buyTab = npcWindow:getChildById('buyTab')
   sellTab = npcWindow:getChildById('sellTab')
 
@@ -77,19 +111,18 @@ function init()
   radioTabs:selectWidget(buyTab)
   radioTabs.onSelectionChange = onTradeTypeChange
 
-  cancelNextRelease = false
-
-  if g_game.isOnline() then
-    playerFreeCapacity = g_game.getLocalPlayer():getFreeCapacity()
+  shopDataByLowerName = {}
+  for npcName, data in pairs(NpcShopData or {}) do
+    shopDataByLowerName[npcName:lower()] = data
   end
 
-  connect(g_game, { onGameEnd = hide,
-                    onOpenNpcTrade = onOpenNpcTrade,
-                    onCloseNpcTrade = onCloseNpcTrade,
-                    onPlayerGoods = onPlayerGoods } )
+  connect(g_game, { onGameStart = connectExtendedOpcode,
+                     onGameEnd = onGameEnd,
+                     onTalk = onGameTalk })
 
-  connect(LocalPlayer, { onFreeCapacityChange = onFreeCapacityChange,
-                         onInventoryChange = onInventoryChange } )
+  connect(LocalPlayer, { onPositionChange = checkNpcRange })
+
+  modules.game_console.addFilter(onOutgoingChat)
 
   initialized = true
 end
@@ -97,15 +130,55 @@ end
 function terminate()
   initialized = false
   npcWindow:destroy()
-  removeEvent(sellAllWithDelayEvent)
-  
-  disconnect(g_game, {  onGameEnd = hide,
-                        onOpenNpcTrade = onOpenNpcTrade,
-                        onCloseNpcTrade = onCloseNpcTrade,
-                        onPlayerGoods = onPlayerGoods } )
 
-  disconnect(LocalPlayer, { onFreeCapacityChange = onFreeCapacityChange,
-                            onInventoryChange = onInventoryChange } )
+  disconnectExtendedOpcode()
+
+  disconnect(g_game, { onGameStart = connectExtendedOpcode,
+                        onGameEnd = onGameEnd,
+                        onTalk = onGameTalk })
+
+  disconnect(LocalPlayer, { onPositionChange = checkNpcRange })
+
+  modules.game_console.removeFilter(onOutgoingChat)
+end
+
+-- The count request/response ride the OTClientV8 "extended opcode" channel (a raw byte + a
+-- free-form string, forwarded to Lua on both ends without needing new fixed protocol opcodes).
+function connectExtendedOpcode()
+  local protocol = g_game.getProtocolGame()
+  if protocol then
+    connect(protocol, { onExtendedOpcode = onExtendedOpcode })
+  end
+end
+
+function disconnectExtendedOpcode()
+  local protocol = g_game.getProtocolGame()
+  if protocol then
+    disconnect(protocol, { onExtendedOpcode = onExtendedOpcode })
+  end
+end
+
+function onExtendedOpcode(protocol, opcode, buffer)
+  if opcode ~= NPCTRADE_OPCODES.ITEM_COUNT_RESPONSE then return end
+
+  local parts = buffer:split(';')
+  local itemId = tonumber(parts[1])
+  local count = tonumber(parts[2])
+  if not itemId or not count then return end
+
+  -- The response is async: only apply it if it's still about the item currently selected
+  -- (the player may have clicked another item, or switched tabs, while it was in flight).
+  if selectedItem and selectedItem.id == itemId and getCurrentTradeType() == SELL then
+    applyOwnedCount(count)
+  end
+end
+
+function applyOwnedCount(count)
+  local maxAmount = math.max(1, math.min(getMaxAmount(), count))
+  quantityScroll:setMaximum(maxAmount)
+  if quantityScroll:getValue() > maxAmount then
+    quantityScroll:setValue(maxAmount)
+  end
 end
 
 function show()
@@ -123,8 +196,6 @@ function show()
 end
 
 function hide()
-  removeEvent(sellAllWithDelayEvent)
-
   npcWindow:hide()
 
   local layout = itemsPanel:getLayout()
@@ -142,27 +213,150 @@ function hide()
   end
 
   layout:enableUpdates()
-  layout:update()  
+  layout:update()
+end
+
+function onGameEnd()
+  currentNpcName = nil
+  currentNpcCreature = nil
+  hide()
+end
+
+-- Finds the actual NPC creature near the player matching this name, so we can keep checking
+-- distance to it later (talk range is enforced by tile position, not just by name).
+function findNpcCreature(name)
+  local player = g_game.getLocalPlayer()
+  if not player then return nil end
+
+  local spectators = g_map.getSpectatorsInRangeEx(player:getPosition(), false, TALK_RADIUS, TALK_RADIUS, TALK_RADIUS, TALK_RADIUS)
+  for _, creature in ipairs(spectators) do
+    if creature:isNpc() and creature:getName() == name then
+      return creature
+    end
+  end
+  return nil
+end
+
+-- Same range check the server itself uses to decide whether an NPC still listens to/focuses
+-- on the player (NpcHandler:isInRange, talkRadius=3 by default): same floor, within a square
+-- of TALK_RADIUS tiles. Trade must not be reachable outside of that range either.
+function isNpcInRange()
+  if not currentNpcCreature then return false end
+  local player = g_game.getLocalPlayer()
+  if not player then return false end
+  return Position.isInRange(player:getPosition(), currentNpcCreature:getPosition(), TALK_RADIUS, TALK_RADIUS)
+end
+
+-- Called whenever the local player moves. If we walk out of talk range of the NPC we were
+-- tracking, the trade possibility must go away too, exactly like NPC conversation itself
+-- would stop working at that point.
+function checkNpcRange()
+  if not currentNpcName then return end
+  if not isNpcInRange() then
+    currentNpcName = nil
+    currentNpcCreature = nil
+    if npcWindow:isVisible() then
+      hide()
+    end
+  end
+end
+
+-- Tracks which NPC we're currently talking to, so a later "trade"/"offer" message can be
+-- matched to that NPC's shop data. NPC replies now arrive via the private TALKTYPE_PRIVATE_NP
+-- talktype (Npc::doSayToPlayer in game-server/src/npc.cpp), which the client sees as
+-- MessageModes.NpcFrom -- a reliable, position-independent signal that "an NPC just replied
+-- to me", regardless of whether that NPC happens to sell anything. This must update on
+-- *every* NPC reply, not just ones with shop data, otherwise talking to a shopless NPC after
+-- a real shop NPC would leave currentNpcName stuck on the old one and wrongly reopen its
+-- item list.
+function onGameTalk(name, level, mode, message, channelId, creaturePos)
+  if not name then return end
+
+  if mode == MessageModes.NpcFrom or mode == MessageModes.NpcFromStartBlock then
+    currentNpcName = name
+    currentNpcCreature = findNpcCreature(name)
+  end
+end
+
+-- Called for every outgoing chat message (game_console filter). Never blocks the message:
+-- the real "trade"/"offer" text still reaches the server and the NPC conversation continues
+-- exactly as if this dialog didn't exist; we just also open our own view of it locally.
+-- Gated on talk range so trade can't open (and the item list can't be built) for an NPC
+-- we've since walked away from.
+function onOutgoingChat(message)
+  if currentNpcName and isNpcInRange() then
+    local shop = shopDataByLowerName[currentNpcName:lower()]
+    if shop then
+      local lowerMessage = message:lower()
+      if string.find(lowerMessage, 'trade', 1, true) or string.find(lowerMessage, 'offer', 1, true) then
+        openForNpc(currentNpcName)
+      end
+    end
+  end
+  return false
+end
+
+function openForNpc(npcName)
+  local shop = shopDataByLowerName[npcName:lower()]
+  if not shop then return end
+
+  tradeItems[BUY] = {}
+  tradeItems[SELL] = {}
+
+  -- entry.id is the server id (npc scripts/items.xml); entry.clientId is what the loaded
+  -- .dat actually indexes sprites by -- the two diverge for most items on this server.
+  for _, entry in ipairs(shop.buy) do
+    table.insert(tradeItems[BUY], { ptr = createShopItem(entry), id = entry.id, name = entry.name, keyword = entry.keyword, price = entry.price })
+  end
+  for _, entry in ipairs(shop.sell) do
+    table.insert(tradeItems[SELL], { ptr = createShopItem(entry), id = entry.id, name = entry.name, keyword = entry.keyword, price = entry.price })
+  end
+
+  refreshTradeItems()
+  show()
 end
 
 function onItemBoxChecked(widget)
   if widget:isChecked() then
-    local item = widget.item
-    selectedItem = item
-    refreshItem(item)
+    selectedItem = widget.item
+    refreshItem(selectedItem)
     tradeButton:enable()
-
-    if getCurrentTradeType() == SELL then
-      quantityScroll:setValue(quantityScroll:getMaximum())
-    end
   end
 end
 
 function onQuantityValueChange(quantity)
   if selectedItem then
-    weightLabel:setText(string.format('%.2f', selectedItem.weight*quantity) .. ' ' .. WEIGHT_UNIT)
-    priceLabel:setText(formatCurrency(getItemPrice(selectedItem)))
+    totalLabel:setText(formatCurrency(getItemPrice(selectedItem)))
   end
+end
+
+local function setQuantityFromMouse(widget, mousePos)
+  local decrementButton = widget:getChildById('decrementButton')
+  local incrementButton = widget:getChildById('incrementButton')
+  local leftInset = decrementButton and decrementButton:getWidth() or 0
+  local rightInset = incrementButton and incrementButton:getWidth() or 0
+  local trackWidth = widget:getWidth() - leftInset - rightInset
+  if trackWidth <= 0 then return end
+
+  local trackX = widget:getX() + leftInset
+  local ratio = math.max(0, math.min(1, (mousePos.x - trackX) / trackWidth))
+  local minimum = widget:getMinimum()
+  local maximum = widget:getMaximum()
+  widget:setValue(math.floor(minimum + (maximum - minimum) * ratio + 0.5))
+end
+
+function onQuantitySliderPress(widget, mousePos, mouseButton)
+  if mouseButton ~= MouseLeftButton or not widget:isEnabled() then
+    return false
+  end
+
+  setQuantityFromMouse(widget, mousePos)
+  return true
+end
+
+function onQuantitySliderDrag(widget, mousePos, mouseMoved)
+  if not widget:isEnabled() then return end
+  setQuantityFromMouse(widget, mousePos)
 end
 
 function onTradeTypeChange(radioTabs, selected, deselected)
@@ -170,68 +364,23 @@ function onTradeTypeChange(radioTabs, selected, deselected)
   selected:setOn(true)
   deselected:setOn(false)
 
-  local currentTradeType = getCurrentTradeType()
-  buyWithBackpack:setVisible(currentTradeType == BUY)
-  ignoreCapacity:setVisible(currentTradeType == BUY)
-  ignoreEquipped:setVisible(currentTradeType == SELL)
-  showAllItems:setVisible(currentTradeType == SELL)
-  sellAllButton:setVisible(currentTradeType == SELL)
-  sellAllWithDelayButton:setVisible(currentTradeType == SELL)
-  
   refreshTradeItems()
-  refreshPlayerGoods()
 end
 
+-- Sends the exact same chat commands a player would type by hand, e.g. "buy 3 dragon shield"
+-- followed by "yes" -- no protocol calls involved.
 function onTradeClick()
-  removeEvent(sellAllWithDelayEvent)
-  if getCurrentTradeType() == BUY then
-    g_game.buyItem(selectedItem.ptr, quantityScroll:getValue(), ignoreCapacity:isChecked(), buyWithBackpack:isChecked())
-  else
-    g_game.sellItem(selectedItem.ptr, quantityScroll:getValue(), ignoreEquipped:isChecked())
-  end
+  if not selectedItem then return end
+
+  local action = getCurrentTradeType() == BUY and 'buy' or 'sell'
+  local quantity = quantityScroll:getValue()
+
+  modules.game_console.sendMessage(action .. ' ' .. quantity .. ' ' .. selectedItem.keyword)
+  scheduleEvent(function() modules.game_console.sendMessage('yes') end, 300)
 end
 
 function onSearchTextChange()
-  refreshPlayerGoods()
-end
-
-function itemPopup(self, mousePosition, mouseButton)
-  if cancelNextRelease then
-    cancelNextRelease = false
-    return false
-  end
-
-  if mouseButton == MouseRightButton then
-    local menu = g_ui.createWidget('PopupMenu')
-    menu:setGameMenu(true)
-    menu:addOption(tr('Look'), function() return g_game.inspectNpcTrade(self:getItem()) end)
-    menu:display(mousePosition)
-    return true
-  elseif ((g_mouse.isPressed(MouseLeftButton) and mouseButton == MouseRightButton)
-    or (g_mouse.isPressed(MouseRightButton) and mouseButton == MouseLeftButton)) then
-    cancelNextRelease = true
-    g_game.inspectNpcTrade(self:getItem())
-    return true
-  end
-  return false
-end
-
-function onBuyWithBackpackChange()
-  if selectedItem then
-    refreshItem(selectedItem)
-  end
-end
-
-function onIgnoreCapacityChange()
-  refreshPlayerGoods()
-end
-
-function onIgnoreEquippedChange()
-  refreshPlayerGoods()
-end
-
-function onShowAllItemsChange()
-  refreshPlayerGoods()
+  applySearchFilter()
 end
 
 function setCurrency(currency, decimal)
@@ -239,28 +388,13 @@ function setCurrency(currency, decimal)
   CURRENCY_DECIMAL = decimal
 end
 
-function setShowWeight(state)
-  showWeight = state
-  weightDesc:setVisible(state)
-  weightLabel:setVisible(state)
-end
-
-function setShowYourCapacity(state)
-  capacityDesc:setVisible(state)
-  capacityLabel:setVisible(state)
-  ignoreCapacity:setVisible(state)
-end
-
 function clearSelectedItem()
-  idLabel:clearText()
-  nameLabel:clearText()
-  weightLabel:clearText()
-  priceLabel:clearText()
+  totalLabel:clearText()
   tradeButton:disable()
   quantityScroll:setMinimum(0)
   quantityScroll:setMaximum(0)
   if selectedItem then
-    radioItems:selectWidget(nil)
+    if radioItems then radioItems:selectWidget(nil) end
     selectedItem = nil
   end
 end
@@ -274,67 +408,41 @@ function getCurrentTradeType()
 end
 
 function getItemPrice(item, single)
-  local amount = 1
-  local single = single or false
-  if not single then
-    amount = quantityScroll:getValue()
-  end
-  if getCurrentTradeType() == BUY then
-    if buyWithBackpack:isChecked() then
-      if item.ptr:isStackable() then
-          return item.price*amount + 20
-      else
-        return item.price*amount + math.ceil(amount/20)*20
-      end
-    end
-  end
-  return item.price*amount
-end
-
-function getSellQuantity(item)
-  if not item or not playerItems[item:getId()] then return 0 end
-  local removeAmount = 0
-  if ignoreEquipped:isChecked() then
-    local localPlayer = g_game.getLocalPlayer()
-    for i=1,LAST_INVENTORY do
-      local inventoryItem = localPlayer:getInventoryItem(i)
-      if inventoryItem and inventoryItem:getId() == item:getId() then
-        removeAmount = removeAmount + inventoryItem:getCount()
-      end
-    end
-  end
-  return playerItems[item:getId()] - removeAmount
-end
-
-function canTradeItem(item)
-  if getCurrentTradeType() == BUY then
-    return (ignoreCapacity:isChecked() or (not ignoreCapacity:isChecked() and playerFreeCapacity >= item.weight)) and playerMoney >= getItemPrice(item, true)
-  else
-    return getSellQuantity(item.ptr) > 0
-  end
+  local amount = single and 1 or quantityScroll:getValue()
+  return item.price * amount
 end
 
 function refreshItem(item)
-  idLabel:setText(item.ptr:getId())
-  nameLabel:setText(item.name)
-  weightLabel:setText(string.format('%.2f', item.weight) .. ' ' .. WEIGHT_UNIT)
-  priceLabel:setText(formatCurrency(getItemPrice(item)))
+  totalLabel:setText(formatCurrency(getItemPrice(item)))
 
-  if getCurrentTradeType() == BUY then
-    local capacityMaxCount = math.floor(playerFreeCapacity / item.weight)
-    if ignoreCapacity:isChecked() then
-      capacityMaxCount = 65535
-    end
-    local priceMaxCount = math.floor(playerMoney / getItemPrice(item, true))
-    local finalCount = math.max(0, math.min(getMaxAmount(), math.min(priceMaxCount, capacityMaxCount)))
-    quantityScroll:setMinimum(1)
-    quantityScroll:setMaximum(finalCount)
-  else
-    quantityScroll:setMinimum(1)
-    quantityScroll:setMaximum(math.max(0, math.min(getMaxAmount(), getSellQuantity(item.ptr))))
-  end
+  quantityScroll:setMinimum(1)
+  quantityScroll:setMaximum(getMaxAmountFor(item))
+  quantityScroll:setValue(1)
 
   setupPanel:enable()
+
+  -- The client-side estimate above only sees equipped slots + currently open containers.
+  -- Ask the server for the real count (it can see the whole inventory tree, closed backpacks
+  -- included) and refine the slider once the async response comes back.
+  if getCurrentTradeType() == SELL then
+    local protocol = g_game.getProtocolGame()
+    if protocol then
+      protocol:sendExtendedOpcode(NPCTRADE_OPCODES.REQUEST_ITEM_COUNT, tostring(item.id))
+    end
+  end
+end
+
+-- Instant client-side estimate shown before the server's accurate count arrives: equipped
+-- slots + currently open containers only (the server never tells the client what's inside a
+-- closed backpack, so this can undercount unopened containers).
+function getMaxAmountFor(item)
+  if getCurrentTradeType() ~= SELL then
+    return getMaxAmount()
+  end
+
+  local player = g_game.getLocalPlayer()
+  local owned = player and player:getItemsCount(item.ptr:getId()) or 0
+  return math.max(1, math.min(getMaxAmount(), owned))
 end
 
 function refreshTradeItems()
@@ -353,24 +461,14 @@ function refreshTradeItems()
   radioItems = UIRadioGroup.create()
 
   local currentTradeItems = tradeItems[getCurrentTradeType()]
-  for key,item in pairs(currentTradeItems) do
+  for _, item in pairs(currentTradeItems) do
     local itemBox = g_ui.createWidget('NPCItemBox', itemsPanel)
     itemBox.item = item
+    itemBox:recursiveGetChildById('name'):setText(item.name)
+    itemBox:recursiveGetChildById('price'):setText(formatCurrency(item.price))
 
-    local text = ''
-    local name = item.name
-    text = text .. name
-    if showWeight then
-      local weight = string.format('%.2f', item.weight) .. ' ' .. WEIGHT_UNIT
-      text = text .. '\n' .. weight
-    end
-    local price = formatCurrency(item.price)
-    text = text .. '\n' .. price
-    itemBox:setText(text)
-
-    local itemWidget = itemBox:getChildById('item')
+    local itemWidget = itemBox:recursiveGetChildById('item')
     itemWidget:setItem(item.ptr)
-    itemWidget.onMouseRelease = itemPopup
 
     radioItems:addWidget(itemBox)
   end
@@ -379,210 +477,30 @@ function refreshTradeItems()
   layout:update()
 end
 
-function refreshPlayerGoods()
-  if not initialized then return end
-
-  checkSellAllTooltip()
-
-  moneyLabel:setText(formatCurrency(playerMoney))
-  capacityLabel:setText(string.format('%.2f', playerFreeCapacity) .. ' ' .. WEIGHT_UNIT)
-
-  local currentTradeType = getCurrentTradeType()
+function applySearchFilter()
   local searchFilter = searchText:getText():lower()
-  local foundSelectedItem = false
 
   local items = itemsPanel:getChildCount()
-  for i=1,items do
+  for i = 1, items do
     local itemWidget = itemsPanel:getChildByIndex(i)
     local item = itemWidget.item
-
-    local canTrade = canTradeItem(item)
-    itemWidget:setOn(canTrade)
-    itemWidget:setEnabled(canTrade)
-
-    local searchCondition = (searchFilter == '') or (searchFilter ~= '' and string.find(item.name:lower(), searchFilter) ~= nil)
-    local showAllItemsCondition = (currentTradeType == BUY) or (showAllItems:isChecked()) or (currentTradeType == SELL and not showAllItems:isChecked() and canTrade)
-    itemWidget:setVisible(searchCondition and showAllItemsCondition)
-
-    if selectedItem == item and itemWidget:isEnabled() and itemWidget:isVisible() then
-      foundSelectedItem = true
-    end
-  end
-
-  if not foundSelectedItem then
-    clearSelectedItem()
-  end
-
-  if selectedItem then
-    refreshItem(selectedItem)
-  end
-end
-
-function onOpenNpcTrade(items)
-  tradeItems[BUY] = {}
-  tradeItems[SELL] = {}
-  for key,item in pairs(items) do
-    if item[4] > 0 then
-      local newItem = {}
-      newItem.ptr = item[1]
-      newItem.name = item[2]
-      newItem.weight = item[3] / 100
-      newItem.price = item[4]
-      table.insert(tradeItems[BUY], newItem)
-    end
-    
-    if item[5] > 0 then
-      local newItem = {}
-      newItem.ptr = item[1]
-      newItem.name = item[2]
-      newItem.weight = item[3] / 100
-      newItem.price = item[5]
-      table.insert(tradeItems[SELL], newItem)
-    end
-  end
-
-  refreshTradeItems()
-  addEvent(show) -- player goods has not been parsed yet
-end
-
-function closeNpcTrade()
-  g_game.closeNpcTrade()
-  addEvent(hide)
-end
-
-function onCloseNpcTrade()
-  addEvent(hide)
-end
-
-function onPlayerGoods(money, items)
-  playerMoney = money
-
-  playerItems = {}
-  for key,item in pairs(items) do
-    local id = item[1]:getId()
-    if not playerItems[id] then
-      playerItems[id] = item[2]
-    else
-      playerItems[id] = playerItems[id] + item[2]
-    end
-  end
-
-  refreshPlayerGoods()
-end
-
-function onFreeCapacityChange(localPlayer, freeCapacity, oldFreeCapacity)
-  playerFreeCapacity = freeCapacity
-
-  if npcWindow:isVisible() then
-    refreshPlayerGoods()
-  end
-end
-
-function onInventoryChange(inventory, item, oldItem)
-  refreshPlayerGoods()
-end
-
-function getTradeItemData(id, type)
-  if table.empty(tradeItems[type]) then
-    return false
-  end
-
-  if type then
-    for key,item in pairs(tradeItems[type]) do
-      if item.ptr and item.ptr:getId() == id then
-        return item
-      end
-    end
-  else
-    for _,items in pairs(tradeItems) do
-      for key,item in pairs(items) do
-        if item.ptr and item.ptr:getId() == id then
-          return item
-        end
-      end
-    end
-  end
-  return false
-end
-
-function checkSellAllTooltip()
-  sellAllButton:setEnabled(true)
-  sellAllButton:removeTooltip()
-  sellAllWithDelayButton:setEnabled(true)
-  sellAllWithDelayButton:removeTooltip()
-
-  local total = 0
-  local info = ''
-  local first = true
-
-  for key, amount in pairs(playerItems) do
-    local data = getTradeItemData(key, SELL)
-    if data then
-      amount = getSellQuantity(data.ptr)
-      if amount > 0 then
-        if data and amount > 0 then
-          info = info..(not first and "\n" or "")..
-                 amount.." "..
-                 data.name.." ("..
-                 data.price*amount.." gold)"
-
-          total = total+(data.price*amount)
-          if first then first = false end
-        end
-      end
-    end
-  end
-  if info ~= '' then
-    info = info.."\nTotal: "..total.." gold"
-    sellAllButton:setTooltip(info)
-    sellAllWithDelayButton:setTooltip(info)
-  else
-    sellAllButton:setEnabled(false)
-    sellAllWithDelayButton:setEnabled(false)
+    local visible = (searchFilter == '') or string.find(item.name:lower(), searchFilter, 1, true) ~= nil
+    itemWidget:setVisible(visible)
   end
 end
 
 function formatCurrency(amount)
   if CURRENCY_DECIMAL then
-    return string.format("%.02f", amount/100.0) .. ' ' .. CURRENCY
+    return string.format("%.02f", amount / 100.0) .. ' ' .. CURRENCY
   else
     return amount .. ' ' .. CURRENCY
   end
 end
 
 function getMaxAmount()
-  if getCurrentTradeType() == SELL and g_game.getFeature(GameDoubleShopSellAmount) then
-    return 10000
-  end
-  return 100
+  return MAX_AMOUNT
 end
 
-function sellAll(delayed, exceptions)
-  -- backward support
-  if type(delayed) == "table" then
-    exceptions = delayed
-    delayed = false
-  end
-  exceptions = exceptions or {}
-  removeEvent(sellAllWithDelayEvent)
-  local queue = {}
-  for _,entry in ipairs(tradeItems[SELL]) do
-    local id = entry.ptr:getId()
-    if not table.find(exceptions, id) then
-      local sellQuantity = getSellQuantity(entry.ptr)
-      while sellQuantity > 0 do
-        local maxAmount = math.min(sellQuantity, getMaxAmount())
-        if delayed then
-          g_game.sellItem(entry.ptr, maxAmount, ignoreEquipped:isChecked())
-          sellAllWithDelayEvent = scheduleEvent(function() sellAll(true) end, 1100)
-          return
-        end
-        table.insert(queue, {entry.ptr, maxAmount, ignoreEquipped:isChecked()})
-        sellQuantity = sellQuantity - maxAmount
-      end
-    end
-  end
-  for _, entry in ipairs(queue) do
-    g_game.sellItem(entry[1], entry[2], entry[3])
-  end
+function closeNpcTrade()
+  hide()
 end

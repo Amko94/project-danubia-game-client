@@ -1,24 +1,26 @@
 PausedTaskListItem < Panel
-  height: 40
-  background-color: #111111
+  height: 46
+  background-color: #1a1a1a
   border-width: 1
-  border-color: #333333
-  margin-bottom: 2
+  border-color: #3d3d3d
 
   UICreature
     id: monsterIcon
-    size: 32 32
+    size: 36 36
     anchors.left: parent.left
     anchors.verticalCenter: parent.verticalCenter
+    margin-left: 3
     phantom: true
 
   Label
     id: taskName
     font: verdana-11px-rounded
+    color: #eeeeee
     anchors.top: parent.top
     anchors.left: monsterIcon.right
-    margin-left: 5
-    text-auto-resize: true
+    anchors.right: taskMenu.left
+    margin-left: 6
+    margin-top: 5
 
   Panel
     id: progressPanel
@@ -26,10 +28,10 @@ PausedTaskListItem < Panel
     anchors.bottom: parent.bottom
     anchors.left: monsterIcon.right
     anchors.right: taskMenu.left
-    margin-left: 5
-    margin-right: 10
-    margin-bottom: 10
-    background-color: #00000066
+    margin-left: 6
+    margin-right: 6
+    margin-bottom: 5
+    background-color: #090909cc
     border-width: 1
     border-color: #333333
 
@@ -40,7 +42,7 @@ PausedTaskListItem < Panel
       anchors.left: parent.left
       width: 0
       margin: 1
-      background-color: #E0980C
+      background-color: #b77b24
 
     Label
       id: progressLabel
@@ -50,22 +52,19 @@ PausedTaskListItem < Panel
 
   Button
     id: taskMenu
-    width: 20
-    height: 20
-    anchors.bottom: parent.bottom
+    size: 20 20
+    anchors.verticalCenter: parent.verticalCenter
     anchors.right: parent.right
-    margin-right: 15
-    margin-left: 5
-    margin-bottom: 5
+    margin-right: 4
     text: >
     @onClick: |
       local menu = g_ui.createWidget('PopupMenu')
       menu:addOption('Resume', function() TaskUI.onTaskMenuChange(self, 'Resume') end)
       menu:addOption('Cancel', function() TaskUI.onTaskMenuChange(self, 'Cancel') end)
-
       local cancelItem = menu:getChildByIndex(2)
-      if cancelItem then
-        cancelItem:setColor('#FF0000')
-      end
-
+      if cancelItem then cancelItem:setColor('#FF6666') end
       menu:display(self:getRect())
+
+  $hover:
+    background-color: #252525
+    border-color: #555555

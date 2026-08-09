@@ -1,7 +1,25 @@
+TaskTab < TabButton
+  height: 28
+  font: verdana-11px-rounded
+  color: #b8b8b8
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #333333
+
+  $hover !on:
+    color: #ffffff
+    background-color: #292929
+    border-color: #555555
+
+  $on:
+    color: #ffffff
+    background-color: #355d89
+    border-color: #6f9dcc
+
 TaskWindow < MainWindow
   id: taskWindow
   text: Tasks
-  size: 740 650
+  size: 740 680
   draggable: true
   @onEscape: self:destroy()
   onDestroy: modules.game_tasks.onWindowDestroy()
@@ -13,101 +31,82 @@ TaskWindow < MainWindow
   ActiveTaskPanel
     anchors.top: parent.top
     anchors.left: parent.left
-    anchors.bottom: closeButton.top
+    anchors.bottom: taskPointsChip.top
     width: 190
-    margin-right: 5
+    margin-bottom: 5
 
   Panel
     id: categoryPanel
     anchors.top: parent.top
     anchors.left: activeTaskPanel.right
     anchors.right: parent.right
-    height: 20
-    margin-left: 5
+    height: 28
+    margin-left: 8
 
     layout:
       type: grid
       num-columns: 5
-      cell-size: 101 20
-      cell-spacing: 1
+      cell-size: 101 28
+      cell-spacing: 2
 
-    TabButton
+    TaskTab
       id: categoryAll
       text: All
-      font: verdana-11px-rounded
-      background-color: #222222
-      border-width: 0
-      color: #B8B8B8
       @onClick: TaskUI.filterByCategory(0)
-      $on:
-        background-color: #444444
-        color: #FFFFFF
 
-    TabButton
+    TaskTab
       id: categoryLow
       text: Low
-      font: verdana-11px-rounded
-      background-color: #222222
-      color: #B8B8B8
-      border-width: 0
       @onClick: TaskUI.filterByCategory(1)
-      $on:
-        background-color: #444444
-        color: #FFFFFF
 
-    TabButton
+    TaskTab
       id: categoryMedium
       text: Medium
-      font: verdana-11px-rounded
-      color: #B8B8B8
-      background-color: #222222
-      border-width: 0
       @onClick: TaskUI.filterByCategory(2)
-      $on:
-        background-color: #444444
-        color: #FFFFFF
 
-    TabButton
+    TaskTab
       id: categoryHard
       text: Hard
-      font: verdana-11px-rounded
-      background-color: #222222
-      color: #B8B8B8
-      border-width: 0
       @onClick: TaskUI.filterByCategory(3)
-      $on:
-        background-color: #444444
-        color: #FFFFFF
 
-    TabButton
+    TaskTab
       id: categoryVeryHard
       text: Very Hard
-      font: verdana-11px-rounded
-      color: #B8B8B8
-      background-color: #222222
-      border-width: 0
       @onClick: TaskUI.filterByCategory(4)
-      $on:
-        background-color: #444444
-        color: #FFFFFF
 
   Panel
     id: filterPanel
     anchors.top: categoryPanel.bottom
     anchors.left: activeTaskPanel.right
     anchors.right: parent.right
-    height: 30
-    margin: 5 5 0 5
+    height: 38
+    margin-top: 7
+    margin-left: 8
     background-color: #1a1a1a
     border-width: 1
     border-color: #333333
 
+    Label
+      text: Search:
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 10
+      font: verdana-11px-rounded
+      color: #eeeeee
+      text-auto-resize: true
+
     TextEdit
       id: filterInput
-      anchors.fill: parent
-      margin: 2
+      height: 24
+      anchors.left: prev.right
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 8
+      margin-right: 10
       placeholder: Search monster...
-      background-color: #00000044
+      background-color: #0d0d0dcc
+      border-width: 1
+      border-color: #444444
       @onTextChange: TaskUI.filterTasks(self:getText())
 
   ScrollablePanel
@@ -116,25 +115,27 @@ TaskWindow < MainWindow
     anchors.left: activeTaskPanel.right
     anchors.right: parent.right
     anchors.bottom: closeButton.top
-    margin: 5
-    padding: 5
+    margin-top: 7
+    margin-left: 8
+    margin-bottom: 7
+    padding: 6 20 6 6
     vertical-scrollbar: taskListScrollBar
     background-color: #111111
     border-width: 1
-    margin-bottom: 5
     border-color: #333333
 
     layout:
       type: grid
       num-columns: 3
-      cell-size: 160 160
-      spacing: 8
+      cell-size: 160 150
+      spacing: 7
 
   Label
     id: emptyList
     visible: false
     text: No monsters found.
     color: #aaaaaa
+    font: verdana-11px-rounded
     text-align: center
     anchors.fill: taskList
 
@@ -144,16 +145,19 @@ TaskWindow < MainWindow
     anchors.top: taskList.top
     anchors.bottom: taskList.bottom
     anchors.right: taskList.right
+    margin-top: 6
+    margin-right: 4
+    margin-bottom: 6
     step: 50
     pixels-scroll: true
 
   Panel
     id: taskPointsChip
-    height: 20
-    anchors.top: activeTaskPanel.bottom
-    anchors.left: activeTaskPanel.left
-    anchors.right: activeTaskPanel.right
-    margin-top: 4
+    height: 24
+    width: 190
+    anchors.left: parent.left
+    anchors.bottom: closeButton.top
+    margin-bottom: 6
     background-color: #1a1a1a
     border-width: 1
     border-color: #333333
@@ -162,13 +166,14 @@ TaskWindow < MainWindow
       id: taskPointsLabel
       text: Points: 0
       font: verdana-11px-rounded
-      color: #FFD700
+      color: #ffd75e
       anchors.fill: parent
       text-align: center
 
   Button
     id: closeButton
     text: Close
+    size: 76 22
     anchors.right: parent.right
     anchors.bottom: parent.bottom
     @onClick: TaskUI.hide()

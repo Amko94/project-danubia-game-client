@@ -1,6 +1,6 @@
 ClaimRewardDialog < MainWindow
   id: claimRewardDialog
-  size: 420 520
+  size: 420 430
   text: Claim Reward
   @onEscape: self:destroy()
 
@@ -8,34 +8,33 @@ ClaimRewardDialog < MainWindow
     id: rewardLabel
     text: Select Your Reward
     font: verdana-11px-rounded
-    color: #dfdfdf
-    text-shadow: #000000
+    color: #eeeeee
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    margin-top: 20
+    margin-top: 8
     text-align: center
 
   UIWidget
     id: goldSection
-    width: 110
-    height: 170
+    size: 110 150
     anchors.top: rewardLabel.bottom
     anchors.left: parent.left
-    margin-top: 30
-    margin-left: 25
+    margin-top: 10
+    margin-left: 20
     background-color: #1a1a1a
-    border: 3 #333333
+    border-width: 2
+    border-color: #4a4326
     cursor: pointer
 
-    states:
-      hover:
-        background-color: #202020
-      selected:
-        border: 3 #FFD700
-        background-color: #222222
+    $hover:
+      background-color: #252525
+      border-color: #ffd75e
 
-    @onClick: TaskUI.selectReward(self)
+    $on:
+      background-color: #2f2a18
+      border-width: 2
+      border-color: #ffd75e
 
     Label
       text: Gold
@@ -43,16 +42,15 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-top: 10
+      color: #ffd75e
+      margin-top: 8
       text-align: center
+      phantom: true
 
     UIWidget
       image-source: /images/game/prey/prey_bigloot.png
-      anchors.top: prev.bottom
-      anchors.horizontalCenter: parent.horizontalCenter
-      margin-top: 4
+      size: 50 85
+      anchors.centerIn: parent
       phantom: true
 
     Label
@@ -62,31 +60,30 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-bottom: 10
+      color: #ffd75e
+      margin-bottom: 8
       text-align: center
+      phantom: true
 
   UIWidget
     id: expSection
-    width: 110
-    height: 170
-    anchors.top: rewardLabel.bottom
+    size: 110 150
+    anchors.top: goldSection.top
     anchors.left: goldSection.right
-    margin-top: 30
-    margin-left: 15
+    margin-left: 10
     background-color: #1a1a1a
-    border: 3 #333333
+    border-width: 2
+    border-color: #49334d
     cursor: pointer
 
-    states:
-      hover:
-        background-color: #202020
-      selected:
-        border: 3 #E638CB
-        background-color: #222222
+    $hover:
+      background-color: #252525
+      border-color: #dc78d0
 
-    @onClick: TaskUI.selectReward(self)
+    $on:
+      background-color: #302033
+      border-width: 2
+      border-color: #dc78d0
 
     Label
       text: Experience
@@ -94,18 +91,15 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #E638CB
-      text-shadow: #000000
-      margin-top: 10
+      color: #dc78d0
+      margin-top: 8
       text-align: center
+      phantom: true
 
     UIWidget
       image-source: /images/game/prey/prey_bigxp.png
-      width: 50
-      height: 95
-      anchors.top: prev.bottom
-      anchors.horizontalCenter: parent.horizontalCenter
-      margin-top: 4
+      size: 50 85
+      anchors.centerIn: parent
       phantom: true
 
     Label
@@ -115,32 +109,30 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #E638CB
-      text-shadow: #000000
-      margin-bottom: 10
+      color: #dc78d0
+      margin-bottom: 8
       text-align: center
-
+      phantom: true
 
   UIWidget
     id: splitSection
-    width: 110
-    height: 170
-    anchors.top: rewardLabel.bottom
+    size: 110 150
+    anchors.top: goldSection.top
     anchors.left: expSection.right
-    margin-top: 30
-    margin-left: 15
+    margin-left: 10
     background-color: #1a1a1a
-    border: 3 #333333
+    border-width: 2
+    border-color: #4a4326
     cursor: pointer
 
-    states:
-      hover:
-        background-color: #202020
-      selected:
-        border: 3 #FFD700
-        background-color: #222222
+    $hover:
+      background-color: #252525
+      border-color: #ffd75e
 
-    @onClick: TaskUI.selectReward(self)
+    $on:
+      background-color: #252d35
+      border-width: 2
+      border-color: #ffd75e
 
     Label
       text: 50 / 50 Split
@@ -148,18 +140,17 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-top: 10
+      color: #eeeeee
+      margin-top: 8
       text-align: center
+      phantom: true
 
     UIWidget
       image-source: /images/game/prey/50-50.png
-      width: 50
-      height: 95
-      anchors.top: prev.bottom
+      size: 50 75
+      anchors.top: parent.top
       anchors.horizontalCenter: parent.horizontalCenter
-      margin-top: 4
+      margin-top: 28
       phantom: true
 
     Label
@@ -169,10 +160,10 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #E638CB
-      text-shadow: #000000
-      margin-bottom: 26
+      color: #dc78d0
+      margin-bottom: 23
       text-align: center
+      phantom: true
 
     Label
       id: splitGoldAmount
@@ -181,22 +172,23 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-bottom: 8
+      color: #ffd75e
+      margin-bottom: 7
       text-align: center
-
+      phantom: true
 
   Panel
+    id: taskPointsPanel
     anchors.top: goldSection.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    height: 75
-    margin-top: 25
-    margin-left: 25
-    margin-right: 25
-    background-color: #1e1e1e
-    border: 2 #FFE81F
+    height: 64
+    margin-top: 12
+    margin-left: 20
+    margin-right: 20
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #4a4326
 
     Label
       text: Task Points Earned
@@ -204,9 +196,8 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFE81F
-      text-shadow: #000000
-      margin-top: 10
+      color: #ffe81f
+      margin-top: 7
       text-align: center
 
     Label
@@ -216,22 +207,19 @@ ClaimRewardDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFE81F
-      text-shadow: #000000
-      margin-top: 4
+      color: #ffe81f
+      margin-top: 5
       text-align: center
 
     Label
-      text: (Always earned)
+      text: Always earned
       anchors.bottom: parent.bottom
       anchors.left: parent.left
       anchors.right: parent.right
-      font: verdana-11px-rounded
-      color: #AAAAAA
-      text-shadow: #000000
-      margin-bottom: 6
+      font: verdana-11px-antialised
+      color: #888888
+      margin-bottom: 5
       text-align: center
-
 
   Label
     id: pzWarningLabel
@@ -240,43 +228,41 @@ ClaimRewardDialog < MainWindow
     anchors.left: parent.left
     anchors.right: parent.right
     font: verdana-11px-rounded
-    color: #FF5555
-    text-shadow: #000000
-    margin-bottom: 10
+    color: #ff6666
+    margin-bottom: 7
     text-align: center
     visible: false
-
 
   Panel
     id: buttonPanel
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    height: 50
-    margin: 0 15 15 15
+    height: 34
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
 
     Button
       text: Cancel
-      width: 175
-      height: 35
-      anchors.left: parent.left
-      anchors.bottom: parent.bottom
+      size: 110 22
+      anchors.right: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+      margin-right: 5
       @onClick: self:getParent():getParent():destroy()
 
     Button
       id: claimButton
       text: Confirm
-      width: 175
-      height: 35
-      anchors.left: prev.right
-      anchors.bottom: parent.bottom
-      margin-left: 10
+      size: 110 22
+      anchors.left: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 5
       enabled: false
-      color: #777777
+      color: #ffd75e
       font: verdana-11px-rounded
 
-      states:
-        enabled:
-          color: #FFD700
+      $disabled:
+        color: #777777
 
       @onClick: TaskUI.confirmClaimReward()

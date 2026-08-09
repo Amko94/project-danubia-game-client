@@ -1,54 +1,70 @@
 ConfirmDialog < MainWindow
   id: confirmDialog
-  size: 300 150
-  text: "Confirm Cancellation"
+  size: 310 155
+  text: Confirm Cancellation
   draggable: true
   @onEscape: self:destroy()
 
-  Label
-    id: confirmLabel
+  Panel
+    id: contentPanel
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
-    margin: 10
-    text-align: center
-    text: "Are you sure to cancel your task?"
+    anchors.bottom: buttonPanel.top
+    margin-bottom: 7
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
 
-  Label
-    id: taskNameAndProcess
-    anchors.top: confirmLabel.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    margin: 5 10 0 10
-    text-align: center
-    text: "placeholder"
-    color: #ffffff
+    Label
+      id: confirmLabel
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 14
+      text-align: center
+      text: Are you sure you want to cancel this task?
+      font: verdana-11px-rounded
+      color: #eeeeee
+
+    Label
+      id: taskNameAndProcess
+      anchors.top: confirmLabel.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 10
+      text-align: center
+      text: placeholder
+      font: verdana-11px-rounded
+      color: #ffd75e
 
   Panel
     id: buttonPanel
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    height: 38
+    height: 32
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
 
     Button
       id: abortButton
-      text: "Close"
-      width: 130
-      height: 28
-      anchors.left: parent.left
-      anchors.bottom: parent.bottom
+      text: Close
+      size: 100 22
+      anchors.right: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+      margin-right: 5
       @onClick: self:getParent():getParent():destroy()
 
     Button
       id: confirmButton
-      text: "Cancel Task!"
-      width: 130
-      height: 28
-      anchors.left: abortButton.right
-      anchors.bottom: parent.bottom
+      text: Cancel Task
+      size: 100 22
+      anchors.left: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
       margin-left: 5
-      color: #ff6347
-      hover-color: #cc0000
+      color: #ff6666
+      hover-color: #cc4444
       font: verdana-11px-rounded
       @onClick: TaskUI.confirmCancel()

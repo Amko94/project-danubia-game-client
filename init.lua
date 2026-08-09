@@ -14,12 +14,13 @@ Services = {
 
 Servers = {
   ProjectDanubia = "65.109.62.62:7171:800",  -- oder wie euer Login-Endpoint heißt/aussieht
+  localhost = "127.0.0.1:7171:800",  -- oder wie euer Login-Endpoint heißt/aussieht
 }
 
 --Server = "ws://otclient.ovh:3000/"
 --Server = "ws://127.0.0.1:88/"
 --USE_NEW_ENERGAME = true -- uses entergamev2 based on websockets instead of entergame
-ALLOW_CUSTOM_SERVERS = false -- if true it shows option ANOTHER on server list
+ALLOW_CUSTOM_SERVERS = true -- if true it shows option ANOTHER on server list
 
 g_app.setName("ProjectDanubia")
 -- CONFIG END

@@ -1,19 +1,22 @@
 StartTaskDialog < MainWindow
   id: startTaskDialog
-  size: 320 420
+  size: 350 390
   text: Task Assignment
   @onEscape: self:destroy()
 
   Panel
     id: monsterSection
-    height: 64
+    height: 70
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: parent.right
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
 
     Panel
       id: iconContainer
-      height: 64
+      height: 60
       anchors.centerIn: parent
       layout:
         type: horizontalBox
@@ -21,71 +24,69 @@ StartTaskDialog < MainWindow
         fit-size: true
         align-center: true
 
-  Label
-    id: amountLabel
-    text: Enter kill amount:
-    font: verdana-11px-rounded
-    color: #dfdfdf
-    text-shadow: #000000
+  Panel
+    id: amountSection
+    height: 48
     anchors.top: monsterSection.bottom
     anchors.left: parent.left
-    margin-top: 20
-    margin-left: 20
-
-  TextEdit
-    id: amountInput
-    placeholder: Min 50 - Max 1000
-    size: 125 24
-    anchors.verticalCenter: amountLabel.verticalCenter
     anchors.right: parent.right
-    margin-right: 20
+    margin-top: 7
     background-color: #1a1a1a
-    border: 1 #333333
-    text-shadow: #000000
-    @onTextChange: TaskUI.updateTaskAmount(self:getParent(),self:getText())
+    border-width: 1
+    border-color: #333333
 
-  Label
-    id: errorLabel
-    text: Only numbers allowed
-    font: verdana-11px-rounded
-    color: #ff4444
-    text-shadow: #000000
-    visible: false
-    anchors.top: amountInput.bottom
-    anchors.left: amountInput.left
+    Label
+      id: amountLabel
+      text: Kill amount:
+      font: verdana-11px-rounded
+      color: #eeeeee
+      anchors.left: parent.left
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 12
 
-    margin-top: 5
-    margin-bottom: 5
+    TextEdit
+      id: amountInput
+      placeholder: 50 - 1000
+      size: 125 24
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.right: parent.right
+      margin-right: 12
+      background-color: #0d0d0dcc
+      border-width: 1
+      border-color: #444444
+      @onTextChange: TaskUI.updateTaskAmount(self:getParent():getParent(), self:getText())
 
-  HorizontalSeparator
-    id: separator
-    anchors.top: amountInput.bottom
-    anchors.left: parent.left
-    anchors.right: parent.right
-    margin: 20 15 0 15
-    background-color: #333333
+    Label
+      id: errorLabel
+      text: Only numbers allowed
+      font: verdana-11px-rounded
+      color: #ff6666
+      visible: false
+      anchors.bottom: parent.bottom
+      anchors.right: amountInput.right
+      margin-bottom: 1
 
   Label
     id: rewardLabel
-    text: Reward
+    text: Reward Preview
     font: verdana-11px-rounded
-    color: #dfdfdf
-    text-shadow: #000000
-    anchors.top: separator.bottom
+    color: #b8b8b8
+    anchors.top: amountSection.bottom
     anchors.left: parent.left
-    anchors.horizontalCenter: parent.horizontalCenter
+    anchors.right: parent.right
     margin-top: 10
+    text-align: center
 
   Panel
     id: goldCoinRewardSection
-    width: 80
-    height: 140
+    size: 96 120
     anchors.top: rewardLabel.bottom
     anchors.left: parent.left
-    margin-top: 15
-    margin-left: 15
+    margin-top: 8
+    margin-left: 10
     background-color: #1a1a1a
-    border: 1 #333333
+    border-width: 1
+    border-color: #4a4326
 
     Label
       id: goldCoinRewardLabel
@@ -94,19 +95,16 @@ StartTaskDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-top: 5
+      color: #ffd75e
+      margin-top: 6
       text-align: center
 
     UIWidget
       id: goldCoinRewardIcon
       image-source: /images/game/prey/prey_bigloot.png
-      width: 44
-      height: 92
-      anchors.top: goldCoinRewardLabel.bottom
-      anchors.horizontalCenter: parent.horizontalCenter
-      margin-top: 3
+      size: 44 64
+      anchors.centerIn: parent
+      phantom: true
 
     Label
       id: goldCoinAmount
@@ -115,21 +113,19 @@ StartTaskDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFD700
-      text-shadow: #000000
-      margin-bottom: 5
+      color: #ffd75e
+      margin-bottom: 6
       text-align: center
 
   Panel
     id: expRewardSection
-    width: 80
-    height: 140
-    anchors.top: rewardLabel.bottom
+    size: 96 120
+    anchors.top: goldCoinRewardSection.top
     anchors.left: goldCoinRewardSection.right
-    margin-top: 15
     margin-left: 10
     background-color: #1a1a1a
-    border: 1 #333333
+    border-width: 1
+    border-color: #49334d
 
     Label
       id: expRewardLabel
@@ -138,19 +134,16 @@ StartTaskDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #E638CB
-      text-shadow: #000000
-      margin-top: 5
+      color: #dc78d0
+      margin-top: 6
       text-align: center
 
     UIWidget
       id: expRewardIcon
       image-source: /images/game/prey/prey_bigxp.png
-      width: 44
-      height: 92
-      anchors.top: expRewardLabel.bottom
-      anchors.horizontalCenter: parent.horizontalCenter
-      margin-top: 3
+      size: 44 64
+      anchors.centerIn: parent
+      phantom: true
 
     Label
       id: expAmount
@@ -159,42 +152,37 @@ StartTaskDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #E638CB
-      text-shadow: #000000
-      margin-bottom: 5
+      color: #dc78d0
+      margin-bottom: 6
       text-align: center
 
   Panel
     id: taskPointsRewardSection
-    width: 80
-    height: 140
-    anchors.top: rewardLabel.bottom
+    size: 96 120
+    anchors.top: goldCoinRewardSection.top
     anchors.left: expRewardSection.right
-    margin-top: 15
     margin-left: 10
     background-color: #1a1a1a
-    border: 1 #333333
+    border-width: 1
+    border-color: #4a4326
 
     Label
       id: taskPointsRewardLabel
       text: Task Points
-      font: verdana-11px-rounded
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      color: #FFE81F
-      text-shadow: #000000
-      margin-top: 5
+      font: verdana-11px-rounded
+      color: #ffe81f
+      margin-top: 6
       text-align: center
 
     UIWidget
       id: taskPointsRewardIcon
       image-source: /images/game/prey/task_points.png
-      width: 44
-      height: 92
-      anchors.top: taskPointsRewardLabel.bottom
-      anchors.horizontalCenter: parent.horizontalCenter
-      margin-top: 3
+      size: 44 64
+      anchors.centerIn: parent
+      phantom: true
 
     Label
       id: taskPointsAmount
@@ -203,28 +191,34 @@ StartTaskDialog < MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       font: verdana-11px-rounded
-      color: #FFE81F
-      text-shadow: #000000
-      margin-bottom: 5
+      color: #ffe81f
+      margin-bottom: 6
       text-align: center
 
-  Button
-    id: okButton
-    text: Start Task
-    width: 130
-    height: 28
-    anchors.bottom: parent.bottom
-    anchors.right: parent.right
-    margin-right: 5
-    @onClick: TaskUI.confirmStartTask()
-
-  Button
-    id: cancelButton
-    text: Close
-    width: 130
-    height: 28
-    anchors.bottom: parent.bottom
+  Panel
+    id: buttonPanel
+    height: 32
     anchors.left: parent.left
-    margin-left: 5
-    color: #dfdfdf
-    @onClick: self:getParent():destroy()
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    Button
+      id: cancelButton
+      text: Close
+      size: 100 22
+      anchors.right: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+      margin-right: 5
+      @onClick: self:getParent():getParent():destroy()
+
+    Button
+      id: okButton
+      text: Start Task
+      size: 100 22
+      anchors.left: parent.horizontalCenter
+      anchors.verticalCenter: parent.verticalCenter
+      margin-left: 5
+      @onClick: TaskUI.confirmStartTask()

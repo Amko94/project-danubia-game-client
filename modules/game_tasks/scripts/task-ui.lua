@@ -27,6 +27,15 @@ local debounceEvent = nil
 local selectedActiveTask = nil
 local selectedPausedTask = nil
 
+local function resetTaskFilters()
+    if debounceEvent then
+        removeEvent(debounceEvent)
+        debounceEvent = nil
+    end
+    currentCategory = 0
+    filterText = ""
+end
+
 local function isFlagTrue(value)
     return value == true or value == 1 or value == "1"
 end
@@ -107,6 +116,8 @@ function TaskUI.show()
         currentPlayerTaskList = tasksWindow:getChildById("taskList")
         tasksWindow.onDestroy = function()
             tasksWindow = nil
+            currentPlayerTaskList = nil
+            resetTaskFilters()
         end
     end
 
@@ -131,6 +142,7 @@ function TaskUI.show()
 end
 
 function TaskUI.hide()
+    resetTaskFilters()
     if tasksWindow then
         tasksWindow:destroy()
         tasksWindow = nil
@@ -477,6 +489,7 @@ function TaskUI.filterTasks(text)
     end
     filterText = text:lower()
     debounceEvent = scheduleEvent(function()
+        debounceEvent = nil
         TaskUI.updateFilterMonsterList()
     end, 100)
 end
@@ -521,7 +534,12 @@ function TaskUI.createIconGrid(box)
     local cols = (#monsters == 4) and 2 or math.min(#monsters, 3)
     container:getLayout():setNumColumns(cols)
 
-    local cellSize, spacing = 64, -18
+    -- Two monster rows need a compact size so they stay above the Start Task button.
+    local isGroup = #monsters > 3
+    local cellSize = isGroup and 44 or 64
+    local spacing = isGroup and -6 or -18
+    container:getLayout():setCellSize({ width = cellSize, height = cellSize })
+    container:getLayout():setCellSpacing(spacing)
     container:setWidth((cols * cellSize) + ((cols - 1) * spacing))
 
     for _, monster in ipairs(monsters) do
@@ -569,7 +587,7 @@ function TaskUI.cancelTask()
     local confirm = g_ui.createWidget("ConfirmDialog", rootPanel)
     confirm.onDestroy = TaskUI.onDialogDestroy
     if tasksWindow then tasksWindow:hide() end
-    confirm:getChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
+    confirm:recursiveGetChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
             TasksManager.getTaskNameById(selectedActiveTask.taskId),
             selectedActiveTask.progress,
             selectedActiveTask.amount))
@@ -608,7 +626,7 @@ function TaskUI.cancelPausedTask()
     local confirm = g_ui.createWidget("ConfirmDialog", rootPanel)
     confirm.onDestroy = TaskUI.onDialogDestroy
     if tasksWindow then tasksWindow:hide() end
-    confirm:getChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
+    confirm:recursiveGetChildById("taskNameAndProcess"):setText(string.format("%s (%d/%d)",
             TasksManager.getTaskNameById(selectedPausedTask.taskId),
             selectedPausedTask.progress,
             selectedPausedTask.amount))
@@ -949,13 +967,16 @@ function TaskUI.showClaimRewardDialog(goldStr, expStr, pointsStr)
         goldSection:setBackgroundColor("#1a1a1a")
         expSection:setBackgroundColor("#1a1a1a")
         splitSection:setBackgroundColor("#1a1a1a")
+        goldSection:setOn(false)
+        expSection:setOn(false)
+        splitSection:setOn(false)
 
         if dialog.selectedReward == "gold" then
-            goldSection:setBackgroundColor("#2a3a1a")
+            goldSection:setOn(true)
         elseif dialog.selectedReward == "exp" then
-            expSection:setBackgroundColor("#2a1a3a")
+            expSection:setOn(true)
         elseif dialog.selectedReward == "split" then
-            splitSection:setBackgroundColor("#2a3a1a")
+            splitSection:setOn(true)
         end
     end
 

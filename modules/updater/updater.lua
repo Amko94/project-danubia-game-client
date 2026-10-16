@@ -196,10 +196,11 @@ local function updateFiles(data, keepCurrentFiles)
         -- unsigned exe gets held up by Windows Defender/SmartScreen for an
         -- unpredictable amount of time (seconds to minutes) before it can
         -- actually run, which made an automatic restart here unreliable.
-        -- Let the user close and relaunch on their own schedule instead.
-        -- keep the updater window open and switch it to a "done" state
-        -- instead of popping up a second box
-        Updater.showDone(tr("Update completed!\nPlease start the client again to apply the changes."), tr("Close"), g_app.exit)
+        -- Instead, keep the window open in a "done" state and relaunch via
+        -- g_app.restart (which retries spawning), automatically after 2s or
+        -- immediately on button click.
+        Updater.showDone(tr("Update completed! Restarting the client..."), tr("Restart now"), g_app.restart)
+        scheduledEvent = scheduleEvent(g_app.restart, 2000)
       else
         if reloadModules then
           g_modules.reloadModules()

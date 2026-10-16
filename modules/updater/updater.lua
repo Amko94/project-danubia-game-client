@@ -173,7 +173,6 @@ local function updateFiles(data, keepCurrentFiles)
   updaterWindow.downloadProgress:setPercent(0)
   updaterWindow.downloadProgress:show()
   updaterWindow.downloadStatus:show()
-  updaterWindow.changeUrlButton:hide()
   downloadFiles(data["url"], toUpdate, 1, 0, function()
     updaterWindow.status:setText(tr("Updating client (may take few seconds)"))
     updaterWindow.mainProgress:setPercent(100)
@@ -246,7 +245,6 @@ function Updater.showDone(text, buttonText, onClick)
   updaterWindow.mainProgress:setPercent(100)
   updaterWindow.downloadProgress:hide()
   updaterWindow.downloadStatus:hide()
-  updaterWindow.changeUrlButton:hide()
   if buttonText then
     updaterWindow.cancelButton:setText(buttonText)
     updaterWindow.cancelButton.onClick = onClick
@@ -308,18 +306,4 @@ function Updater.error(message)
   displayErrorBox(tr("Updater Error"), message).onOk = function()
     Updater.abort()
   end
-end
-
-function Updater.changeUrl()
-  removeEvent(scheduledEvent)
-  modules.client_textedit.edit(Services.updater, {title="Enter updater url", width=300}, function(newUrl)
-    if updaterWindow and newUrl:len() > 4 then
-      Services.updater = newUrl
-    end
-    if updaterWindow then
-      updaterWindow:destroy()
-      updaterWindow = nil
-    end
-    Updater.check()
-  end)
 end

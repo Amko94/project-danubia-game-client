@@ -1,4 +1,5 @@
 -- CONFIG
+DEV_MODE = false             -- true enables dev tools (terminal, stats, script reload). MUST be false in releases
 APP_NAME = "danubia"          -- war "otclientv8" -- WICHTIG (siehe Kommentar im Original)
 APP_VERSION = 1                -- war 1341, sinnvoller Startwert für euch
 DEFAULT_LAYOUT = "retro"       -- unverändert lassen
@@ -20,7 +21,7 @@ Servers = {
 --Server = "ws://otclient.ovh:3000/"
 --Server = "ws://127.0.0.1:88/"
 --USE_NEW_ENERGAME = true -- uses entergamev2 based on websockets instead of entergame
-ALLOW_CUSTOM_SERVERS = true -- if true it shows option ANOTHER on server list
+ALLOW_CUSTOM_SERVERS = false -- if true it shows option ANOTHER on server list
 
 g_app.setName("ProjectDanubia")
 -- CONFIG END
@@ -60,6 +61,12 @@ local function loadModules()
   -- client modules 100-499
   g_modules.autoLoadModules(499)
   g_modules.ensureModuleLoaded("client")
+
+  -- dev tools only (never in releases)
+  if DEV_MODE then
+    g_modules.ensureModuleLoaded("client_terminal")
+    g_modules.ensureModuleLoaded("client_stats")
+  end
 
   -- game modules 500-999
   g_modules.autoLoadModules(999)

@@ -71,16 +71,6 @@ StaticMainWindow
     visible: false
 
   Button
-    id: changeUrlButton
-    width: 140
-    anchors.bottom: cancelButton.top
-    anchors.horizontalCenter: parent.horizontalCenter
-    margin-bottom: 6
-    !text: tr('Change updater URL')
-    @onClick: Updater.changeUrl()
-    visible: false
-
-  Button
     id: cancelButton
     width: 100
     anchors.bottom: parent.bottom

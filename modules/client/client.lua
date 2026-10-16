@@ -11,7 +11,7 @@ function setMusic(filename)
 end
 
 function reloadScripts()
-  if g_game.getFeature(GameNoDebug) then
+  if not DEV_MODE or g_game.getFeature(GameNoDebug) then
     return
   end
   
@@ -86,7 +86,9 @@ function init()
   g_window.setTitle(g_app.getName())
   g_window.setIcon('/images/clienticon')
 
-  g_keyboard.bindKeyDown('Ctrl+Shift+R', reloadScripts)
+  if DEV_MODE then
+    g_keyboard.bindKeyDown('Ctrl+Shift+R', reloadScripts)
+  end
 
   -- generate machine uuid, this is a security measure for storing passwords
   if not g_crypt.setMachineUUID(g_settings.get('uuid')) then

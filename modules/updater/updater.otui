@@ -37,12 +37,14 @@ StaticMainWindow
     id: status
     !text: tr('Checking for updates')
     text-align: center
-    text-auto-resize: true
     text-wrap: true
+    height: 32
     anchors.top: title.bottom
     anchors.left: parent.left
     anchors.right: parent.right
     margin-top: 4
+    margin-left: 10
+    margin-right: 10
 
   UpdaterBar
     id: mainProgress

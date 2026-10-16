@@ -28,6 +28,8 @@ local function initAppWindow()
   g_window.resize(size)
 
   -- window position, default is the screen center
+
+
   local displaySize = g_window.getDisplaySize()
   local defaultPos = { x = (displaySize.width - size.width)/2,
                        y = (displaySize.height - size.height)/2 }

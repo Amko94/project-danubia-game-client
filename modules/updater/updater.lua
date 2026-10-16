@@ -9,6 +9,7 @@ Updater.maxRetries = 5
 local updaterWindow
 local loadModulesFunction
 local scheduledEvent
+local iconEvent
 local httpOperationId = 0
 
 local function onLog(level, message, time)
@@ -66,7 +67,8 @@ local function downloadFiles(url, files, index, retries, doneCallback)
     updaterWindow.downloadStatus:setText(tr("Downloading:\n%s", file))
   end
   updaterWindow.downloadProgress:setPercent(0)
-  updaterWindow.mainProgress:setPercent(math.floor(100 * index / #files))
+  updaterWindow.status:setText(tr("Updating file %i of %i", index, #files))
+  updaterWindow.mainProgress:setPercent(math.floor(100 * (index - 1) / #files))
   
   httpOperationId = HTTP.download(url .. file, file,
     function (file, checksum, err)
@@ -166,6 +168,7 @@ local function updateFiles(data, keepCurrentFiles)
   end
   
   updaterWindow.status:setText(tr("Updating %i files", #toUpdate))
+  Updater.startIconAnimation()
   updaterWindow.mainProgress:setPercent(0)
   updaterWindow.downloadProgress:setPercent(0)
   updaterWindow.downloadProgress:show()
@@ -195,14 +198,15 @@ local function updateFiles(data, keepCurrentFiles)
         -- unpredictable amount of time (seconds to minutes) before it can
         -- actually run, which made an automatic restart here unreliable.
         -- Let the user close and relaunch on their own schedule instead.
-        displayInfoBox("Update completed", "The client has been updated. Please restart the application to apply the changes.").onOk = function()
-          g_app.exit()
-        end
+        -- keep the updater window open and switch it to a "done" state
+        -- instead of popping up a second box
+        Updater.showDone(tr("Update completed!\nPlease start the client again to apply the changes."), tr("Close"), g_app.exit)
       else
         if reloadModules then
           g_modules.reloadModules()
         end
-        Updater.abort()
+        Updater.showDone(tr("Update completed!"), nil, nil)
+        scheduledEvent = scheduleEvent(Updater.abort, 1200)
       end
     end, 100)  
   end)
@@ -221,9 +225,40 @@ function Updater.terminate()
   Updater.abort()
 end
 
+function Updater.startIconAnimation()
+  removeEvent(iconEvent)
+  local tick = 0
+  local function step()
+    if not updaterWindow then return end
+    tick = tick + 1
+    updaterWindow.icon:setMarginTop(6 + math.floor(3 * math.sin(tick / 4) + 0.5))
+    iconEvent = scheduleEvent(step, 60)
+  end
+  step()
+end
+
+function Updater.showDone(text, buttonText, onClick)
+  removeEvent(iconEvent)
+  if not updaterWindow then return end
+  updaterWindow.icon:setMarginTop(6)
+  updaterWindow.status:setText(text)
+  updaterWindow.status:setColor('#6fdc7c')
+  updaterWindow.mainProgress:setPercent(100)
+  updaterWindow.downloadProgress:hide()
+  updaterWindow.downloadStatus:hide()
+  updaterWindow.changeUrlButton:hide()
+  if buttonText then
+    updaterWindow.cancelButton:setText(buttonText)
+    updaterWindow.cancelButton.onClick = onClick
+  else
+    updaterWindow.cancelButton:hide()
+  end
+end
+
 function Updater.abort()
   HTTP.cancel(httpOperationId)
   removeEvent(scheduledEvent)
+  removeEvent(iconEvent)
   if updaterWindow then
     updaterWindow:destroy()
     updaterWindow = nil

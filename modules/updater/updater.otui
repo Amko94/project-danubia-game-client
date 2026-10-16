@@ -1,52 +1,89 @@
+UpdaterBar < UIProgressBar
+  height: 14
+  background-color: #3a8dde
+  border: 1 #000000
+  image-source: /images/ui/progressbar
+  image-border: 1
+  font: verdana-11px-rounded
+  text-offset: 0 1
+
 StaticMainWindow
   id: updaterWindow
   !text: tr('Updater')
-  width: 350
+  width: 420
+  height: 330
 
-  layout:
-    type: verticalBox
-    fit-children: true
-      
+  UIWidget
+    id: icon
+    size: 96 96
+    image-source: /images/clienticon
+    image-smooth: true
+    anchors.top: parent.top
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-top: 6
+
+  Label
+    id: title
+    !text: tr('Danubia')
+    font: verdana-11px-rounded
+    color: #ffd24d
+    text-align: center
+    anchors.top: icon.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 6
+
   Label
     id: status
     !text: tr('Checking for updates')
     text-align: center
+    anchors.top: title.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 4
 
-  ProgressBar
+  UpdaterBar
     id: mainProgress
-    height: 15
-    background-color: #4444ff
-    margin-bottom: 5
-    margin-top: 5
+    anchors.top: status.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
 
   Label
     id: downloadStatus
     text-align: center
     text-auto-resize: true
     text-wrap: true
+    color: #aaaaaa
+    anchors.top: mainProgress.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
     visible: false
 
-  ProgressBar
+  UpdaterBar
     id: downloadProgress
-    height: 15
-    background-color: #4444ff
-    margin-bottom: 5
-    margin-top: 5
+    background-color: #44aa66
+    anchors.top: downloadStatus.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 6
     visible: false
-          
+
   Button
     id: changeUrlButton
-    margin-left: 50
-    margin-right: 50
-    margin-top: 5
-    margin-bottom: 10
+    width: 140
+    anchors.bottom: cancelButton.top
+    anchors.horizontalCenter: parent.horizontalCenter
+    margin-bottom: 6
     !text: tr('Change updater URL')
     @onClick: Updater.changeUrl()
     visible: false
 
   Button
-    margin-left: 90
-    margin-right: 90
+    id: cancelButton
+    width: 100
+    anchors.bottom: parent.bottom
+    anchors.horizontalCenter: parent.horizontalCenter
     !text: tr('Cancel')
     @onClick: Updater.abort()
-

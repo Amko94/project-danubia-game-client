@@ -448,6 +448,36 @@ void DrawQueueItemOutfitWithShader::draw()
     if (!m_texture) return;
     PainterShaderProgramPtr shader = g_shaders.getShader(m_shader);
     if (!shader) return DrawQueueItemTexturedRect::draw();
+
+    // "outfit_variant_*" shaders draw an aura around the sprite. A plain outfit shader only
+    // sees the sprite's own pixels, so render the sprite into a framebuffer with a transparent
+    // border first and run the shader over that, drawn into a correspondingly larger rect.
+    if (m_shader.compare(0, 15, "outfit_variant_") == 0 && m_src.width() > 0 && m_src.height() > 0) {
+        const int pad = 8;
+        const Size fbSize(m_src.width() + pad * 2, m_src.height() + pad * 2);
+        g_framebuffers.getTemporaryFrameBuffer()->resize(fbSize);
+        g_framebuffers.getTemporaryFrameBuffer()->bind();
+        g_painter->clear(Color::alpha);
+        g_painter->drawTexturedRect(Rect(Point(pad, pad), m_src.size()), m_texture, m_src);
+        g_framebuffers.getTemporaryFrameBuffer()->release();
+
+        const float scaleX = static_cast<float>(m_dest.width()) / m_src.width();
+        const float scaleY = static_cast<float>(m_dest.height()) / m_src.height();
+        const int padX = static_cast<int>(std::round(pad * scaleX));
+        const int padY = static_cast<int>(std::round(pad * scaleY));
+        const Rect dest(m_dest.x() - padX, m_dest.y() - padY, m_dest.width() + padX * 2, m_dest.height() + padY * 2);
+
+        g_painter->resetColor();
+        g_painter->setShaderProgram(shader);
+        shader->setMatrixColor(Matrix4());
+        // u_Center carries the framebuffer size in pixels so the shader can step one texel.
+        shader->setCenter(Point(fbSize.width(), fbSize.height()));
+        shader->bindMultiTextures();
+        g_framebuffers.getTemporaryFrameBuffer()->draw(dest);
+        g_painter->resetShaderProgram();
+        return;
+    }
+
     bool useFramebuffer = m_dest.size() != m_src.size();
 
     if (useFramebuffer) {

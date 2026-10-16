@@ -1,0 +1,11 @@
+Module
+  name: game_monster_variants
+  description: Client-side Minor and Major monster shaders
+  author: Project Danubia
+  sandboxed: true
+  autoload: true
+  autoload-priority: 550
+  dependencies: [ gamelib ]
+  scripts: [ monster_variants ]
+  @onLoad: init()
+  @onUnload: terminate()

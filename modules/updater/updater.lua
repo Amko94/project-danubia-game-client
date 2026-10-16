@@ -192,15 +192,15 @@ local function updateFiles(data, keepCurrentFiles)
         g_resources.updateExecutable(binary)
       end
       if restart then
-        -- don't spawn the freshly downloaded binary ourselves: a fresh,
-        -- unsigned exe gets held up by Windows Defender/SmartScreen for an
-        -- unpredictable amount of time (seconds to minutes) before it can
-        -- actually run, which made an automatic restart here unreliable.
-        -- Instead, keep the window open in a "done" state and relaunch via
-        -- g_app.restart (which retries spawning), automatically after 2s or
-        -- immediately on button click.
-        Updater.showDone(tr("Update completed! Restarting the client..."), tr("Restart now"), g_app.restart)
-        scheduledEvent = scheduleEvent(g_app.restart, 2000)
+        -- the running client can't swap its own exe/dlls, so start the new
+        -- version and close this one. g_app.restart retries in the background
+        -- while an antivirus scan (Windows Defender) still holds the freshly
+        -- written exe, and only closes this client once the new one is up -
+        -- keep the window animating meanwhile, that can take a while
+        updaterWindow.status:setText(tr("Update completed! Starting the new version..."))
+        updaterWindow.cancelButton:hide()
+        connect(g_app, { onRestartFailed = Updater.onRestartFailed })
+        g_app.restart()
       else
         if reloadModules then
           g_modules.reloadModules()
@@ -249,9 +249,15 @@ function Updater.showDone(text, buttonText, onClick)
   if buttonText then
     updaterWindow.cancelButton:setText(buttonText)
     updaterWindow.cancelButton.onClick = onClick
+    updaterWindow.cancelButton:show()
   else
     updaterWindow.cancelButton:hide()
   end
+end
+
+function Updater.onRestartFailed()
+  disconnect(g_app, { onRestartFailed = Updater.onRestartFailed })
+  Updater.showDone(tr("Update completed!\nPlease start the client again to apply the changes."), tr("Close"), g_app.exit)
 end
 
 function Updater.abort()

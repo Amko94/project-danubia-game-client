@@ -820,11 +820,9 @@ void ResourceManager::updateExecutable(std::string fileName)
     // overwrite the exe we're currently running from, in place. Windows
     // allows replacing a running executable's on-disk file (rename it out of
     // the way, then write a new file under the original name - the already
-    // loaded image stays valid in memory for this session), so the update
-    // takes effect the next time the user launches this same file/shortcut.
-    // We deliberately don't spawn the new binary ourselves anymore (see
-    // updater.lua) - freshly written, unsigned exes get held up by Windows
-    // Defender/SmartScreen for an unpredictable amount of time.
+    // loaded image stays valid in memory for this session), so the user's
+    // file/shortcut keeps pointing at the current version. The updater then
+    // starts this new file via g_app.restart (see Application::restartArgs).
     std::error_code ec;
     std::filesystem::path oldPath = m_binaryPath;
     oldPath += ".old";

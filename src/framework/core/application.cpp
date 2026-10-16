@@ -34,12 +34,12 @@
 #include <framework/http/http.h>
 
 #ifndef FREE_VERSION
-#ifndef BOOST_PROCESS_VERSION
-#define BOOST_PROCESS_VERSION 1
-#endif
-#include <boost/process/v1/args.hpp>
-#include <boost/process/v1/child.hpp>
+#include <atomic>
+#include <filesystem>
 #include <thread>
+#ifdef WIN32
+#include <windows.h>
+#endif
 #endif
 
 #include <locale>
@@ -180,40 +180,76 @@ void Application::close()
 
 #ifndef FREE_VERSION
 namespace {
-// A binary that was just written to disk by the updater can be briefly
-// locked by antivirus/real-time-scan (e.g. Windows Defender), which makes
-// launching it right away fail with a transient error. Retry a few times
-// before giving up, and surface the real error message instead of letting
-// it bubble up as an opaque "C++ call failed" lua error.
-void spawnRestartProcess(const std::string& binary, const std::vector<std::string>* args)
+#ifdef WIN32
+// Starts the binary and waits (bounded) until the new process has its window
+// up and is idle waiting for input, so the old client only disappears once the
+// new one is actually there. Returns 0 on success, otherwise the error code.
+int launchBinary(const std::string& binary, const std::vector<std::string>& args)
 {
-    // Windows Defender (and similar on-access scanners) can hold an exclusive
-    // scan lock on a freshly-written, unsigned exe for several seconds before
-    // releasing it - worth waiting out rather than failing the update.
-    constexpr int MAX_ATTEMPTS = 30;
-    constexpr auto RETRY_DELAY = std::chrono::milliseconds(500);
+    std::wstring path = std::filesystem::path(binary).wstring();
+    std::wstring commandLine = L"\"" + path + L"\"";
+    for (const std::string& arg : args)
+        commandLine += L" \"" + stdext::utf8_to_utf16(arg) + L"\"";
 
-    std::string lastError;
-    for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-        try {
-            boost::process::child c = args ? boost::process::child(binary, boost::process::args(*args))
-                                            : boost::process::child(binary);
-            std::error_code ec2;
-            const bool exited = c.wait_for(std::chrono::seconds(1), ec2);
-            if (exited && c.exit_code() != 0) {
-                g_logger.fatal(stdext::format("Updater restart error, new process exited with code %i. Please restart application", c.exit_code()));
+    STARTUPINFOW si = { sizeof(si) };
+    PROCESS_INFORMATION pi = {};
+    if (!CreateProcessW(path.c_str(), &commandLine[0], NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
+        return (int)GetLastError();
+
+    DWORD exitCode = STILL_ACTIVE;
+    for (int i = 0; i < 200 && WaitForInputIdle(pi.hProcess, 100) == WAIT_TIMEOUT; ++i) {
+        if (GetExitCodeProcess(pi.hProcess, &exitCode) && exitCode != STILL_ACTIVE)
+            break;
+    }
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+    return 0;
+}
+#else
+int launchBinary(const std::string& binary, const std::vector<std::string>& args)
+{
+    return g_platform.spawnProcess(binary, args) ? 0 : -1;
+}
+#endif
+
+// A running process can't swap its own exe/dlls, so restarting means starting
+// the (just updated) binary and closing this one. A freshly written, unsigned
+// exe can stay locked by an antivirus scan (Windows Defender) for anything from
+// a few seconds up to ~2 minutes, so launching is retried on a background
+// thread while the client stays open and responsive. This instance only exits
+// once the new one is running; if it never starts, g_app.onRestartFailed is
+// called instead and the client keeps running.
+void restartInBackground(const std::string& binary, const std::vector<std::string>& args)
+{
+    static std::atomic<bool> restarting(false);
+    if (restarting.exchange(true))
+        return;
+
+    g_logger.info(stdext::format("Restarting, launching %s", binary));
+    std::thread([binary, args] {
+        constexpr int MAX_ATTEMPTS = 180;
+        bool started = false;
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS && !g_app.isStopping(); ++attempt) {
+            int error = launchBinary(binary, args);
+            if ((started = error == 0))
+                break;
+            if (attempt == 1 || attempt % 30 == 0)
+                g_logger.info(stdext::format("Restart: can't launch %s yet (error %d, attempt %d), retrying", binary, error, attempt));
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+        if (g_app.isStopping())
+            return;
+
+        g_dispatcher.addEvent([started, binary] {
+            if (started) {
+                g_app.exit();
                 return;
             }
-            if (!exited)
-                c.detach();
-            return;
-        } catch (const std::exception& e) {
-            lastError = e.what();
-            if (attempt < MAX_ATTEMPTS)
-                std::this_thread::sleep_for(RETRY_DELAY);
-        }
-    }
-    g_logger.fatal(stdext::format("Updater restart error, failed to launch %s: %s", binary, lastError));
+            restarting = false;
+            g_logger.warning(stdext::format("Restart failed, could not launch %s", binary));
+            g_lua.callGlobalField("g_app", "onRestartFailed");
+        });
+    }).detach();
 }
 }
 #endif
@@ -221,13 +257,7 @@ void spawnRestartProcess(const std::string& binary, const std::vector<std::strin
 void Application::restart()
 {
 #ifndef FREE_VERSION
-    // prefer the exact binary just downloaded by the updater (if any) - the
-    // bare binary name would otherwise resolve back to the OLD executable
-    std::string binary = g_resources.getNewBinaryPath();
-    if (binary.empty())
-        binary = g_resources.getBinaryPath();
-    spawnRestartProcess(binary, nullptr);
-    quick_exit();
+    restartArgs({});
 #else
     exit();
 #endif
@@ -236,11 +266,12 @@ void Application::restart()
 void Application::restartArgs(const std::vector<std::string>& args)
 {
 #ifndef FREE_VERSION
+    // prefer the exact binary just downloaded by the updater (if any) - the
+    // bare binary name would otherwise resolve back to the OLD executable
     std::string binary = g_resources.getNewBinaryPath();
     if (binary.empty())
         binary = g_resources.getBinaryPath();
-    spawnRestartProcess(binary, &args);
-    quick_exit();
+    restartInBackground(binary, args);
 #else
     exit();
 #endif

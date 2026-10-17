@@ -194,15 +194,10 @@ local function updateFiles(data, keepCurrentFiles)
         g_resources.updateExecutable(binary)
       end
       if restart then
-        -- the running client can't swap its own exe/dlls, so start the new
-        -- version and close this one. g_app.restart retries in the background
-        -- while an antivirus scan (Windows Defender) still holds the freshly
-        -- written exe, and only closes this client once the new one is up -
-        -- keep the window animating meanwhile, that can take a while
-        updaterWindow.status:setText(tr("Update completed! Starting the new version..."))
-        updaterWindow.cancelButton:hide()
-        connect(g_app, { onRestartFailed = Updater.onRestartFailed })
-        g_app.restart()
+        -- don't relaunch the client ourselves (a freshly written, unsigned exe
+        -- gets held up by Windows Defender, which made that unreliable) - just
+        -- tell the user to start it again
+        Updater.showDone(tr("Update completed!\nPlease restart the client."), tr("Close"), g_app.exit)
       else
         if reloadModules then
           g_modules.reloadModules()
@@ -255,11 +250,6 @@ function Updater.showDone(text, buttonText, onClick)
   else
     updaterWindow.cancelButton:hide()
   end
-end
-
-function Updater.onRestartFailed()
-  disconnect(g_app, { onRestartFailed = Updater.onRestartFailed })
-  Updater.showDone(tr("Update completed!\nPlease start the client again to apply the changes."), tr("Close"), g_app.exit)
 end
 
 function Updater.abort()

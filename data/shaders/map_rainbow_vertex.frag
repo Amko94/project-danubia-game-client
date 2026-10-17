@@ -1,13 +1,10 @@
 attribute vec2 a_TexCoord;
 attribute vec2 a_Vertex;
-
 varying vec2 v_TexCoord;
 varying vec2 v_TexCoord2;
-
 uniform mat3 u_TextureMatrix;
 uniform mat3 u_TransformMatrix;
 uniform mat3 u_ProjectionMatrix;
-
 uniform vec2 u_Offset;
 uniform vec2 u_Center;
 uniform float u_Time;

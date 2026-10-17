@@ -22,6 +22,8 @@
 
 #include "application.h"
 #include <csignal>
+#include <cerrno>
+#include <cstdlib>
 #include <framework/core/clock.h>
 #include <framework/core/resourcemanager.h>
 #include <framework/core/modulemanager.h>
@@ -37,9 +39,9 @@
 #include <atomic>
 #include <filesystem>
 #include <thread>
+#endif
 #ifdef WIN32
 #include <windows.h>
-#endif
 #endif
 
 #include <locale>
@@ -79,8 +81,8 @@ void Application::init(std::vector<std::string>& args)
     // setup locale
     std::locale::global(std::locale());
 
-    // process args encoding
-    g_platform.processArgs(args);
+    // Arguments have already been decoded and restart arguments consumed in main.
+    m_startupArgs.assign(args.begin() + 1, args.end());
 
     g_asyncDispatcher.init();
 
@@ -108,6 +110,10 @@ void Application::init(std::vector<std::string>& args)
 
 void Application::deinit()
 {
+    m_restartCancelled = true;
+    if (m_restartThread.joinable())
+        m_restartThread.join();
+
     g_lua.callGlobalField("g_app", "onTerminate");
 
     // run modules unload events
@@ -159,6 +165,7 @@ void Application::poll()
 
 void Application::exit()
 {
+    m_restartCancelled = true;
     g_lua.callGlobalField<bool>("g_app", "onExit");
     m_stopping = true;
 }
@@ -181,26 +188,39 @@ void Application::close()
 #ifndef FREE_VERSION
 namespace {
 #ifdef WIN32
-// Starts the binary and waits (bounded) until the new process has its window
-// up and is idle waiting for input, so the old client only disappears once the
-// new one is actually there. Returns 0 on success, otherwise the error code.
+// Quote according to CommandLineToArgvW, including quotes and trailing slashes.
+std::wstring quoteArgument(const std::wstring& arg)
+{
+    std::wstring result = L"\"";
+    size_t slashes = 0;
+    for (wchar_t c : arg) {
+        if (c == L'\\') {
+            ++slashes;
+            continue;
+        }
+        result.append(c == L'"' ? slashes * 2 + 1 : slashes, L'\\');
+        result += c;
+        slashes = 0;
+    }
+    result.append(slashes * 2, L'\\');
+    return result + L'"';
+}
+
+// The child waits for this process to exit before opening settings or deleting
+// the old executable. Waiting for its input idle here would deadlock that handoff.
 int launchBinary(const std::string& binary, const std::vector<std::string>& args)
 {
     std::wstring path = std::filesystem::path(binary).wstring();
-    std::wstring commandLine = L"\"" + path + L"\"";
+    std::wstring commandLine = quoteArgument(path);
     for (const std::string& arg : args)
-        commandLine += L" \"" + stdext::utf8_to_utf16(arg) + L"\"";
+        commandLine += L" " + quoteArgument(stdext::utf8_to_utf16(arg));
+    commandLine += L" --wait-for-parent " + std::to_wstring(GetCurrentProcessId());
 
     STARTUPINFOW si = { sizeof(si) };
     PROCESS_INFORMATION pi = {};
     if (!CreateProcessW(path.c_str(), &commandLine[0], NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi))
         return (int)GetLastError();
 
-    DWORD exitCode = STILL_ACTIVE;
-    for (int i = 0; i < 200 && WaitForInputIdle(pi.hProcess, 100) == WAIT_TIMEOUT; ++i) {
-        if (GetExitCodeProcess(pi.hProcess, &exitCode) && exitCode != STILL_ACTIVE)
-            break;
-    }
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
     return 0;
@@ -212,52 +232,43 @@ int launchBinary(const std::string& binary, const std::vector<std::string>& args
 }
 #endif
 
-// A running process can't swap its own exe/dlls, so restarting means starting
-// the (just updated) binary and closing this one. A freshly written, unsigned
-// exe can stay locked by an antivirus scan (Windows Defender) for anything from
-// a few seconds up to ~2 minutes, so launching is retried on a background
-// thread while the client stays open and responsive. This instance only exits
-// once the new one is running; if it never starts, g_app.onRestartFailed is
-// called instead and the client keeps running.
-void restartInBackground(const std::string& binary, const std::vector<std::string>& args)
-{
-    static std::atomic<bool> restarting(false);
-    if (restarting.exchange(true))
-        return;
-
-    g_logger.info(stdext::format("Restarting, launching %s", binary));
-    std::thread([binary, args] {
-        constexpr int MAX_ATTEMPTS = 180;
-        bool started = false;
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS && !g_app.isStopping(); ++attempt) {
-            int error = launchBinary(binary, args);
-            if ((started = error == 0))
-                break;
-            if (attempt == 1 || attempt % 30 == 0)
-                g_logger.info(stdext::format("Restart: can't launch %s yet (error %d, attempt %d), retrying", binary, error, attempt));
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-        if (g_app.isStopping())
-            return;
-
-        g_dispatcher.addEvent([started, binary] {
-            if (started) {
-                g_app.exit();
-                return;
-            }
-            restarting = false;
-            g_logger.warning(stdext::format("Restart failed, could not launch %s", binary));
-            g_lua.callGlobalField("g_app", "onRestartFailed");
-        });
-    }).detach();
-}
 }
 #endif
+
+bool Application::prepareStartup(std::vector<std::string>& args)
+{
+    g_platform.processArgs(args);
+#ifdef WIN32
+    auto flag = std::find(args.begin() + 1, args.end(), "--wait-for-parent");
+    if (flag != args.end()) {
+        if (flag + 1 == args.end())
+            return false;
+        const std::string pidText = *(flag + 1);
+        char* end = nullptr;
+        errno = 0;
+        unsigned long pid = std::strtoul(pidText.c_str(), &end, 10);
+        if (pidText.empty() || pidText.find_first_not_of("0123456789") != std::string::npos ||
+            errno == ERANGE || *end != '\0' || pid == 0 || pid == GetCurrentProcessId())
+            return false;
+        HANDLE parent = OpenProcess(SYNCHRONIZE, FALSE, pid);
+        if (parent) {
+            DWORD result = WaitForSingleObject(parent, 60000);
+            CloseHandle(parent);
+            if (result != WAIT_OBJECT_0)
+                return false;
+        } else if (GetLastError() != ERROR_INVALID_PARAMETER) {
+            return false;
+        }
+        args.erase(flag, flag + 2);
+    }
+#endif
+    return true;
+}
 
 void Application::restart()
 {
 #ifndef FREE_VERSION
-    restartArgs({});
+    restartArgs(m_startupArgs);
 #else
     exit();
 #endif
@@ -266,12 +277,41 @@ void Application::restart()
 void Application::restartArgs(const std::vector<std::string>& args)
 {
 #ifndef FREE_VERSION
+    if (m_restarting)
+        return;
+    if (m_restartThread.joinable())
+        m_restartThread.join();
+    m_restarting = true;
+    m_restartCancelled = false;
     // prefer the exact binary just downloaded by the updater (if any) - the
     // bare binary name would otherwise resolve back to the OLD executable
     std::string binary = g_resources.getNewBinaryPath();
     if (binary.empty())
         binary = g_resources.getBinaryPath();
-    restartInBackground(binary, args);
+    // Defender can temporarily lock a downloaded EXE. Keep the UI responsive
+    // while retrying and retain this instance if Windows cannot start the child.
+    m_restartThread = std::thread([this, binary, args] {
+        bool started = false;
+        int error = 0;
+        for (int attempt = 0; attempt < 180 && !m_restartCancelled; ++attempt) {
+            error = launchBinary(binary, args);
+            if ((started = error == 0))
+                break;
+            for (int tick = 0; tick < 10 && !m_restartCancelled; ++tick)
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        if (m_restartCancelled)
+            return;
+        g_dispatcher.addEvent([this, started, error] {
+            if (started) {
+                exit();
+            } else {
+                m_restarting = false;
+                g_logger.warning(stdext::format("Restart failed (error %d)", error));
+                g_lua.callGlobalField("g_app", "onRestartFailed");
+            }
+        });
+    });
 #else
     exit();
 #endif

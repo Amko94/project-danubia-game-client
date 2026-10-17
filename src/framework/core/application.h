@@ -24,6 +24,8 @@
 #define APPLICATION_H
 
 #include <framework/global.h>
+#include <atomic>
+#include <thread>
 
 //@bindsingleton g_app
 class Application
@@ -42,6 +44,8 @@ public:
     virtual void close();
     void restart();
     void restartArgs(const std::vector<std::string>& args);
+    // Handles the private restart argument before resources or settings are opened.
+    static bool prepareStartup(std::vector<std::string>& args);
 
     void setName(const std::string& name) { m_appName = name; }
     void setCompactName(const std::string& compactName) { m_appCompactName = compactName; }
@@ -77,6 +81,10 @@ protected:
     std::string m_appCompactName;
     std::string m_appVersion;
     std::string m_startupOptions;
+    std::vector<std::string> m_startupArgs;
+    std::thread m_restartThread;
+    std::atomic<bool> m_restartCancelled{false};
+    bool m_restarting = false;
     stdext::boolean<false> m_running;
     stdext::boolean<false> m_stopping;
     stdext::boolean<false> m_terminated;

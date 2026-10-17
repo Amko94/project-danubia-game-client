@@ -27,10 +27,13 @@
 #include <framework/http/http.h>
 #include <framework/platform/crashhandler.h>
 #include <framework/platform/platformwindow.h>
+#include <framework/platform/platform.h>
 #include <client/client.h>
 
 int main(int argc, const char* argv[]) {
     std::vector<std::string> args(argv, argv + argc);
+    if (!Application::prepareStartup(args))
+        return 1;
 
 #ifdef CRASH_HANDLER
     installCrashHandler();
@@ -38,8 +41,18 @@ int main(int argc, const char* argv[]) {
 
     // initialize resources
     g_resources.init(argv[0]);
+    g_resources.cleanupUpdateFiles();
     std::string compactName = g_resources.getCompactName();
-    g_logger.setLogFile(compactName + ".log");
+    // Normal releases leave no log beside the client. Keep opt-in diagnostics.
+    if (std::find(args.begin(), args.end(), "--log") != args.end()) {
+        g_logger.setLogFile(compactName + ".log");
+    } else {
+#ifndef ANDROID
+        std::error_code ec;
+        std::filesystem::remove(compactName + ".log", ec);
+        std::filesystem::remove(std::filesystem::path(g_resources.getBinaryPath()).parent_path() / (compactName + ".log"), ec);
+#endif
+    }
 
     // setup application name and version
     g_app.setName("OTClientV8");

@@ -33,6 +33,8 @@ public:
     void init(const char *argv0);
     // @dontbind
     void terminate();
+    // @dontbind
+    void cleanupUpdateFiles();
 
     bool launchCorrect(const std::string& product, const std::string& app);
     bool setupWriteDir(const std::string& product, const std::string& app);

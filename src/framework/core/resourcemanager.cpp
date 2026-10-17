@@ -31,6 +31,7 @@
 #include <framework/http/http.h>
 #include <queue>
 #include <regex>
+#include <thread>
 
 #if !defined(ANDROID) && !defined(FREE_VERSION)
 #ifndef BOOST_PROCESS_VERSION
@@ -69,6 +70,24 @@ void ResourceManager::init(const char *argv0)
 void ResourceManager::terminate()
 {
     PHYSFS_deinit();
+}
+
+void ResourceManager::cleanupUpdateFiles()
+{
+#ifndef ANDROID
+    auto oldPath = m_binaryPath;
+    oldPath += ".old";
+    // The restart child normally waited for its parent already. Retry locks
+    // briefly, also covering an update from a client using the older handoff.
+    std::error_code ec;
+    for (int attempt = 0; attempt < 300; ++attempt) {
+        std::filesystem::remove(oldPath, ec);
+        if (!ec)
+            return;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    g_logger.warning(stdext::format("Cannot remove update backup: %s", ec.message()));
+#endif
 }
 
 bool ResourceManager::launchCorrect(const std::string& product, const std::string& app) { // curently works only on windows
@@ -817,25 +836,14 @@ void ResourceManager::updateExecutable(std::string fileName)
     if (!dFile)
         g_logger.fatal(stdext::format("Cannot find executable: %s in downloads", fileName));
 
-    // overwrite the exe we're currently running from, in place. Windows
-    // allows replacing a running executable's on-disk file (rename it out of
-    // the way, then write a new file under the original name - the already
-    // loaded image stays valid in memory for this session), so the user's
-    // file/shortcut keeps pointing at the current version. The updater then
-    // starts this new file via g_app.restart (see Application::restartArgs).
+    // Finish and check the self-contained replacement before moving the running
+    // executable. A failed write must leave the user's working client intact.
     std::error_code ec;
-    std::filesystem::path oldPath = m_binaryPath;
-    oldPath += ".old";
-    std::filesystem::remove(oldPath, ec);
-    std::filesystem::rename(m_binaryPath, oldPath, ec);
-    if (ec)
-        return g_logger.fatal(stdext::format("can't move current executable out of the way: %s", ec.message()));
-
-    std::ofstream out(m_binaryPath, std::ios::binary | std::ios::trunc);
-    if (!out.is_open()) {
-        std::filesystem::rename(oldPath, m_binaryPath, ec); // best effort restore
-        return g_logger.fatal(stdext::format("can't write new executable to %s", m_binaryPath.string()));
-    }
+    auto stagedPath = m_binaryPath;
+    stagedPath += ".update";
+    std::ofstream out(stagedPath, std::ios::binary | std::ios::trunc);
+    if (!out.is_open())
+        stdext::throw_exception(stdext::format("Can't write executable update: %s", stagedPath.string()));
     out.write((const char*)dFile->response.data(), dFile->response.size());
 
     // append data.zip so the written exe is self-contained (loadDataFromSelf),
@@ -845,17 +853,44 @@ void ResourceManager::updateExecutable(std::string fileName)
     // exists or is discoverable yet, so the write dir alone isn't enough here
     PHYSFS_File* dataZip = PHYSFS_openRead("data.zip");
     if (dataZip) {
-        int zipSize = PHYSFS_fileLength(dataZip);
-        std::vector<char> zipBuffer(zipSize);
-        PHYSFS_readBytes(dataZip, zipBuffer.data(), zipSize);
+        auto zipSize = PHYSFS_fileLength(dataZip);
+        std::vector<char> zipBuffer(zipSize >= 1024 ? static_cast<size_t>(zipSize) : 0);
+        auto bytesRead = PHYSFS_readBytes(dataZip, zipBuffer.data(), zipBuffer.size());
         PHYSFS_close(dataZip);
-        out.write(zipBuffer.data(), zipBuffer.size());
+        if (zipSize >= 1024 && bytesRead == zipSize)
+            out.write(zipBuffer.data(), zipBuffer.size());
+        else
+            out.setstate(std::ios::failbit);
     } else {
-        g_logger.error("data.zip not found while updating executable - new binary won't be self-contained");
+        out.setstate(std::ios::failbit);
     }
 
     out.close();
-    std::filesystem::remove(oldPath, ec); // best effort cleanup, ok if this fails
+    if (!out) {
+        std::filesystem::remove(stagedPath, ec);
+        stdext::throw_exception("Can't finish executable update (write failed or data.zip missing)");
+    }
+
+    auto oldPath = m_binaryPath;
+    oldPath += ".old";
+    std::filesystem::remove(oldPath, ec);
+    if (!ec)
+        std::filesystem::rename(m_binaryPath, oldPath, ec);
+    if (ec) {
+        const auto message = ec.message();
+        std::filesystem::remove(stagedPath, ec);
+        stdext::throw_exception("Can't replace current executable: " + message);
+    }
+    std::filesystem::rename(stagedPath, m_binaryPath, ec);
+    if (ec) {
+        const auto message = ec.message();
+        std::filesystem::rename(oldPath, m_binaryPath, ec);
+        std::filesystem::remove(stagedPath, ec);
+        stdext::throw_exception("Can't install executable update: " + message);
+    }
+    m_newBinaryPath = m_binaryPath;
+    // Windows holds the running image open. The new process removes .old after
+    // this process has shut down, instead of leaving a failed best-effort delete.
 
     g_logger.info(stdext::format("Updated binary file: %s", m_binaryPath.string()));
 

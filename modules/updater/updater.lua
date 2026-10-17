@@ -154,21 +154,6 @@ local function updateFiles(data, keepCurrentFiles)
     return
   end
   
-  -- update of some files require full client restart
-  local forceRestart = false
-  local reloadModules = false
-  local forceRestartPattern = {"init.lua", "corelib", "updater", "otmod"}
-  for _, file in ipairs(toUpdate) do
-    for __, pattern in ipairs(forceRestartPattern) do
-      if string.find(file[1], pattern) then
-        forceRestart = true
-      end
-      if not string.find(file[1], "data/things") then
-        reloadModules = true
-      end
-    end
-  end
-  
   updaterWindow.status:setText(tr("Updating %i files", #toUpdate))
   Updater.startIconAnimation()
   updaterWindow.mainProgress:setPercent(0)
@@ -179,32 +164,24 @@ local function updateFiles(data, keepCurrentFiles)
     updaterWindow.status:setText(tr("Updating client (may take few seconds)"))
     updaterWindow.mainProgress:setPercent(100)
     updaterWindow.downloadProgress:hide()
-    updaterWindow.downloadStatus:hide() 
+    updaterWindow.downloadStatus:hide()
+    updaterWindow.cancelButton:hide()
     scheduledEvent = scheduleEvent(function()
-      local restart = binary or (not loadModulesFunction and reloadModules) or forceRestart
-      -- the freshly downloaded binary has no data embedded (unlike the
-      -- self-contained website download) and no loose data/ folder next to
-      -- it, so it can only load via a data.zip written next to it - write
-      -- one even if no data files changed this update, or the new process
-      -- has nothing to load from and dies with "data.zip fehlt"
-      if newFiles or binary then
-        g_resources.updateData(finalFiles, not restart)
-      end
-      if binary then
-        g_resources.updateExecutable(binary)
-      end
-      if restart then
-        -- don't relaunch the client ourselves (a freshly written, unsigned exe
-        -- gets held up by Windows Defender, which made that unreliable) - just
-        -- tell the user to start it again
-        Updater.showDone(tr("Update completed!\nPlease restart the client."), tr("Close"), g_app.exit)
-      else
-        if reloadModules then
-          g_modules.reloadModules()
+      -- Persist the full archive even for a binary-only update: updateExecutable
+      -- embeds it so the replacement can discover APP_NAME before its write dir.
+      local ok, err = pcall(function()
+        if newFiles or binary then
+          g_resources.updateData(finalFiles, false)
         end
-        Updater.showDone(tr("Update completed!"), nil, nil)
-        scheduledEvent = scheduleEvent(Updater.abort, 1200)
+        if binary then
+          g_resources.updateExecutable(binary)
+        end
+      end)
+      if not ok then
+        return Updater.error(tostring(err))
       end
+      Updater.showDone(tr("Restarting client..."), nil, nil)
+      g_app.restart()
     end, 100)  
   end)
 end
@@ -212,14 +189,24 @@ end
 -- public functions
 function Updater.init(loadModulesFunc)
   g_logger.setOnLog(onLog)
+  connect(g_app, { onRestartFailed = Updater.onRestartFailed })
   loadModulesFunction = loadModulesFunc
   initAppWindow()
   Updater.check()
 end
 
 function Updater.terminate()
+  disconnect(g_app, { onRestartFailed = Updater.onRestartFailed })
+  g_logger.setOnLog(nil)
   loadModulesFunction = nil
   Updater.abort()
+end
+
+function Updater.onRestartFailed()
+  Updater.showDone(tr("Could not restart client. Please try again."), tr("Retry"), g_app.restart)
+  if updaterWindow then
+    updaterWindow.status:setColor('#e6a04e')
+  end
 end
 
 function Updater.startIconAnimation()

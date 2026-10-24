@@ -334,7 +334,7 @@ end
 local function createHistoryRow(entry, index)
   local row = g_ui.createWidget(index % 2 == 0 and 'ShopHistoryRowAlt' or 'ShopHistoryRow', historyList)
 
-  local info = TRANSACTION_TYPES[entry.type] or { label = '?', color = '#b9a57c', sign = '', details = '' }
+  local info = TRANSACTION_TYPES[entry.type] or { label = '?', color = '#b8b8b8', sign = '', details = '' }
   row.date:setText(os.date('%d.%m.%Y', entry.time) .. '\n' .. os.date('%H:%M', entry.time))
   setBadge(row.type, info.label, info.color)
   row.details:setText(getHistoryDetails(entry, info))
@@ -458,7 +458,7 @@ local function setupHistoryHeader()
   for id, text in pairs(columns) do
     local column = header:getChildById(id)
     column:setText(text)
-    column:setColor('#d4a843')
+    column:setColor('#80c7f8')
     column:setBorderWidth(0)
     column:setHeight(18)
   end
@@ -654,7 +654,7 @@ function updateTransferSummary()
   summaryBalance.value:setText(formatNumber(balance))
   summaryAmount.value:setText(formatNumber(amount))
   summaryAfter.value:setText(formatNumber(after))
-  summaryAfter.value:setColor(after < 0 and '#e07a7a' or '#f0d590')
+  summaryAfter.value:setColor(after < 0 and '#e07a7a' or '#ffffff')
   transferError:setText('')
   transferButton:setEnabled(not pendingAction and amount > 0 and after >= 0 and recipientEdit:getText():trim() ~= '')
 end

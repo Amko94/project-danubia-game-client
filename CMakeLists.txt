@@ -39,8 +39,12 @@ set(executable_SOURCES
 
 # add executable icon for win32 platforms
 if (WIN32)
+    set(APP_ICON "${CMAKE_CURRENT_SOURCE_DIR}/src/oticon.ico")
+    set_source_files_properties(src/otclient.rc PROPERTIES OBJECT_DEPENDS "${APP_ICON}")
+    set_source_files_properties("${APP_ICON}" PROPERTIES HEADER_FILE_ONLY TRUE)
     set(executable_SOURCES ${executable_SOURCES}
             src/otclient.rc
+            ${APP_ICON}
             src/client/creature.h)
 endif ()
 

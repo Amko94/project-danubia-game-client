@@ -47,6 +47,21 @@ $manifestOut  = Join-Path $WwwRoot "client-updater/manifest.json"
 $initialZip   = Join-Path $env:TEMP "danubia-data.zip"
 $exeName      = Split-Path $ExePath -Leaf
 $exeDeployed  = Join-Path (Join-Path $WwwRoot "client-updater/files") $exeName
+$iconSource   = Join-Path $PSScriptRoot "src/oticon.ico"
+
+# The Windows icon is embedded in the executable, so it is delivered by the
+# binary auto-update rather than as a data file. Refuse to publish a stale EXE;
+# otherwise a changed icon could be skipped even though the release succeeds.
+if (-not (Test-Path -LiteralPath $iconSource -PathType Leaf)) {
+    throw "Application icon not found: $iconSource"
+}
+if (-not (Test-Path -LiteralPath $ExePath -PathType Leaf)) {
+    throw "Client executable not found: $ExePath"
+}
+if ((Get-Item -LiteralPath $iconSource).LastWriteTimeUtc -gt
+    (Get-Item -LiteralPath $ExePath).LastWriteTimeUtc) {
+    throw "oticon.ico is newer than $exeName. Rebuild the client before publishing the update."
+}
 
 # --- CRC32 (must match stdext/libzip's CRC32) ---
 Add-Type -TypeDefinition @"

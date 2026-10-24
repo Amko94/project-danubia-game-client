@@ -1,45 +1,45 @@
 ShopTab < UIButton
   size: 150 26
   font: verdana-11px-rounded
-  color: #a8936a
-  background-color: #17120b
+  color: #b8b8b8
+  background-color: #1a1a1a
   border-width: 1
-  border-color: #3a2c10
+  border-color: #333333
   text-offset: 0 1
   change-cursor-image: true
   cursor: pointer
 
   $hover !on:
-    color: #f0d590
-    background-color: #241b0f
-    border-color: #6b5020
+    color: #ffffff
+    background-color: #292929
+    border-color: #555555
 
   $on:
-    color: #ffe9a8
-    background-color: #3b2b0e
-    border-color: #d4a843
+    color: #ffffff
+    background-color: #355d89
+    border-color: #6f9dcc
 
 ShopCategoryButton < UIButton
   height: 34
   font: verdana-11px-rounded
-  color: #b9a57c
+  color: #b8b8b8
   text-align: left
   text-offset: 12 1
-  background-color: #1a140c
+  background-color: #1a1a1a
   border-width: 1
-  border-color: #3a2c10
+  border-color: #333333
   change-cursor-image: true
   cursor: pointer
 
   $hover !on:
-    color: #f0d590
-    background-color: #241b0f
-    border-color: #6b5020
+    color: #ffffff
+    background-color: #292929
+    border-color: #555555
 
   $on:
-    color: #ffe9a8
-    background-color: #3b2b0e
-    border-color: #d4a843
+    color: #ffffff
+    background-color: #355d89
+    border-color: #6f9dcc
 
   Label
     id: count
@@ -47,28 +47,29 @@ ShopCategoryButton < UIButton
     anchors.verticalCenter: parent.verticalCenter
     margin-right: 10
     text-auto-resize: true
-    color: #8c7a5e
+    color: #aaaaaa
     phantom: true
 
 ShopPill < UIButton
   height: 20
   font: verdana-11px-antialised
-  color: #c9a65a
+  color: #b8b8b8
   background-color: #00000000
   border-width: 1
-  border-color: #5c4416
+  border-color: #444444
   text-offset: 0 1
   change-cursor-image: true
   cursor: pointer
 
   $hover !on:
-    color: #f0d590
-    border-color: #a67c27
+    color: #ffffff
+    background-color: #292929
+    border-color: #777777
 
   $on:
-    color: #1a1206
-    background-color: #c9962e
-    border-color: #f0c75e
+    color: #ffffff
+    background-color: #355d89
+    border-color: #6f9dcc
 
 ShopGoldButton < UIButton
   height: 24
@@ -97,19 +98,19 @@ ShopGoldButton < UIButton
 
 ShopDivider < UIWidget
   height: 1
-  background-color: #a67c2766
+  background-color: #4a4a4a
   phantom: true
 
 ShopOfferCard < UIWidget
   size: 176 240
-  background-color: #1a140c
+  background-color: #1a1a1a
   border-width: 1
-  border-color: #4a3712
+  border-color: #444444
   clipping: true
 
   $hover:
-    background-color: #221a0f
-    border-color: #d4a843
+    background-color: #272727
+    border-color: #6f9dcc
 
   UIWidget
     id: preview
@@ -118,9 +119,9 @@ ShopOfferCard < UIWidget
     anchors.right: parent.right
     margin: 5 5 0 5
     height: 100
-    background-color: #0b0805
+    background-color: #0d0d0dcc
     border-width: 1
-    border-color: #2e230e
+    border-color: #333333
     phantom: true
 
     UIItem
@@ -168,7 +169,7 @@ ShopOfferCard < UIWidget
     height: 16
     text-align: center
     font: verdana-11px-rounded
-    color: #f0d590
+    color: #ffffff
 
   ShopDivider
     id: divider
@@ -186,7 +187,7 @@ ShopOfferCard < UIWidget
     height: 42
     text-wrap: true
     text-align: top
-    color: #b9a57c
+    color: #b8b8b8
 
   ShopGoldButton
     id: buyButton
@@ -230,7 +231,7 @@ ShopHistoryColumns < UIWidget
     margin-right: 10
     width: 80
     text-align: right
-    color: #b9a57c
+    color: #b8b8b8
 
   Label
     id: amount
@@ -255,7 +256,7 @@ ShopHistoryColumns < UIWidget
     margin-left: 10
     size: 92 30
     text-align: left
-    color: #c9b48a
+    color: #aaaaaa
 
   ShopBadge
     id: type
@@ -273,13 +274,13 @@ ShopHistoryColumns < UIWidget
     height: 30
     text-align: left
     text-wrap: true
-    color: #e6d6b0
+    color: #eeeeee
 
 ShopHistoryRow < ShopHistoryColumns
   background-color: #00000000
 
   $hover:
-    background-color: #a67c271a
+    background-color: #355d8933
 
 ShopHistoryRowAlt < ShopHistoryRow
   background-color: #ffffff08
@@ -293,7 +294,7 @@ ShopSummaryRow < UIWidget
     anchors.verticalCenter: parent.verticalCenter
     margin-left: 12
     text-auto-resize: true
-    color: #b9a57c
+    color: #b8b8b8
 
   Label
     id: value
@@ -302,7 +303,7 @@ ShopSummaryRow < UIWidget
     margin-right: 12
     text-auto-resize: true
     font: verdana-11px-rounded
-    color: #f0d590
+    color: #ffffff
 
 MainWindow
   id: shopWindow
@@ -316,9 +317,9 @@ MainWindow
     anchors.left: parent.left
     anchors.right: parent.right
     height: 52
-    background-color: #1d160b
+    background-color: #1a1a1a
     border-width: 1
-    border-color: #a67c27
+    border-color: #333333
 
     Label
       id: balanceCaption
@@ -328,7 +329,7 @@ MainWindow
       margin-left: 14
       !text: tr('YOUR BALANCE')
       font: verdana-9px-bold
-      color: #a67c27
+      color: #aaaaaa
       text-auto-resize: true
 
     UIItem
@@ -357,7 +358,7 @@ MainWindow
       margin-left: 6
       margin-top: 2
       !text: tr('Danubia Points')
-      color: #c9a65a
+      color: #b8b8b8
       text-auto-resize: true
 
     ShopGoldButton
@@ -375,7 +376,7 @@ MainWindow
       anchors.verticalCenter: parent.verticalCenter
       margin-right: 16
       text-auto-resize: true
-      color: #8c7a5e
+      color: #aaaaaa
 
   Panel
     id: tabBar
@@ -455,9 +456,9 @@ MainWindow
       anchors.right: categoryList.right
       anchors.bottom: parent.bottom
       margin-top: 8
-      background-color: #120e08
+      background-color: #111111
       border-width: 1
-      border-color: #3a2c10
+      border-color: #333333
 
       Label
         id: infoTitle
@@ -467,7 +468,7 @@ MainWindow
         margin: 10 10 0 10
         !text: tr('How it works')
         font: verdana-11px-rounded
-        color: #d4a843
+        color: #80c7f8
 
       ShopDivider
         anchors.top: infoTitle.bottom
@@ -484,7 +485,7 @@ MainWindow
         margin: 8 10 10 10
         text-wrap: true
         text-align: topleft
-        color: #a8936a
+        color: #aaaaaa
         !text: tr('Everything you buy here is delivered to the character you are playing within a few seconds.\n\nItems go to your backpack, or to your depot if you have no room.\n\nPurchases made on the website show up in your history as well.')
 
     Panel
@@ -501,7 +502,7 @@ MainWindow
         anchors.left: parent.left
         height: 22
         font: sans-bold-16px
-        color: #f0d590
+        color: #ffffff
         text-auto-resize: true
 
       Panel
@@ -557,9 +558,9 @@ MainWindow
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         margin-top: 8
-        background-color: #0e0b07
+        background-color: #111111
         border-width: 1
-        border-color: #3a2c10
+        border-color: #333333
 
         ScrollablePanel
           id: offerList
@@ -585,7 +586,7 @@ MainWindow
           id: offersEmpty
           anchors.centerIn: parent
           text-auto-resize: true
-          color: #8c7a5e
+          color: #aaaaaa
           visible: false
 
   Panel
@@ -637,7 +638,7 @@ MainWindow
       anchors.right: parent.right
       anchors.verticalCenter: historyFilterBar.verticalCenter
       text-auto-resize: true
-      color: #8c7a5e
+      color: #aaaaaa
 
     ShopHistoryColumns
       id: historyHeader
@@ -646,9 +647,9 @@ MainWindow
       anchors.right: parent.right
       margin-top: 8
       height: 24
-      background-color: #1d160b
+      background-color: #1a1a1a
       border-width: 1
-      border-color: #3a2c10
+      border-color: #333333
       padding-right: 18
 
     Panel
@@ -657,9 +658,9 @@ MainWindow
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.bottom: parent.bottom
-      background-color: #0e0b07
+      background-color: #111111
       border-width: 1
-      border-color: #3a2c10
+      border-color: #333333
 
       ScrollablePanel
         id: historyList
@@ -682,7 +683,7 @@ MainWindow
         id: historyEmpty
         anchors.centerIn: parent
         text-auto-resize: true
-        color: #8c7a5e
+        color: #aaaaaa
         visible: false
 
   Panel
@@ -701,9 +702,9 @@ MainWindow
       anchors.top: parent.top
       margin-top: 16
       size: 460 388
-      background-color: #15100a
+      background-color: #1a1a1a
       border-width: 1
-      border-color: #a67c27
+      border-color: #444444
 
       Label
         id: transferTitle
@@ -712,7 +713,7 @@ MainWindow
         margin-top: 14
         !text: tr('Transfer Danubia Points')
         font: sans-bold-16px
-        color: #f0d590
+        color: #ffffff
         text-auto-resize: true
 
       Label
@@ -724,7 +725,7 @@ MainWindow
         height: 30
         text-wrap: true
         text-align: center
-        color: #b9a57c
+        color: #b8b8b8
         !text: tr('Send points from your account to another character. The points are credited to the receiving account immediately.')
 
       ShopDivider
@@ -740,7 +741,7 @@ MainWindow
         anchors.left: parent.left
         margin: 14 24 0 24
         !text: tr('Receiving character')
-        color: #d4a843
+        color: #eeeeee
         text-auto-resize: true
 
       TextEdit
@@ -758,7 +759,7 @@ MainWindow
         anchors.left: parent.left
         margin: 12 24 0 24
         !text: tr('Amount')
-        color: #d4a843
+        color: #eeeeee
         text-auto-resize: true
 
       SpinBox
@@ -809,9 +810,9 @@ MainWindow
         anchors.right: parent.right
         margin: 16 24 0 24
         height: 76
-        background-color: #0b0805
+        background-color: #111111
         border-width: 1
-        border-color: #2e230e
+        border-color: #333333
         padding-top: 4
         layout:
           type: verticalBox
@@ -852,7 +853,7 @@ MainWindow
         anchors.bottom: parent.bottom
         margin: 0 24 12 24
         text-align: center
-        color: #8c7a5e
+        color: #aaaaaa
         !text: tr('Double-check the name. Transfers cannot be undone.')
 
   HorizontalSeparator
@@ -868,7 +869,7 @@ MainWindow
     anchors.right: closeButton.left
     anchors.verticalCenter: closeButton.verticalCenter
     margin-right: 10
-    color: #a8936a
+    color: #aaaaaa
 
   Button
     id: closeButton

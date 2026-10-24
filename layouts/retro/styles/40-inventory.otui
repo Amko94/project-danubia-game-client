@@ -306,15 +306,6 @@ InventoryWindow < HeadlessMiniWindow
         layout:
           type: verticalBox
         
-        UIButton
-          id: buttonPvp
-          height: 20
-          icon: /images/game/combatmodes/pvp
-          icon-clip: 0 0 42 20
-
-          $on:
-            icon-clip: 0 20 42 20
-        
         InventoryButton
           !text: tr('Stop')
           @onClick: g_game.stop(); g_game.cancelAttackAndFollow()

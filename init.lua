@@ -42,12 +42,7 @@ end
 g_configs.loadSettings("/config.otml")
 
 -- set layout
-local settings = g_configs.getSettings()
-local layout = DEFAULT_LAYOUT
-if settings:exists('layout') then
-  layout = settings:getValue('layout')
-end
-g_resources.setLayout(layout)
+g_resources.setLayout(DEFAULT_LAYOUT)
 
 -- load mods
 g_modules.discoverModules()

@@ -313,12 +313,8 @@ function setupSkillPanel(id, parent, experience, defaultOff)
     widget.icon:setTooltip(id)
     widget.icon:setImageClip({x = iconsTable[id]*9, y = 0, width = 9,height = 9})
 
-    if not experience then 
-        widget.progress:setBackgroundColor('#00c000') 
-        widget.shop:setVisible(false)
-        widget.shop:disable()
-        widget.shop:setWidth(0)
-        widget.progress:setMarginRight(1)
+    if not experience then
+        widget.progress:setBackgroundColor('#00c000')
     end
 
     settings[id] = settings[id] ~= nil and settings[id] or defaultOff

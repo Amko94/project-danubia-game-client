@@ -207,17 +207,6 @@ function enableChat(temporarily)
 
   local gameRootPanel = modules.game_interface.getRootPanel()
   g_keyboard.unbindKeyDown("Enter", gameRootPanel)
-  
-  if temporarily then
-    local quickFunc = function()
-      if not g_game.isOnline() then return end
-      g_keyboard.unbindKeyDown("Enter", gameRootPanel)
-      g_keyboard.unbindKeyDown("Escape", gameRootPanel)
-      disableChat(temporarily)
-    end
-    g_keyboard.bindKeyDown("Enter", quickFunc, gameRootPanel)
-    g_keyboard.bindKeyDown("Escape", quickFunc, gameRootPanel)  
-  end
 
   modules.game_walking.disableWSAD()
 
@@ -235,16 +224,10 @@ function disableChat(temporarily)
   consoleTextEdit:setVisible(false)
   consoleTextEdit:setText("")
 
-  local quickFunc = function()
-    if not g_game.isOnline() then return end
-    if consoleToggleChat:isChecked() then
-      consoleToggleChat:setChecked(false)
-    end
-    enableChat(true)
-  end
-  
   local gameRootPanel = modules.game_interface.getRootPanel()
-  g_keyboard.bindKeyDown("Enter", quickFunc, gameRootPanel)
+  -- Chat mode is changed explicitly through the toggle/hotkey. Enter only submits
+  -- text while chat is enabled and must never switch the input mode.
+  g_keyboard.unbindKeyDown("Enter", gameRootPanel)
 
   modules.game_walking.enableWSAD()
 

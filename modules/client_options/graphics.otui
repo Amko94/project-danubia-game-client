@@ -88,11 +88,3 @@ OptionPanel
     margin-top: 3
     minimum: 0
     maximum: 100
-  
-  Label
-    id: tips
-    margin-top: 20
-    text-auto-resize: true
-    text-align: left
-    text-wrap: true
-    !text: tr("If you have FPS issues:\n- Use OpenGL version (_gl)\n- Disable vertical synchronization\n- Set higher optimization level\n- Lower screen resolution\nOr report it on forum: http://otclient.net")

@@ -1,5 +1,4 @@
 local defaultOptions = {
-  layout = DEFAULT_LAYOUT, -- set in init.lua
   vsync = true,
   showFps = true,
   showPing = true,
@@ -24,10 +23,9 @@ local defaultOptions = {
   enableAudio = true,
   enableMusicSound = false,
   musicSoundVolume = 100,
-  botSoundVolume = 100,
   enableLights = false,
   floorFading = 500,
-  crosshair = 2,
+  crosshair = 1,
   ambientLight = 100,
   optimizationLevel = 1,
   displayNames = true,
@@ -36,7 +34,6 @@ local defaultOptions = {
   displayHealthOnTop = false,
   showHealthManaCircle = false,
   hidePlayerBars = false,
-  highlightThingsUnderCursor = true,
   topHealtManaBar = true,
   displayText = true,
   dontStretchShrink = false,
@@ -69,6 +66,18 @@ local defaultOptions = {
   antialiasing = true
 }
 
+-- These gameplay-affecting values are intentionally not configurable by players.
+-- Always use the client defaults, even when an old config.otml contains other values.
+local fixedOptions = {
+  dash = false,
+  crosshair = 1,
+  walkFirstStepDelay = 200,
+  walkTurnDelay = 100,
+  walkStairsDelay = 50,
+  walkTeleportDelay = 200,
+  walkCtrlTurnDelay = 150
+}
+
 local optionsWindow
 local optionsButton
 local optionsTabBar
@@ -89,8 +98,12 @@ function init()
     options[k] = v
   end
   for _, v in ipairs(g_extras.getAll()) do
-	  extraOptions[v] = g_extras.get(v)
-    g_settings.setDefault("extras_" .. v, extraOptions[v])
+    extraOptions[v] = g_extras.get(v)
+    if DEV_MODE then
+      g_settings.setDefault("extras_" .. v, extraOptions[v])
+    else
+      g_extras.set(v, false)
+    end
   end
 
   optionsWindow = g_ui.displayUI('options')
@@ -118,14 +131,14 @@ function init()
   optionsTabBar:addTab(tr('Audio'), audioPanel, '/images/optionstab/audio')
 
 
-  extrasPanel = g_ui.createWidget('OptionPanel')
-  for _, v in ipairs(g_extras.getAll()) do
-    local extrasButton = g_ui.createWidget('OptionCheckBox')
-    extrasButton:setId(v)
-    extrasButton:setText(g_extras.getDescription(v))
-    extrasPanel:addChild(extrasButton)
-  end
-  if not g_game.getFeature(GameNoDebug) then
+  if DEV_MODE then
+    extrasPanel = g_ui.createWidget('OptionPanel')
+    for _, v in ipairs(g_extras.getAll()) do
+      local extrasButton = g_ui.createWidget('OptionCheckBox')
+      extrasButton:setId(v)
+      extrasButton:setText(g_extras.getDescription(v))
+      extrasPanel:addChild(extrasButton)
+    end
     optionsTabBar:addTab(tr('Extras'), extrasPanel, '/images/optionstab/extras')
   end
 
@@ -155,7 +168,9 @@ end
 function setup()
   -- load options
   for k,v in pairs(defaultOptions) do
-    if type(v) == 'boolean' then
+    if fixedOptions[k] ~= nil then
+      setOption(k, fixedOptions[k], true)
+    elseif type(v) == 'boolean' then
       setOption(k, g_settings.getBoolean(k), true)
     elseif type(v) == 'number' then
       setOption(k, g_settings.getNumber(k), true)
@@ -164,13 +179,15 @@ function setup()
     end
   end
   
-  for _, v in ipairs(g_extras.getAll()) do
-    g_extras.set(v, g_settings.getBoolean("extras_" .. v))
-    local widget = extrasPanel:recursiveGetChildById(v)
-    if widget then
-      widget:setChecked(g_extras.get(v))
+  if DEV_MODE then
+    for _, v in ipairs(g_extras.getAll()) do
+      g_extras.set(v, g_settings.getBoolean("extras_" .. v))
+      local widget = extrasPanel:recursiveGetChildById(v)
+      if widget then
+        widget:setChecked(g_extras.get(v))
+      end
     end
-  end  
+  end
   
   if g_game.isOnline() then
     online()
@@ -217,6 +234,10 @@ end
 
 function setOption(key, value, force)
   if extraOptions[key] ~= nil then
+    if not DEV_MODE then
+      g_extras.set(key, false)
+      return
+    end
     g_extras.set(key, value)
     g_settings.set("extras_" .. key, value)
     if key == "debugProxy" and modules.game_proxy then
@@ -268,11 +289,6 @@ function setOption(key, value, force)
       g_sounds.getChannel(SoundChannels.Music):setGain(value/100)
     end
     audioPanel:getChildById('musicSoundVolumeLabel'):setText(tr('Music volume: %d', value))
-  elseif key == 'botSoundVolume' then
-    if g_sounds ~= nil then
-      g_sounds.getChannel(SoundChannels.Bot):setGain(value/100)
-    end
-    audioPanel:getChildById('botSoundVolumeLabel'):setText(tr('Bot sound volume: %d', value))    
   elseif key == 'showHealthManaCircle' then
     modules.game_healthinfo.healthCircle:setVisible(value)
     modules.game_healthinfo.healthCircleFront:setVisible(value)
@@ -335,16 +351,6 @@ function setOption(key, value, force)
     end
   elseif key == 'hotkeyDelay' then
     generalPanel:getChildById('hotkeyDelayLabel'):setText(tr('Hotkey delay: %s ms', value))  
-  elseif key == 'walkFirstStepDelay' then
-    generalPanel:getChildById('walkFirstStepDelayLabel'):setText(tr('Walk delay after first step: %s ms', value))  
-  elseif key == 'walkTurnDelay' then
-    generalPanel:getChildById('walkTurnDelayLabel'):setText(tr('Walk delay after turn: %s ms', value))  
-  elseif key == 'walkStairsDelay' then
-    generalPanel:getChildById('walkStairsDelayLabel'):setText(tr('Walk delay after floor change: %s ms', value))  
-  elseif key == 'walkTeleportDelay' then
-    generalPanel:getChildById('walkTeleportDelayLabel'):setText(tr('Walk delay after teleport: %s ms', value))  
-  elseif key == 'walkCtrlTurnDelay' then
-    generalPanel:getChildById('walkCtrlTurnDelayLabel'):setText(tr('Walk delay after ctrl turn: %s ms', value))  
   elseif key == "antialiasing" then
     g_app.setSmooth(value)
   end

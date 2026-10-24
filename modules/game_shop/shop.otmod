@@ -1,6 +1,6 @@
 Module
   name: game_shop
-  description: Game shop
+  description: Danubia shop - offers, points history and point transfers
   author: otclient.ovh
   website: http://otclient.ovh
   sandboxed: true

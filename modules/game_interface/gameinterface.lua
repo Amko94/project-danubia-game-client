@@ -82,8 +82,10 @@ function bindKeys()
     lastAction = g_clock.millis()
     g_game.cancelAttackAndFollow() 
   end, gameRootPanel)
-  g_keyboard.bindKeyPress('Ctrl+=', function() if g_game.getFeature(GameNoDebug) then return end gameMapPanel:zoomIn() end, gameRootPanel)
-  g_keyboard.bindKeyPress('Ctrl+-', function() if g_game.getFeature(GameNoDebug) then return end gameMapPanel:zoomOut() end, gameRootPanel)
+  if DEV_MODE then
+    g_keyboard.bindKeyPress('Ctrl+=', function() gameMapPanel:zoomIn() end, gameRootPanel)
+    g_keyboard.bindKeyPress('Ctrl+-', function() gameMapPanel:zoomOut() end, gameRootPanel)
+  end
   g_keyboard.bindKeyDown('Ctrl+Q', function() tryLogout(false) end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+L', function() tryLogout(false) end, gameRootPanel)
   g_keyboard.bindKeyDown('Ctrl+W', function() g_map.cleanTexts() modules.game_textmessage.clearMessages() end, gameRootPanel)
@@ -93,7 +95,6 @@ function terminate()
   hide()
 
   hookedMenuOptions = {}
-  markThing = nil
   
 
   disconnect(g_game, {
@@ -562,20 +563,10 @@ function createThingMenu(menuPosition, lookThing, useThing, creatureThing)
     end
   end
 
-  if g_game.getFeature(GameBot) and useThing and useThing:isItem() then
-    menu:addSeparator()
-    local useThingId = useThing:getId()
-    if useThing:getSubType() > 1 then
-      menu:addOption("ID: " .. useThingId .. " SubType: " .. g_game..setClipboardText(useThingId), function() end)    
-    else
-      menu:addOption("ID: " .. useThingId, function() g_game.setClipboardText(useThingId) end)
-    end
-  end
-
   menu:display(menuPosition)
 end
 
-function processMouseAction(menuPosition, mouseButton, autoWalkPos, lookThing, useThing, creatureThing, attackCreature, marking)
+function processMouseAction(menuPosition, mouseButton, autoWalkPos, lookThing, useThing, creatureThing, attackCreature)
   local keyboardModifiers = g_keyboard.getModifiers()
 
   if not modules.client_options.getOption('classicControl') then

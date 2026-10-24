@@ -57,25 +57,13 @@ SkillPanel < Panel
     id: progress
     anchors.left: prev.right
     margin-left: 7
-    anchors.right: next.left
+    anchors.right: parent.right
     margin-right: 7
     anchors.verticalCenter: parent.verticalCenter
     background-color: #c00000
     height: 6
     border: 1 black
 
-  UIWidget
-    id: shop
-    anchors.right: parent.right
-    anchors.verticalCenter: parent.verticalCenter
-    image-source: /images/game/topbar/boost
-    size: 76 14
-    @onClick: modules.game_shop.show()
-    image-clip: 0 0 76 14
-
-    $pressed:
-      image-clip: 0 14 76 14
-  
   VerticalSeparator
     id: left
     anchors.top: progress.top

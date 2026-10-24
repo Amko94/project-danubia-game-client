@@ -5,30 +5,8 @@ function UIGameMap.create()
   gameMap:setKeepAspectRatio(true)
   gameMap:setVisibleDimension({width = 15, height = 11})
   gameMap:setDrawLights(true)
-  gameMap.markedThing = nil
   gameMap.blockNextRelease = 0
-  gameMap:updateMarkedCreature()
   return gameMap
-end
-
-function UIGameMap:onDestroy()
-  if self.updateMarkedCreatureEvent then
-    removeEvent(self.updateMarkedCreatureEvent)
-  end
-end
-
-function UIGameMap:markThing(thing, color)
-  if self.markedThing == thing then
-    return
-  end
-  if self.markedThing then
-    self.markedThing:setMarked('')
-  end
-  
-  self.markedThing = thing
-  if self.markedThing and g_settings.getBoolean('highlightThingsUnderCursor') then
-    self.markedThing:setMarked(color)
-  end
 end
 
 function UIGameMap:onDragEnter(mousePos)
@@ -73,29 +51,9 @@ function UIGameMap:onDrop(widget, mousePos)
   return true
 end
 
-function UIGameMap:onMouseMove(mousePos, mouseMoved)
-  self.mousePos = mousePos
-  return false
-end
-
-function UIGameMap:onDragMove(mousePos, mouseMoved)
-  self.mousePos = mousePos
-  return false
-end
-
-function UIGameMap:updateMarkedCreature()
-  self.updateMarkedCreatureEvent = scheduleEvent(function() self:updateMarkedCreature() end, 100)
-  if self.mousePos and g_game.isOnline() then
-    self.markingMouseRelease = true
-    self:onMouseRelease(self.mousePos, MouseRightButton)
-    self.markingMouseRelease = false
-  end
-end
-
 function UIGameMap:onMousePress()
   if not self:isDragging() and self.blockNextRelease < g_clock.millis() then
     self.allowNextRelease = true
-    self.markingMouseRelease = false
   end
 end
 
@@ -109,18 +67,15 @@ function UIGameMap:blockNextMouseRelease(postAction)
 end
 
 function UIGameMap:onMouseRelease(mousePosition, mouseButton)
-  if not self.allowNextRelease and not self.markingMouseRelease then
+  if not self.allowNextRelease then
     return true
   end
   local autoWalkPos = self:getPosition(mousePosition)
   local positionOffset = self:getPositionOffset(mousePosition)
 
   -- happens when clicking outside of map boundaries
-  if not autoWalkPos then 
-    if self.markingMouseRelease then
-      self:markThing(nil)
-    end
-    return false 
+  if not autoWalkPos then
+    return false
   end
 
   local localPlayerPos = g_game.getLocalPlayer():getPosition()
@@ -149,22 +104,7 @@ function UIGameMap:onMouseRelease(mousePosition, mouseButton)
     attackCreature = autoWalkTile:getTopCreatureEx(positionOffset)
   end
 
-  if self.markingMouseRelease then
-    if attackCreature then
-      self:markThing(attackCreature, 'yellow')
-    elseif creatureThing then
-      self:markThing(creatureThing, 'yellow')
-    elseif useThing and not useThing:isGround() then
-      self:markThing(useThing, 'yellow')
-    elseif lookThing and not lookThing:isGround() then
-      self:markThing(lookThing, 'yellow')
-    else
-      self:markThing(nil, '')
-    end
-    return
-  end
-
-  local ret = modules.game_interface.processMouseAction(mousePosition, mouseButton, autoWalkPos, lookThing, useThing, creatureThing, attackCreature, self.markingMouseRelease)
+  local ret = modules.game_interface.processMouseAction(mousePosition, mouseButton, autoWalkPos, lookThing, useThing, creatureThing, attackCreature)
   if ret then
     self.allowNextRelease = false
   end

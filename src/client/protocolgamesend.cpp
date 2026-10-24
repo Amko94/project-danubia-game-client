@@ -117,7 +117,9 @@ void ProtocolGame::sendLoginPacket(uint challengeTimestamp, uint8 challengeRando
     if (!extended.empty()) {
         msg->addString(extended);
     } else {
-        msg->addString(std::string("OTCv8"));
+        // CLIENT_IDENTIFIER comes from modules/gamelib/const.lua, the server rejects any other value
+        g_lua.getGlobal("CLIENT_IDENTIFIER");
+        msg->addString(g_lua.popString());
         std::string version = g_app.getVersion();
         version = stdext::split(version, " ")[0];
         stdext::replace_all(version, ".", "");

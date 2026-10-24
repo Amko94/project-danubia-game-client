@@ -88,7 +88,7 @@ function ProtocolLogin:sendLoginPacket()
     local data = self:getLoginExtendedData()
     msg:addString(data)
   else
-    msg:addString("OTCv8")
+    msg:addString(CLIENT_IDENTIFIER)
     local version = g_app.getVersion():split(" ")[1]:gsub("%.", "")
     if version:len() == 2 then
       version = version .. "0" 

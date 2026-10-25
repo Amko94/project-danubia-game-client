@@ -61,6 +61,11 @@ function updateFeatures(version)
         g_game.enableFeature(GamePenalityOnDeath)
     end
 
+    -- mounts are an extension of our 8.00 server: it writes the mount into every outfit
+    if(version >= 800) then
+        g_game.enableFeature(GamePlayerMounts)
+    end
+
     if(version >= 870) then
         g_game.enableFeature(GameDoubleExperience)
         g_game.enableFeature(GamePlayerMounts)

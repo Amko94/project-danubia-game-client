@@ -1024,10 +1024,6 @@ function TaskUI.confirmClaimReward()
         return
     end
 
-    if TaskUI.checkPlayerPz() then
-        return
-    end
-
     local selectedReward = dialog.selectedReward or "gold"
     local taskId = dialog.taskId
 

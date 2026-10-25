@@ -241,8 +241,8 @@ try {
     $zipFileStream.Close()
 }
 
-$initialExeOut = Join-Path $filesOut "..\ProjectDanubiaClient.exe" | Resolve-Path -ErrorAction SilentlyContinue
-$websiteExePath = Join-Path (Join-Path $WwwRoot "client-updater") "ProjectDanubiaClient.exe"
+$initialExeOut = Join-Path $filesOut "..\projectdanubia.exe" | Resolve-Path -ErrorAction SilentlyContinue
+$websiteExePath = Join-Path (Join-Path $WwwRoot "client-updater") "projectdanubia.exe"
 
 # append data.zip bytes to a copy of the exe - loadDataFromSelf() finds the
 # zip's local-file-header signature (PK..) by scanning, so a straight append works
@@ -271,7 +271,7 @@ if (Test-Path $websiteZipPath) { Remove-Item $websiteZipPath -Force }
 $zipFileStream2 = [System.IO.File]::Open($websiteZipPath, 'Create')
 $archive2 = New-Object System.IO.Compression.ZipArchive($zipFileStream2, [System.IO.Compression.ZipArchiveMode]::Create)
 try {
-    $entry1 = $archive2.CreateEntry("ProjectDanubiaClient.exe", [System.IO.Compression.CompressionLevel]::Optimal)
+    $entry1 = $archive2.CreateEntry("projectdanubia.exe", [System.IO.Compression.CompressionLevel]::Optimal)
     $s1 = $entry1.Open(); $src1 = [System.IO.File]::OpenRead($websiteExePath); $src1.CopyTo($s1); $src1.Close(); $s1.Close()
 
     $entry2 = $archive2.CreateEntry("README.txt", [System.IO.Compression.CompressionLevel]::Optimal)

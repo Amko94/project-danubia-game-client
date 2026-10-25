@@ -580,7 +580,6 @@ void ProtocolGame::sendTalk(Otc::MessageMode mode, int channelId, const std::str
 
     switch(mode) {
     case Otc::MessagePrivateTo:
-    case Otc::MessageNpcTo:
     case Otc::MessageGamemasterPrivateTo:
     case Otc::MessageRVRAnswer:
         msg->addString(receiver);

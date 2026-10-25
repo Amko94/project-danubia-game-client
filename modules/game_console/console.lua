@@ -535,10 +535,6 @@ function addPrivateText(text, speaktype, name, isPrivateCommand, creatureName)
   -- Preserve the NPC identity even when an existing tab is reused.
   if speaktype.npcChat then
     privateTab.npcChat = true
-    -- remember who we talk to; replies are addressed to this npc name
-    if creatureName and creatureName ~= g_game.getCharacterName() then
-      privateTab.npcName = creatureName
-    end
   end
   addTabText(text, speaktype, privateTab, creatureName)
 end
@@ -934,13 +930,17 @@ function sendMessage(message, tab)
   end
 
   local speaktypedesc
-  -- the NPCs tab only ever *receives* privately (NPC replies now use the private
-  -- TALKTYPE_PRIVATE_NP talktype server-side); there's no outgoing private-to-npc path, so
-  -- typing here must still go out as a normal public say, exactly like the default tab, or
-  -- NPCs never hear you at all.
-  local npcPrivate = tab.npcChat and tab.npcName
-  if (channel or tab == defaultTab or tab.npcChat) and not npcPrivate and not chatCommandPrivateReady then
-    if tab == defaultTab or tab.npcChat then
+  -- the NPCs tab sends MessageNpcTo without a receiver; the server hands it to every npc in
+  -- say range (like the default tab, but invisible to players), so new npcs can be greeted here too
+  if tab.npcChat and not chatCommandPrivateReady then
+    g_game.talkChannel(MessageModes.NpcTo, 0, message)
+    addPrivateText(applyMessagePrefixies(g_game.getCharacterName(), g_game.getLocalPlayer():getLevel(), message),
+                   SpeakTypesSettings.privatePlayerToNpc, name, false, g_game.getCharacterName())
+    return
+  end
+
+  if (channel or tab == defaultTab) and not chatCommandPrivateReady then
+    if tab == defaultTab then
       speaktypedesc = chatCommandSayMode or SayModes[consolePanel:getChildById('sayModeButton').sayMode].speakTypeDesc
       if speaktypedesc ~= 'say' then sayModeChange(2) end -- head back to say mode
     else
@@ -958,9 +958,6 @@ function sendMessage(message, tab)
       speaktypedesc = 'privatePlayerToPlayer'
       name = chatCommandPrivate
       isPrivateCommand = true
-    elseif tab.npcChat then
-      speaktypedesc = 'privatePlayerToNpc'
-      name = tab.npcName
     elseif tab == violationReportTab then
       if violationReportTab.locked then
         modules.game_textmessage.displayFailureMessage('Wait for a gamemaster reply.')

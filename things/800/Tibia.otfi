@@ -3,4 +3,5 @@ DatSpr
   transparency: false
   frame-durations: false
   frame-groups: false
-  assets-name: Tibia
+  metadata-file: Tibia.dat
+  sprites-file: Tibia.spr

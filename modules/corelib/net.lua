@@ -11,6 +11,10 @@ function translateNetworkError(errcode, connecting, errdesc)
   else
     text = tr('Your connection has been lost.\nEither your network or the server went down.')
   end
+  if errcode == 2 and not connecting then
+    -- the server drops the connection without a reply when its RSA key does not match ours
+    text = text .. '\n' .. tr('If this happens right at login, your client may be outdated. Please restart it to update.')
+  end
   text = text .. ' ' .. tr('(ERROR %d)', errcode)
   return text
 end

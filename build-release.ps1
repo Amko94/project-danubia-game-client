@@ -58,8 +58,21 @@ if (-not (Test-Path -LiteralPath $iconSource -PathType Leaf)) {
 if (-not (Test-Path -LiteralPath $ExePath -PathType Leaf)) {
     throw "Client executable not found: $ExePath"
 }
-if ((Get-Item -LiteralPath $iconSource).LastWriteTimeUtc -gt
-    (Get-Item -LiteralPath $ExePath).LastWriteTimeUtc) {
+# File mtimes are meaningless after a fresh git checkout (CI sets them all to
+# checkout time, in arbitrary order), so prefer the last commit time of each
+# file and only fall back to the mtime when git has no answer.
+function Get-FileStamp([string]$Path) {
+    $unix = $null
+    try {
+        $unix = (git -C $SourceDir log -1 --format=%ct -- $Path 2>$null | Select-Object -First 1)
+    } catch { }
+    if ($unix -match '^\d+$') {
+        return [DateTimeOffset]::FromUnixTimeSeconds([long]$unix).UtcDateTime
+    }
+    return (Get-Item -LiteralPath $Path).LastWriteTimeUtc
+}
+
+if ((Get-FileStamp $iconSource) -gt (Get-FileStamp $ExePath)) {
     throw "oticon.ico is newer than $exeName. Rebuild the client before publishing the update."
 }
 

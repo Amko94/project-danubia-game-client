@@ -429,7 +429,7 @@ MainWindow
       anchors.top: parent.top
       anchors.left: parent.left
       width: 176
-      height: 148
+      height: 186
       layout:
         type: verticalBox
         spacing: 4
@@ -443,6 +443,11 @@ MainWindow
         id: category2
         !text: tr('Outfits')
         @onClick: modules.game_shop.selectCategory(2)
+
+      ShopCategoryButton
+        id: category5
+        !text: tr('Mounts')
+        @onClick: modules.game_shop.selectCategory(5)
 
       ShopCategoryButton
         id: category3

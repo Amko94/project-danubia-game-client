@@ -26,6 +26,7 @@ local CATEGORY_TITLES = {
   [2] = 'Outfits',
   [3] = 'Items',
   [4] = 'Services',
+  [5] = 'Mounts',
 }
 local CATEGORY_ITEMS = 3
 

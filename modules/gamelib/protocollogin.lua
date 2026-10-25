@@ -89,6 +89,8 @@ function ProtocolLogin:sendLoginPacket()
     msg:addString(data)
   else
     msg:addString(CLIENT_IDENTIFIER)
+    -- 2FA code of the Token field, the server only checks it for accounts with 2FA enabled
+    msg:addString(self.authenticatorToken or "")
     local version = g_app.getVersion():split(" ")[1]:gsub("%.", "")
     if version:len() == 2 then
       version = version .. "0" 

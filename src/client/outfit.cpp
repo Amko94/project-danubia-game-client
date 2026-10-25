@@ -124,7 +124,8 @@ void Outfit::draw(Point dest, Otc::Direction direction, uint walkAnimationPhase,
 
     int zPattern = m_mount > 0 ? std::min<int>(1, type->getNumPatternZ() - 1) : 0;
     auto drawMount = [&] {
-        if (zPattern > 0) {
+        // outfits without a riding pose (patternZ == 1) are drawn in their normal pose on the mount
+        if (m_mount > 0) {
             int mountAnimationPhase = walkAnimationPhase;
             auto mountType = g_things.rawGetThingType(m_mount, ThingCategoryCreature);
             auto idleAnimator = mountType->getIdleAnimator();

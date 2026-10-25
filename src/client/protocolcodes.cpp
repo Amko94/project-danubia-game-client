@@ -161,6 +161,7 @@ void buildMessageModesMap(int version) {
         messageModesMap[Otc::MessageGamemasterPrivateFrom]   = 11;
         messageModesMap[Otc::MessageGamemasterPrivateTo]     = 11;
         messageModesMap[Otc::MessageChannelHighlight]        = 12;
+        messageModesMap[Otc::MessageNpcTo]                   = 4; // outgoing only: private message addressed to the npc's name
         messageModesMap[Otc::MessageNpcFrom]                 = 13; // private npc reply, see game-server/src/const.h TALKTYPE_PRIVATE_NP
         // 14, 15 ??
         messageModesMap[Otc::MessageMonsterSay]              = 16;

@@ -14,7 +14,11 @@ SHOP_OPCODES = {
   HISTORY = 75,
   RESULT = 76,
   BALANCE = 77,
+  CONVERT_TO_COINS = 78,
 }
+
+-- Points a single Danubia Coin costs; must match POINTS_PER_COIN in shop_manager.lua.
+local POINTS_PER_COIN = 10
 
 -- ProjectDanubia.Enums.ShopCategory in the web-service.
 local CATEGORY_TITLES = {
@@ -62,6 +66,8 @@ local categoryTitle, subCategoryBar, offerList, offersEmpty
 local historyFilterBar, historyList, historyEmpty, historyInfo
 local recipientEdit, amountSpin, transferError, transferButton
 local summaryBalance, summaryAmount, summaryAfter
+local convertAmountSpin, convertError, convertButton
+local convertSummaryBalance, convertSummaryCost, convertSummaryAfter
 
 local balance = 0
 local currencyClientId = 0
@@ -210,7 +216,11 @@ local function setPending(action)
   pendingEvent = nil
 
   if action then
-    setStatus(action == 'buy' and 'Processing your purchase...' or 'Processing your transfer...')
+    local statusTexts = {
+      buy = 'Processing your purchase...',
+      convert = 'Processing your conversion...',
+    }
+    setStatus(statusTexts[action] or 'Processing your transfer...')
     pendingEvent = scheduleEvent(function()
       pendingEvent = nil
       setPending(nil)
@@ -226,6 +236,7 @@ local function setPending(action)
     end
   end
   updateTransferSummary()
+  updateConvertSummary()
 end
 
 local function buyOffer(offer)
@@ -379,7 +390,9 @@ local function setBalance(value)
   balance = tonumber(value) or 0
   balanceValue:setText(formatNumber(balance))
   amountSpin:setMaximum(balance)
+  convertAmountSpin:setMaximum(math.floor(balance / POINTS_PER_COIN))
   updateTransferSummary()
+  updateConvertSummary()
 end
 
 local function setCurrencyClientId(value)
@@ -433,6 +446,11 @@ local function onResult(protocol, opcode, data)
       recipientEdit:setText('')
       amountSpin:setValue(0)
     end
+  elseif data.action == 'convert' then
+    showMessage(data.success and 'Conversion Successful' or 'Conversion Failed', data.message or '')
+    if data.success then
+      convertAmountSpin:setValue(0)
+    end
   else
     showMessage(data.success and 'Purchase Successful' or 'Purchase Failed', data.message or '')
   end
@@ -472,7 +490,7 @@ function init()
   balanceValue = shopWindow:recursiveGetChildById('balanceValue')
   deliveryLabel = shopWindow:recursiveGetChildById('deliveryLabel')
   statusLabel = shopWindow:recursiveGetChildById('statusLabel')
-  for _, tab in ipairs({ 'shop', 'history', 'transfer' }) do
+  for _, tab in ipairs({ 'shop', 'history', 'transfer', 'convert' }) do
     tabs[tab] = shopWindow:recursiveGetChildById(tab .. 'Tab')
     panels[tab] = shopWindow:recursiveGetChildById(tab .. 'Panel')
   end
@@ -494,11 +512,21 @@ function init()
   summaryBalance = shopWindow:recursiveGetChildById('summaryBalance')
   summaryAmount = shopWindow:recursiveGetChildById('summaryAmount')
   summaryAfter = shopWindow:recursiveGetChildById('summaryAfter')
+  convertAmountSpin = shopWindow:recursiveGetChildById('convertAmount')
+  convertError = shopWindow:recursiveGetChildById('convertError')
+  convertButton = shopWindow:recursiveGetChildById('convertButton')
+  convertSummaryBalance = shopWindow:recursiveGetChildById('convertSummaryBalance')
+  convertSummaryCost = shopWindow:recursiveGetChildById('convertSummaryCost')
+  convertSummaryAfter = shopWindow:recursiveGetChildById('convertSummaryAfter')
 
   summaryBalance.caption:setText('Current balance')
   summaryAmount.caption:setText('Amount to transfer')
   summaryAfter.caption:setText('Balance after transfer')
   amountSpin.onValueChange = function() updateTransferSummary() end
+  convertSummaryBalance.caption:setText('Current balance')
+  convertSummaryCost.caption:setText('Cost in points')
+  convertSummaryAfter.caption:setText('Balance after conversion')
+  convertAmountSpin.onValueChange = function() updateConvertSummary() end
   setupHistoryHeader()
 
   selectTab('shop')
@@ -535,7 +563,7 @@ function terminate()
     shopWindow:destroy()
     shopWindow = nil
   end
-  offerList, historyList, amountSpin = nil, nil, nil
+  offerList, historyList, amountSpin, convertAmountSpin = nil, nil, nil, nil
 end
 
 function onGameEnd()
@@ -610,6 +638,8 @@ function selectTab(tab)
   elseif tab == 'transfer' then
     updateTransferSummary()
     recipientEdit:focus()
+  elseif tab == 'convert' then
+    updateConvertSummary()
   end
 end
 
@@ -695,5 +725,52 @@ function transferPoints()
     formatNumber(amount), recipient), function()
       setPending('transfer')
       sendOpcode(SHOP_OPCODES.TRANSFER_POINTS, amount .. ';' .. recipient)
+    end)
+end
+
+function updateConvertSummary()
+  if not convertAmountSpin then
+    return
+  end
+  local coins = convertAmountSpin:getValue() or 0
+  local cost = coins * POINTS_PER_COIN
+  local after = balance - cost
+  convertSummaryBalance.value:setText(formatNumber(balance))
+  convertSummaryCost.value:setText(formatNumber(cost))
+  convertSummaryAfter.value:setText(formatNumber(after))
+  convertSummaryAfter.value:setColor(after < 0 and '#e07a7a' or '#ffffff')
+  convertError:setText('')
+  convertButton:setEnabled(not pendingAction and coins > 0 and after >= 0)
+end
+
+-- -1 converts as many coins as the balance allows.
+function setConvertAmount(coins)
+  local maxCoins = math.floor(balance / POINTS_PER_COIN)
+  if coins < 0 then
+    coins = maxCoins
+  end
+  convertAmountSpin.firstchange = false
+  convertAmountSpin:setText(tostring(math.min(coins, maxCoins)))
+end
+
+function convertPoints()
+  if pendingAction then
+    return
+  end
+
+  local coins = convertAmountSpin:getValue() or 0
+  if coins <= 0 then
+    convertError:setText('Please enter an amount greater than 0.')
+    return
+  elseif coins * POINTS_PER_COIN > balance then
+    convertError:setText('You do not have enough Danubia Points.')
+    return
+  end
+
+  confirm('Confirm Conversion', string.format(
+    'Do you really want to convert %s Danubia Points into %s Danubia Coin(s)?',
+    formatNumber(coins * POINTS_PER_COIN), formatNumber(coins)), function()
+      setPending('convert')
+      sendOpcode(SHOP_OPCODES.CONVERT_TO_COINS, tostring(coins))
     end)
 end

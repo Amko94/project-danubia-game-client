@@ -404,6 +404,11 @@ MainWindow
       !text: tr('Transfer Points')
       @onClick: modules.game_shop.selectTab('transfer')
 
+    ShopTab
+      id: convertTab
+      !text: tr('Convert to Coins')
+      @onClick: modules.game_shop.selectTab('convert')
+
   ShopDivider
     id: tabDivider
     anchors.top: tabBar.bottom
@@ -855,6 +860,148 @@ MainWindow
         text-align: center
         color: #aaaaaa
         !text: tr('Double-check the name. Transfers cannot be undone.')
+
+  Panel
+    id: convertPanel
+    anchors.top: tabDivider.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: footerSeparator.top
+    margin-top: 8
+    margin-bottom: 8
+    visible: false
+
+    Panel
+      id: convertCard
+      anchors.horizontalCenter: parent.horizontalCenter
+      anchors.top: parent.top
+      margin-top: 16
+      size: 460 330
+      background-color: #1a1a1a
+      border-width: 1
+      border-color: #444444
+
+      Label
+        id: convertTitle
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        margin-top: 14
+        !text: tr('Convert Points to Coins')
+        font: sans-bold-16px
+        color: #ffffff
+        text-auto-resize: true
+
+      Label
+        id: convertIntro
+        anchors.top: convertTitle.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        margin: 8 24 0 24
+        height: 30
+        text-wrap: true
+        text-align: center
+        color: #b8b8b8
+        !text: tr('Turn Danubia Points into Danubia Coin items. 1 coin costs 10 points. The coins are added to your inventory.')
+
+      ShopDivider
+        id: convertDivider
+        anchors.top: convertIntro.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        margin: 10 24 0 24
+
+      Label
+        id: convertAmountCaption
+        anchors.top: convertDivider.bottom
+        anchors.left: parent.left
+        margin: 14 24 0 24
+        !text: tr('Coins')
+        color: #eeeeee
+        text-auto-resize: true
+
+      SpinBox
+        id: convertAmount
+        anchors.top: convertAmountCaption.bottom
+        anchors.left: parent.left
+        margin: 4 0 0 24
+        width: 120
+        minimum: 0
+        maximum: 0
+
+      Panel
+        id: convertQuickAmounts
+        anchors.left: convertAmount.right
+        anchors.right: parent.right
+        anchors.verticalCenter: convertAmount.verticalCenter
+        margin-left: 10
+        margin-right: 24
+        height: 20
+        layout:
+          type: horizontalBox
+          spacing: 4
+
+        ShopPill
+          width: 60
+          text: 1
+          @onClick: modules.game_shop.setConvertAmount(1)
+
+        ShopPill
+          width: 60
+          text: 10
+          @onClick: modules.game_shop.setConvertAmount(10)
+
+        ShopPill
+          width: 60
+          text: 100
+          @onClick: modules.game_shop.setConvertAmount(100)
+
+        ShopPill
+          width: 60
+          !text: tr('Max')
+          @onClick: modules.game_shop.setConvertAmount(-1)
+
+      Panel
+        id: convertSummary
+        anchors.top: convertAmount.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        margin: 16 24 0 24
+        height: 76
+        background-color: #111111
+        border-width: 1
+        border-color: #333333
+        padding-top: 4
+        layout:
+          type: verticalBox
+
+        ShopSummaryRow
+          id: convertSummaryBalance
+
+        ShopSummaryRow
+          id: convertSummaryCost
+
+        ShopSummaryRow
+          id: convertSummaryAfter
+
+      Label
+        id: convertError
+        anchors.top: convertSummary.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        margin: 8 24 0 24
+        height: 16
+        text-align: center
+        color: #e07a7a
+
+      ShopGoldButton
+        id: convertButton
+        anchors.top: convertError.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        margin-top: 8
+        width: 200
+        height: 28
+        !text: tr('Convert to Coins')
+        @onClick: modules.game_shop.convertPoints()
 
   HorizontalSeparator
     id: footerSeparator

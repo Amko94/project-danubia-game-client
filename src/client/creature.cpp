@@ -488,6 +488,15 @@ void Creature::updateWalkAnimation(uint8 totalPixelsWalked)
         return;
 
     int footAnimPhases = getWalkAnimationPhases() - 1;
+
+    // Since mount is a different outfit the walk cycle is the mount's, not the rider's. This has to
+    // be known before the delay is derived from it, otherwise a rider with more animation phases
+    // (retro outfits have 9) makes the shorter mount cycle run several times too fast.
+    if (m_outfit.getMount() != 0) {
+        ThingType* type = g_things.rawGetThingType(m_outfit.getMount(), m_outfit.getCategory());
+        footAnimPhases = std::min<int>(footAnimPhases, type->getAnimationPhases() - 1);
+    }
+
     // TODO, should be /2 for <= 810
     uint16 footDelay = getStepDuration(true);
     if (footAnimPhases > 0) {
@@ -497,12 +506,6 @@ void Creature::updateWalkAnimation(uint8 totalPixelsWalked)
         footDelay += 10;
     if (footDelay < 20)
         footDelay = 20;
-
-    // Since mount is a different outfit we need to get the mount animation phases
-    if (m_outfit.getMount() != 0) {
-        ThingType* type = g_things.rawGetThingType(m_outfit.getMount(), m_outfit.getCategory());
-        footAnimPhases = std::min<int>(footAnimPhases, type->getAnimationPhases() - 1);
-    }
 
     if (footAnimPhases == 0) {
         m_walkAnimationPhase = 0;

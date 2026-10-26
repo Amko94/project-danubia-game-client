@@ -600,7 +600,10 @@ void Creature::nextWalkUpdate()
 
 void Creature::updateWalk()
 {
-    float walkTicksPerPixel = ((float)(getStepDuration(true) + (g_game.getFeature(Otc::GameNewUpdateWalk) ? 0 : 10))) / (float)g_sprites.spriteSize();
+    // The 8.0 walk ends at getStepDuration(); its pixels must reach the tile
+    // boundary at the same deadline, rather than snapping over a 10 ms tail.
+    const int animationPadding = (g_game.getClientVersion() <= 810 || g_game.getFeature(Otc::GameNewUpdateWalk)) ? 0 : 10;
+    float walkTicksPerPixel = static_cast<float>(getStepDuration(true) + animationPadding) / g_sprites.spriteSize();
     uint8 totalPixelsWalked = std::min<uint8>(m_walkTimer.ticksElapsed() / walkTicksPerPixel, g_sprites.spriteSize());
     uint8 totalPixelsWalkedInNextFrame = std::min<uint8>((m_walkTimer.ticksElapsed() + (g_game.getFeature(Otc::GameNewUpdateWalk) ? std::max(1000.f / g_app.getFps(), 1.0f) : 15)) / walkTicksPerPixel, g_sprites.spriteSize());
 
@@ -918,8 +921,16 @@ uint16 Creature::getStepDuration(bool ignoreDiagonal, Otc::Direction dir)
                                                                                                     + m_speedFormula[Otc::SpeedFormulaB]) + m_speedFormula[Otc::SpeedFormulaC]) + 0.5));
         }
         interval = std::floor(interval / (double)formulatedSpeed);
-    } else
-        interval /= speed;
+    } else {
+        if (g_game.getClientVersion() <= 810 && !g_game.getFeature(Otc::GameNewWalking)) {
+            // The 8.0 server rounds the fractional duration to its beat. Truncating
+            // first can predict a step 50 ms too early (150000 / 748: 200 vs 250).
+            const double duration = static_cast<double>(interval) / speed;
+            interval = static_cast<int>(std::ceil(duration / g_game.getServerBeat()) * g_game.getServerBeat());
+        } else {
+            interval /= speed;
+        }
+    }
 
     // the server rounds step durations up to its beat in every protocol version
     if (!g_game.getFeature(Otc::GameNewWalking))

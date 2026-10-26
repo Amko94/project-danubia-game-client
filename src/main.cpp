@@ -21,6 +21,7 @@
  */
 
 #include <framework/core/application.h>
+#include <framework/core/lagdiagnostics.h>
 #include <framework/core/resourcemanager.h>
 #include <framework/core/eventdispatcher.h>
 #include <framework/luaengine/luainterface.h>
@@ -43,6 +44,11 @@ int main(int argc, const char* argv[]) {
     g_resources.init(argv[0]);
     g_resources.cleanupUpdateFiles();
     std::string compactName = g_resources.getCompactName();
+    if (std::find(args.begin(), args.end(), "--lag-diagnostics") != args.end()) {
+        const auto diagnosticPath = std::filesystem::path(g_resources.getBinaryPath()).parent_path() / "danubia-lag-diagnostics.log";
+        if (!LagDiagnostics::start(diagnosticPath))
+            g_logger.warning("Unable to open lag diagnostics log.");
+    }
     // Normal releases leave no log beside the client. Keep opt-in diagnostics.
     if (std::find(args.begin(), args.end(), "--log") != args.end()) {
         g_logger.setLogFile(compactName + ".log");

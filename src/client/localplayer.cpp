@@ -21,6 +21,7 @@
  */
 
 #include "localplayer.h"
+#include <framework/core/lagdiagnostics.h>
 #include "map.h"
 #include "game.h"
 #include "tile.h"
@@ -125,6 +126,11 @@ void LocalPlayer::walk(const Position& oldPos, const Position& newPos)
     if (isPreWalking()) {
         for (auto it = m_preWalking.begin(); it != m_preWalking.end(); ++it) {
             if (*it == newPos) {
+                if (LagDiagnostics::enabled) {
+                    const auto lateMs = static_cast<int64_t>(m_walkTimer.ticksElapsed()) - getStepDuration();
+                    if (lateMs >= 40)
+                        LagDiagnostics::record(LagDiagnostics::LateConfirmation, lateMs);
+                }
                 m_preWalking.erase(m_preWalking.begin(), ++it);
                 if (!isPreWalking()) // reset pre walking
                     updateWalk();
@@ -135,6 +141,8 @@ void LocalPlayer::walk(const Position& oldPos, const Position& newPos)
             g_logger.info(stdext::format("[%i] LocalPlayer::walk invalid prewalk", (int)g_clock.millis()));
         }
 
+        if (LagDiagnostics::enabled)
+            LagDiagnostics::record(LagDiagnostics::PositionCorrection, 0);
         // invalid pre walk
         m_preWalking.clear();
         m_serverWalking = true;
@@ -176,6 +184,8 @@ void LocalPlayer::preWalk(Otc::Direction direction)
 
 void LocalPlayer::cancelNewWalk(Otc::Direction dir)
 {
+    if (LagDiagnostics::enabled)
+        LagDiagnostics::record(LagDiagnostics::WalkCancel, 0);
     if (g_extras.debugWalking) {
         g_logger.info(stdext::format("[%i] cancelWalk", (int)g_clock.millis()));
     }
@@ -367,6 +377,12 @@ void LocalPlayer::updateWalk()
         return;
 
     Creature::updateWalk();
+
+    if (LagDiagnostics::enabled && isPreWalking()) {
+        const auto waitMs = static_cast<int64_t>(m_walkTimer.ticksElapsed()) - getStepDuration();
+        if (waitMs >= 40)
+            LagDiagnostics::record(LagDiagnostics::WalkWait, waitMs);
+    }
 
     // terminate walk only when client and server side walk are completed
     if (m_walking && m_walkTimer.ticksElapsed() >= getStepDuration()) {

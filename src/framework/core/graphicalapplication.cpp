@@ -22,6 +22,7 @@
 
 
 #include "graphicalapplication.h"
+#include <framework/core/lagdiagnostics.h>
 #include <framework/core/adaptiverenderer.h>
 #include <framework/core/clock.h>
 #include <framework/core/eventdispatcher.h>
@@ -149,7 +150,15 @@ void GraphicalApplication::run()
     std::mutex mutex;
     std::thread worker([&] {
         g_dispatcherThreadId = std::this_thread::get_id();
+        auto previousProcessing = std::chrono::steady_clock::now();
         while (!m_stopping) {
+            if (LagDiagnostics::enabled) {
+                const auto now = std::chrono::steady_clock::now();
+                const auto gapMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - previousProcessing).count();
+                if (gapMs >= 50)
+                    LagDiagnostics::record(LagDiagnostics::ProcessingGap, gapMs);
+                previousProcessing = now;
+            }
             m_processingFrames.addFrame();
             {
                 g_clock.update();
@@ -208,6 +217,8 @@ void GraphicalApplication::run()
 
     std::shared_ptr<DrawQueue> toDrawQueue, toDrawMapQueue, toDrawMapForegroundQueue;
     ticks_t lastFrame = stdext::millis();
+    auto previousPresentation = std::chrono::steady_clock::now();
+    bool previousDiagnosticFrameActive = false;
     while (!m_stopping) {
         m_iteration += 1;
 
@@ -336,6 +347,15 @@ void GraphicalApplication::run()
 
         AutoStat s(STATS_RENDER, "SwapBuffers");
         g_window.swapBuffers();
+        if (LagDiagnostics::enabled) {
+            const auto now = std::chrono::steady_clock::now();
+            const bool active = isOnline && g_window.hasFocus();
+            const auto gapMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - previousPresentation).count();
+            if (active && previousDiagnosticFrameActive && gapMs >= 50)
+                LagDiagnostics::record(LagDiagnostics::FrameGap, gapMs);
+            previousPresentation = now;
+            previousDiagnosticFrameActive = active;
+        }
         g_graphics.checkForError(__FUNCTION__, __FILE__, __LINE__);
         g_graphs[GRAPH_TOTAL_FRAME_TIME].addValue(stdext::millis() - lastFrame);
         lastFrame = stdext::millis();

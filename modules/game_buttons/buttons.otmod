@@ -1,7 +1,6 @@
 Module
   name: game_buttons
-  description: Shows miniwindow with buttons
-  author: otclient@otclient.ovh
+  description: Shows a movable miniwindow with the main buttons
   sandboxed: true
   scripts: [ buttons ]
   @onLoad: init()

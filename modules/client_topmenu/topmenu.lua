@@ -28,6 +28,7 @@ local function addButton(id, description, icon, callback, panel, toggle, front, 
   button:setId(id)
   button:setTooltip(description)
   button:setIcon(resolvepath(icon, 3))
+  button.iconPath = icon
   button.onMouseRelease = function(widget, mousePos, mouseButton)
     if widget:containsPoint(mousePos) and mouseButton ~= MouseMidButton and mouseButton ~= MouseTouch then
       callback()
@@ -72,10 +73,10 @@ function terminate()
 end
 
 function online()
-  topMenu:show()
   if topMenu.hideIngame then
     hide()
   else
+    topMenu:show()
     modules.game_interface.getRootPanel():addAnchor(AnchorTop, 'topMenu', AnchorBottom)
   end
   if topMenu.onlineLabel then
@@ -168,43 +169,27 @@ end
 
 function addLeftGameButton(id, description, icon, callback, front, index)
   local button = addButton(id, description, icon, callback, topMenu.leftGameButtonsPanel, false, front, index)
-  if modules.game_buttons then
-    modules.game_buttons.takeButton(button)
-  end
   return button
 end
 
 function addLeftGameToggleButton(id, description, icon, callback, front, index)
   local button = addButton(id, description, icon, callback, topMenu.leftGameButtonsPanel, true, front, index)
-  if modules.game_buttons then
-    modules.game_buttons.takeButton(button)
-  end
   return button
 end
 
 function addRightGameButton(id, description, icon, callback, front, index)
   local button = addButton(id, description, icon, callback, topMenu.rightGameButtonsPanel, false, front, index)
-  if modules.game_buttons then
-    modules.game_buttons.takeButton(button)
-  end
   return button
 end
 
 function addRightGameToggleButton(id, description, icon, callback, front, index)
   local button = addButton(id, description, icon, callback, topMenu.rightGameButtonsPanel, true, front, index)
-  if modules.game_buttons then
-    modules.game_buttons.takeButton(button)
-  end
   return button
 end
 
 function showGameButtons()
   topMenu.leftGameButtonsPanel:show()
   topMenu.rightGameButtonsPanel:show()
-  if modules.game_buttons then
-    modules.game_buttons.takeButtons(topMenu.leftGameButtonsPanel:getChildren())
-    modules.game_buttons.takeButtons(topMenu.rightGameButtonsPanel:getChildren())
-  end
 end
 
 function hideGameButtons()

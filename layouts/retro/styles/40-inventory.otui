@@ -102,6 +102,7 @@ InventoryButton < Button
   color: white
   size: 45 18
   text-offset: 2 2
+  image-color: #8c8c8c
 
 SoulCapLabel < GameLabel
   text-align: center
@@ -307,6 +308,7 @@ InventoryWindow < HeadlessMiniWindow
           type: verticalBox
         
         InventoryButton
+          id: btnStop
           !text: tr('Stop')
           @onClick: g_game.stop(); g_game.cancelAttackAndFollow()
 
@@ -315,10 +317,22 @@ InventoryWindow < HeadlessMiniWindow
           @onClick: modules.client_options.toggle()
 
         InventoryButton
+          id: btnHotkeys
           !text: tr('Hotkeys')
           @onClick: modules.game_hotkeys.toggle()
 
         InventoryButton
-          !text: tr('Logout')
-          @onClick: modules.game_interface.tryLogout()
+          id: btnQuests
+          !text: tr('Quests')
+          @onClick: g_game.requestQuestLog()
+
+        InventoryButton
+          id: btnShop
+          !text: tr('Shop')
+          @onClick: modules.game_shop.toggle()
+
+        InventoryButton
+          id: btnTasks
+          !text: tr('Tasks')
+          @onClick: modules.game_tasks.TaskUI.toggle()
 

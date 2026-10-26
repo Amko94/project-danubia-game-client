@@ -31,6 +31,16 @@ local defaultOptions = {
   displayHealthOnTop = false,
   showHealthManaCircle = false,
   hidePlayerBars = false,
+  showButtonStop = false,
+  showButtonHotkeys = true,
+  showButtonQuests = true,
+  showButtonShop = true,
+  showButtonTasks = true,
+  showButtonSkills = true,
+  showButtonBattle = true,
+  showButtonVip = true,
+  showButtonBoosts = true,
+  showButtonLogout = true,
   topHealtManaBar = false,
   displayText = true,
   dontStretchShrink = false,
@@ -303,6 +313,17 @@ function setOption(key, value, force)
   elseif key == 'topHealtManaBar' then
     modules.game_healthinfo.topHealthBar:setVisible(value)
     modules.game_healthinfo.topManaBar:setVisible(value)
+  elseif key:find('^showButton') then
+    local id = 'btn' .. key:sub(11)
+    local windows = {}
+    if modules.game_inventory then table.insert(windows, modules.game_inventory.inventoryWindow) end
+    if modules.game_buttons then table.insert(windows, modules.game_buttons.buttonsWindow) end
+    for _, window in ipairs(windows) do
+      local button = window:recursiveGetChildById(id)
+      if button then
+        button:setVisible(value)
+      end
+    end
   elseif key == 'displayText' then
     gameMapPanel:setDrawTexts(value)
   elseif key == 'dontStretchShrink' then

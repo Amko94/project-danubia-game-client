@@ -33,10 +33,63 @@ OptionPanel
     id: displayMana
     !text: tr('Show player mana bar')
 
+  Label
+    margin-top: 6
+    !text: tr('Show buttons (Options is always shown):')
+
+  Panel
+    margin-top: 3
+    height: 90
+    layout:
+      type: grid
+      cell-size: 110 16
+      cell-spacing: 2
+      num-columns: 3
+
+    OptionCheckBox
+      id: showButtonStop
+      !text: tr('Stop')
+
+    OptionCheckBox
+      id: showButtonHotkeys
+      !text: tr('Hotkeys')
+
+    OptionCheckBox
+      id: showButtonQuests
+      !text: tr('Quests')
+
+    OptionCheckBox
+      id: showButtonShop
+      !text: tr('Shop')
+
+    OptionCheckBox
+      id: showButtonTasks
+      !text: tr('Tasks')
+
+    OptionCheckBox
+      id: showButtonSkills
+      !text: tr('Skills')
+
+    OptionCheckBox
+      id: showButtonBattle
+      !text: tr('Battle')
+
+    OptionCheckBox
+      id: showButtonVip
+      !text: tr('VIP')
+
+    OptionCheckBox
+      id: showButtonBoosts
+      !text: tr('Boosts')
+
+    OptionCheckBox
+      id: showButtonLogout
+      !text: tr('Logout')
+
   Panel
     height: 40
     margin-top: 3
-    
+
     Label
       width: 90
       anchors.left: parent.left

@@ -3,7 +3,7 @@ function init()
     SpellBoosterUI.init()
 
     if modules.client_topmenu then
-        modules.client_topmenu.addRightGameToggleButton("taskButton", tr("Spell Boosts"), "/images/topbuttons/spelllist", SpellBoosterUI.toggle)
+        modules.client_topmenu.addRightGameToggleButton("spellBoostButton", tr("Spell Boosts"), "/images/topbarButtons/spell_boosts", SpellBoosterUI.toggle)
     end
 end
 

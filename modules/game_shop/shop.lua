@@ -537,7 +537,7 @@ function init()
   selectHistoryFilter('all')
   setBalance(0)
 
-  shopButton = modules.client_topmenu.addRightGameToggleButton('shopButton', tr('Shop'), '/images/topbuttons/shop', toggle, false, 8)
+  shopButton = modules.client_topmenu.addRightGameToggleButton('shopButton', tr('Shop'), '/images/topbarButtons/shop', toggle, false, 8)
 
   ProtocolGame.registerExtendedJSONOpcode(SHOP_OPCODES.OFFERS, onOffers)
   ProtocolGame.registerExtendedJSONOpcode(SHOP_OPCODES.HISTORY, onHistory)

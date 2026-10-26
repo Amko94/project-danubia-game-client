@@ -1,6 +1,51 @@
-GameButtonsWindow
-  id: buttons
+ButtonsWindow < HeadlessMiniWindow
+  id: buttonsWindow
+  height: 26
   &save: true
-  !text: tr("Buttons")
-  icon: /images/topbuttons/buttons
+  &forceOpen: true
+  &autoOpen: 4
 
+  MiniWindowContents
+    margin-top: 2
+
+    Panel
+      id: buttonsPanel
+      anchors.fill: parent
+      layout:
+        type: horizontalBox
+        spacing: 2
+
+      InventoryButton
+        id: btnSkills
+        height: 18
+        margin-top: 0
+        !text: tr('Skills')
+        @onClick: modules.game_skills.toggle()
+
+      InventoryButton
+        id: btnBattle
+        height: 18
+        margin-top: 0
+        !text: tr('Battle')
+        @onClick: modules.game_battle.toggle()
+
+      InventoryButton
+        id: btnVip
+        height: 18
+        margin-top: 0
+        !text: tr('VIP')
+        @onClick: modules.game_viplist.toggle()
+
+      InventoryButton
+        id: btnBoosts
+        height: 18
+        margin-top: 0
+        !text: tr('Boosts')
+        @onClick: modules.game_spellbooster.SpellBoosterUI.toggle()
+
+      InventoryButton
+        id: btnLogout
+        height: 18
+        margin-top: 0
+        !text: tr('Logout')
+        @onClick: modules.game_interface.tryLogout()

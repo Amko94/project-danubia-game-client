@@ -1,0 +1,84 @@
+// Flat dark look shared by the task and spell booster windows (same palette as the shop)
+
+ModernTab < UIButton
+  height: 28
+  font: verdana-11px-rounded
+  color: #b8b8b8
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #333333
+  text-offset: 0 1
+  change-cursor-image: true
+  cursor: pointer
+
+  $hover !on:
+    color: #ffffff
+    background-color: #292929
+    border-color: #555555
+
+  $on:
+    color: #ffffff
+    background-color: #355d89
+    border-color: #6f9dcc
+
+ModernButton < UIButton
+  height: 24
+  font: verdana-11px-antialised
+  color: #dddddd
+  background-color: #222222
+  border-width: 1
+  border-color: #4a4a4a
+  text-offset: 0 1
+  change-cursor-image: true
+  cursor: pointer
+
+  $hover !disabled:
+    color: #ffffff
+    background-color: #2f2f2f
+    border-color: #777777
+
+  $pressed:
+    background-color: #1a1a1a
+    text-offset: 1 2
+
+  $disabled:
+    color: #666666
+    background-color: #181818
+    border-color: #2c2c2c
+    change-cursor-image: false
+
+ModernGoldButton < UIButton
+  height: 24
+  font: verdana-11px-antialised
+  color: #1e1404
+  background-color: #c9962e
+  border-width: 1
+  border-color: #f0c75e
+  text-offset: 0 1
+  change-cursor-image: true
+  cursor: pointer
+
+  $hover !disabled:
+    background-color: #e0ad42
+    border-color: #ffe08a
+
+  $pressed:
+    background-color: #a67c27
+    text-offset: 1 2
+
+  $disabled:
+    color: #8a7a5a
+    background-color: #2a2216
+    border-color: #4a3a1e
+    change-cursor-image: false
+
+ModernDivider < UIWidget
+  height: 1
+  background-color: #4a4a4a
+  phantom: true
+
+ModernHeader < Panel
+  height: 52
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #333333

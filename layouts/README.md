@@ -1,4 +1,7 @@
-## Layouts overwrite files from `/data`
-Foe example, if you have file `/data/images/background.png` and `/layouts/dragonball/images/background.png`, and dragonball layout is selected, then `/layouts/dragonball/images/background.png` will be loaded instead of `/data/images/background.png`.
+# Layout
 
-## Dont make layout named `default`, this name is reserved
+This client ships with the `retro` layout only. Its complete style set is stored in
+`/layouts/retro/styles`.
+
+Common game resources such as sounds, shaders, fonts, cursors, and non-layout-specific
+images remain under `/data`.

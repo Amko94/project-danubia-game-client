@@ -2,7 +2,6 @@
 DEV_MODE = false             -- true enables dev tools (terminal, stats, script reload). MUST be false in releases
 APP_NAME = "danubia"          -- war "otclientv8" -- WICHTIG (siehe Kommentar im Original)
 APP_VERSION = 1                -- war 1341, sinnvoller Startwert für euch
-DEFAULT_LAYOUT = "retro"       -- unverändert lassen
 
 -- If you don't use updater or other service, set it to updater = ""
 Services = {
@@ -41,8 +40,8 @@ end
 -- settings
 g_configs.loadSettings("/config.otml")
 
--- set layout
-g_resources.setLayout(DEFAULT_LAYOUT)
+-- This client ships with the retro layout only.
+g_resources.setLayout("retro")
 
 -- load mods
 g_modules.discoverModules()

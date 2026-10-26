@@ -31,7 +31,7 @@ local defaultOptions = {
   displayHealthOnTop = false,
   showHealthManaCircle = false,
   hidePlayerBars = false,
-  topHealtManaBar = true,
+  topHealtManaBar = false,
   displayText = true,
   dontStretchShrink = false,
   turnDelay = 30,
@@ -43,8 +43,6 @@ local defaultOptions = {
   walkStairsDelay = 50,
   walkTeleportDelay = 200,
   walkCtrlTurnDelay = 150,
-
-  topBar = true,
 
   actionbar1 = true,
   actionbar2 = false,
@@ -362,10 +360,6 @@ function setOption(key, value, force)
     modules.game_interface.refreshViewMode()    
   elseif key:find("actionbar") then
     modules.game_actionbar.show()
-  end
-
-  if key == 'topBar' then
-    modules.game_topbar.show()
   end
 end
 

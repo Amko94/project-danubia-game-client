@@ -21,10 +21,6 @@ OptionPanel
   Label
 
   OptionCheckBox
-    id: topBar
-    !text: tr('Show customizable top status bar')
-
-  OptionCheckBox
     id: topHealtManaBar
     !text: tr('Show player top health and mana bar')
 

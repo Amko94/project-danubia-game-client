@@ -191,6 +191,8 @@ local function setupPreview(preview, offer)
     preview.item:setVisible(true)
   elseif offer.lookType > 0 then
     preview.creature:setOutfit(getPreviewOutfit(offer.lookType))
+    -- Centers on the outfit's real bounds, so bigger outfits/mounts aren't cut off.
+    preview.creature:setCenter(true)
     preview.creature:setAutoRotating(true)
     preview.creature:setAnimate(true)
     preview.creature:setVisible(true)

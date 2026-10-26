@@ -31,7 +31,7 @@ SpellPreview < UICheckBox
 
 MainWindow
   id: assignSpellWindow
-  size: 275 310
+  size: 275 340
   @onEscape: self:destroy()
 
   SpellPreview
@@ -53,12 +53,20 @@ MainWindow
     anchors.left: parent.left
     anchors.right: parent.right
 
+  TextEdit
+    id: search
+    anchors.top: prev.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    margin-top: 10
+    placeholder: Search spell...
+
   TextList
     id: spellList
     anchors.top: prev.bottom
     anchors.left: parent.left
     anchors.right: parent.right
-    margin-top: 10
+    margin-top: 5
     height: 120
     padding: 1
     focusable: false

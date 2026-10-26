@@ -20,10 +20,17 @@ function terminate()
   bugReportWindow:destroy()
 end
 
+-- must match BUG_REPORT_MAX_LENGTH on the server / bug_reports.content
+MAX_LENGTH = 2000
+
 function doReport()
-  g_game.reportBug(bugTextEdit:getText())
+  local text = bugTextEdit:getText():trim()
+  if text:len() == 0 then
+    return
+  end
+  -- the server answers with a confirmation (or cooldown) message
+  g_game.reportBug(text:sub(1, MAX_LENGTH))
   bugReportWindow:hide()
-  modules.game_textmessage.displayGameMessage(tr('Bug report sent.'))
 end
 
 function show()

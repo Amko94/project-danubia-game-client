@@ -4,6 +4,8 @@ local settingsFile = ""
 local cachedSettings = nil
 local window = nil
 local mouseGrabberWidget = nil
+local itemPickerWidget = nil
+local pickTarget = nil
 
 local TYPE = {
   BLANK = 0,
@@ -77,6 +79,11 @@ function init()
   mouseGrabberWidget:setVisible(false)
   mouseGrabberWidget:setFocusable(false)
   mouseGrabberWidget.onMouseRelease = onDropActionButton
+
+  itemPickerWidget = g_ui.createWidget('UIWidget')
+  itemPickerWidget:setVisible(false)
+  itemPickerWidget:setFocusable(false)
+  itemPickerWidget.onMouseRelease = onPickItem
 end
 
 function terminate()
@@ -129,6 +136,7 @@ function offline()
   -- destroy windows
   destroyAssignWindows()
   mouseGrabberWidget:destroy()
+  itemPickerWidget:destroy()
 
   -- remove binds
   for index, actionbar in ipairs(actionBars) do
@@ -430,6 +438,14 @@ function setupButton(widget)
       menu:addOption(widget.item:getItemId() > 100 and tr('Edit Object') or tr('Assign Object'), function() assignItem(widget) end)
       menu:addOption(widget.text:getText():len() > 0 and tr('Edit Text') or tr('Assign Text'), function() assignText(widget) end)
       menu:addOption(widget.hotkey and tr('Edit Hotkey') or tr('Assign Hotkey'), function() assignHotkey(widget) end)
+      if widget.type == TYPE.ITEM then
+        menu:addSeparator()
+        menu:addOption(tr('Use'), function() setItemAction(widget, ACTION.USE) end)
+        menu:addOption(tr('Use on Yourself'), function() setItemAction(widget, ACTION.USE_SELF) end)
+        menu:addOption(tr('Use on Target'), function() setItemAction(widget, ACTION.USE_TARGET) end)
+        menu:addOption(tr('Use with Crosshair'), function() setItemAction(widget, ACTION.USE_CROSS) end)
+        menu:addOption(tr('Equip/Unequip'), function() setItemAction(widget, ACTION.EQUIP) end)
+      end
 
       if widget.type > 0 then
         menu:addSeparator()
@@ -443,7 +459,13 @@ function setupButton(widget)
 
   widget.item.onItemChange = function(widget)
     widget:setOn(true)
-    assignItem(widget:getParent())
+    -- item dropped on the slot (or cleared): apply directly
+    local slot = widget:getParent()
+    if widget:getItemId() == 0 then
+      resetSlot(slot)
+    else
+      applyItem(slot, widget:getItem())
+    end
   end
 
   -- tooltip
@@ -508,150 +530,66 @@ function resetSlot(widget)
   setupButton(widget)
 end
 
+-- assigns an object by picking it with the crosshair (map, containers, inventory)
 function assignItem(widget)
   destroyAssignWindows()
-  local radio = UIRadioGroup.create()
-  local item = widget.item:getItem()
-  local id = widget.item:getItemId()
-
-  -- check if item wasn't cleared
-  if id == 0 and widget.item:isOn() then
-    return resetSlot(widget) 
-  end
-
-  -- create window
-  window = g_ui.loadUI('object', g_ui.getRootWidget())
-  window:show()
-  window:raise()
-  window:focus()
-
-  -- basics
-  window:setText("Assign Object to Action Button "..widget:getId())
-  window:setId("assignItemWindow")
-
-  -- select item
-  window.select.onClick = function()
-    modules.game_itemselector.show(widget.item)
-  end
-
-  -- checks
-  window.item:setShowCount(false)
-  window.item.onItemChange = function(widget)
-    local item = window.item:getItem()
-
-    if item then
-      for i, child in ipairs(window.checks:getChildren()) do
-        -- add to radio grouo
-        radio:addWidget(child)
-
-        -- enabled
-        if item:getId() < 100 then
-          child:setEnabled(false)
-        elseif i < 4 then
-          local check = item:isMultiUse()
-          child:setEnabled(check)
-          if check then
-            radio:selectWidget(child)
-          end
-        elseif g_game.getClientVersion() >= 910 then
-          if i == 4 then
-  --           local check = item:getClothSlot() > 0
-            local check = true -- unfortunately two handed weapons returns cloth 0, so we have to disable this check
-            child:setEnabled(check)
-            if check then
-              radio:selectWidget(child)
-            end
-          else
-            child:setEnabled(true)
-            radio:selectWidget(child)
-          end
-        else
-          child:setVisible(false)
-        end
-      end
-    end
-
-    -- validation
-    window.buttonOk:setEnabled(item and item:getId() > 100)
-    window.buttonApply:setEnabled(item and item:getId() > 100)
-  end
-
-  window.item:setItemId(id)
-
-  -- select current action, if exists
-  local actionType = widget.action or 0
-  if actionType > ACTION.BLANK then
-    local id
-    if actionType == ACTION.USE_SELF then
-      id = "useSelf"
-    elseif actionType == ACTION.USE_TARGET then
-      id = "useTarget"
-    elseif actionType == ACTION.USE_CROSS then
-      id = "useCross"
-    elseif actionType == ACTION.EQUIP then
-      id = "equip"
-    elseif actionType == ACTION.USE then
-      id = "use"
-    end
-
-    for i, child in ipairs(radio.widgets) do
-      local childId = child:getId()
-      if childId == id then
-        radio:selectWidget(child)
-        break
-      end
-    end
-  end
-
-  -- functions
-  local okFunc = function(destroy)
-    local hotkey = settings[widget:getId()] and settings[widget:getId()].hotkey
-    if hotkey and hotkey:len() > 0 and widget.callback then
-      local gameRootPanel = modules.game_interface.getRootPanel()
-      g_keyboard.unbindKeyPress(widget.hotkey, widget.callback, gameRootPanel)
-    end
-
-    settings[widget:getId()] = {hotkey=hotkey}
-    settings[widget:getId()].itemId = window.item:getItemId()
-    settings[widget:getId()].type = TYPE.ITEM
-
-    local selected = radio:getSelectedWidget():getId()
-    if selected == "useSelf" then
-      settings[widget:getId()].action = ACTION.USE_SELF
-    elseif selected == "useTarget" then
-      settings[widget:getId()].action = ACTION.USE_TARGET
-    elseif selected == "useCross" then
-      settings[widget:getId()].action = ACTION.USE_CROSS
-    elseif selected == "equip" then
-      settings[widget:getId()].action = ACTION.EQUIP
-    else
-      settings[widget:getId()].action = ACTION.USE
-    end
-
-    if destroy then
-      window:destroy()
-      radio:destroy()
-    end
-    setupButton(widget)
-  end
-
-  local cancelFunc = function()
-    setupButton(widget)
-    window:destroy()
-    radio:destroy()
-  end
-
-  -- callbacks
-  window.buttonOk.onClick = function() okFunc(true) end
-  window.onEnter = function() okFunc(true) end
-  window.buttonApply.onClick = function() okFunc(false) end
-  window.buttonClose.onClick = cancelFunc
-  window.onEscape = cancelFunc
 
   local actionbar = widget:getParent():getParent()
-  if actionbar.locked then
-    cancelFunc()
+  if actionbar.locked or g_ui.isMouseGrabbed() then return end
+
+  pickTarget = widget
+  itemPickerWidget:grabMouse()
+  g_mouse.pushCursor('target')
+end
+
+function onPickItem(self, mousePosition, mouseButton)
+  if mouseButton == MouseTouch or not pickTarget then return false end
+
+  local target = pickTarget
+  pickTarget = nil
+  g_mouse.popCursor('target')
+  self:ungrabMouse()
+  modules.game_interface.getMapPanel():blockNextMouseRelease(true)
+
+  if mouseButton ~= MouseLeftButton then return true end
+
+  local clickedWidget = modules.game_interface.getRootPanel():recursiveGetChildByPos(mousePosition, false)
+  local item
+  if clickedWidget then
+    if clickedWidget:getClassName() == 'UIGameMap' then
+      local tile = clickedWidget:getTile(mousePosition)
+      local thing = tile and tile:getTopUseThing()
+      if thing and thing:isItem() then
+        item = thing
+      end
+    elseif clickedWidget:getClassName() == 'UIItem' and not clickedWidget:isVirtual() then
+      item = clickedWidget:getItem()
+    end
   end
+
+  if item and item:getId() > 100 then
+    applyItem(target, item)
+  end
+  return true
+end
+
+function applyItem(widget, item)
+  local hotkey = settings[widget:getId()] and settings[widget:getId()].hotkey
+  if hotkey and hotkey:len() > 0 and widget.callback then
+    local gameRootPanel = modules.game_interface.getRootPanel()
+    g_keyboard.unbindKeyPress(widget.hotkey, widget.callback, gameRootPanel)
+  end
+
+  settings[widget:getId()] = {hotkey=hotkey}
+  settings[widget:getId()].itemId = item:getId()
+  settings[widget:getId()].type = TYPE.ITEM
+  settings[widget:getId()].action = item:isMultiUse() and ACTION.USE_CROSS or ACTION.USE
+  setupButton(widget)
+end
+
+function setItemAction(widget, action)
+  settings[widget:getId()].action = action
+  setupButton(widget)
 end
 
 function assignText(widget)
@@ -796,26 +734,40 @@ function assignSpell(widget)
     window.spellList:moveChildToIndex(widget, i)
   end
 
-  local function filterByVocation(a, filter)
+  local function applyFilter(selectCurrent)
      -- disable callback
     window.spellList.onChildFocusChange = nil
 
     local widgets = window.spellList:getChildren()
     local vocation = translateVocation(g_game.getLocalPlayer():getVocation())
+    -- unknown vocation id: nothing to filter by, show everything
+    local onlyVocation = window.checkPanel.tick:isChecked() and vocation ~= nil
+    local search = window.search:getText():lower():trim()
 
     -- visible
     local fistVisible = nil
     for i, widget in ipairs(widgets) do
-      local viable = not filter or table.find(widget.voc, vocation) and true or false
+      local viable = true
+      if onlyVocation then
+        viable = widget.voc ~= nil and table.find(widget.voc, vocation) ~= nil
+      end
+      if viable and search:len() > 0 then
+        viable = widget:getText():lower():find(search, 1, true) ~= nil
+      end
       widget:setVisible(viable)
       if viable and not fistVisible then
         fistVisible = widget
-        radio:selectWidget(fistVisible)
       end
     end
 
+    -- keep the selection while it is still listed
+    local selected = radio:getSelectedWidget()
+    if fistVisible and (not selected or not selected:isVisible()) then
+      radio:selectWidget(fistVisible)
+    end
+
     -- select current one if exist
-    local currentSpell = widget.spellData and widget.spellData.id or 0
+    local currentSpell = selectCurrent and widget.spellData and widget.spellData.id or 0
     if currentSpell > 0 then
       for i, child in ipairs(radio.widgets) do
         local childId = child.spellData.id
@@ -850,8 +802,9 @@ function assignSpell(widget)
     end
   end
 
-  window.checkPanel.tick.onCheckChange = filterByVocation
-  filterByVocation(nil, true)
+  window.checkPanel.tick.onCheckChange = function() applyFilter(false) end
+  window.search.onTextChange = function() applyFilter(false) end
+  applyFilter(true)
 
   local okFunc = function(destroy) 
     local selected = radio:getSelectedWidget()

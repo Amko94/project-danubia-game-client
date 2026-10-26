@@ -134,7 +134,7 @@ ShopOfferCard < UIWidget
 
     UICreature
       id: creature
-      size: 96 96
+      size: 76 76
       anchors.centerIn: parent
       phantom: true
       visible: false

@@ -43,6 +43,7 @@ MiniWindow
   &autoOpen: false
 
   MiniWindowContents
+    background-color: #00000070
     padding-left: 5
     padding-right: 5
     layout: verticalBox

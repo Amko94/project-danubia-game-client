@@ -50,7 +50,7 @@ local defaultOptions = {
   wsadWalking = false,
   walkFirstStepDelay = 100,
   walkTurnDelay = 50,
-  walkStairsDelay = 50,
+  walkStairsDelay = 250,
   walkTeleportDelay = 200,
   walkCtrlTurnDelay = 150,
 
@@ -78,7 +78,7 @@ local fixedOptions = {
   crosshair = 1,
   walkFirstStepDelay = 100,
   walkTurnDelay = 50,
-  walkStairsDelay = 50,
+  walkStairsDelay = 250,
   walkTeleportDelay = 200,
   walkCtrlTurnDelay = 150
 }

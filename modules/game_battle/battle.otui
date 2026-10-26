@@ -47,15 +47,17 @@ MiniWindow
 
   Panel
     id: filterPanel
-    margin-top: 26
+    background-color: #00000070
+    margin-top: 20
     anchors.top: parent.top
     anchors.left: parent.left
     anchors.right: miniwindowScrollBar.left
-    height: 45
+    height: 53
 
     Panel
       id: buttons
       anchors.top: parent.top
+      margin-top: 6
       anchors.horizontalCenter: parent.horizontalCenter
       height: 20
       width: 120
@@ -112,11 +114,12 @@ MiniWindow
         margin-left: 4
 
   Panel
-    height: 18
+    height: 22
+    background-color: #00000070
     anchors.top: prev.bottom
     anchors.left: parent.left
     anchors.right: miniwindowScrollBar.left
-    margin-top: 4
+    margin-top: 0
 
     UIWidget
       id: toggleFilterButton
@@ -134,11 +137,13 @@ MiniWindow
     anchors.left: parent.left
     anchors.right: miniwindowScrollBar.left
     margin-right: 1
-    margin-top: 11
+    margin-top: 20
+    visible: false
 
   MiniWindowContents
+    background-color: #00000070
     anchors.top: prev.bottom
-    margin-top: 6
+    margin-top: 0
 
     Panel
       id: battlePanel

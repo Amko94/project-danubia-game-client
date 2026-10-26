@@ -189,7 +189,7 @@ function hideFilterPanel()
 end
 
 function showFilterPanel()
-  toggleFilterButton:getParent():setMarginTop(5)
+  toggleFilterButton:getParent():setMarginTop(0)
   filterPanel:setHeight(filterPanel.originalHeight)
   toggleFilterButton:setImageClip(torect("21 0 21 12"))
   setHidingFilters(false)

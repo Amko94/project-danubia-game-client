@@ -881,20 +881,21 @@ function assignHotkey(widget)
   local okFunc = function() 
     local hotkey = window.display:getText()
 
+    settings[widget:getId()] = settings[widget:getId()] or {}
     if settings[widget:getId()].hotkey and settings[widget:getId()].hotkey:len() > 0 and widget.callback then
       local gameRootPanel = modules.game_interface.getRootPanel()
       g_keyboard.unbindKeyPress(widget.hotkey, widget.callback, gameRootPanel)
     end
-    settings[widget:getId()] = settings[widget:getId()] or {}
     settings[widget:getId()].hotkey = hotkey
-  
+
     window:destroy()
     setupButton(widget)
   end
-  local clearFunc = function() 
+  local clearFunc = function()
     window.display:setText('')
     local hotkey = window.display:getText()
 
+    settings[widget:getId()] = settings[widget:getId()] or {}
     if settings[widget:getId()].hotkey and settings[widget:getId()].hotkey:len() > 0 and widget.callback then
       local gameRootPanel = modules.game_interface.getRootPanel()
       g_keyboard.unbindKeyPress(widget.hotkey, widget.callback, gameRootPanel)
@@ -916,7 +917,7 @@ function assignHotkey(widget)
 
   local actionbar = widget:getParent():getParent()
   if actionbar.locked then
-    cancelFunc()
+    closeFunc()
   end
 end
 

@@ -20,9 +20,6 @@ local defaultOptions = {
   leftPanels = 2,
   containerPanel = 8,
   backgroundFrameRate = 60,
-  enableAudio = true,
-  enableMusicSound = false,
-  musicSoundVolume = 100,
   enableLights = false,
   floorFading = 500,
   crosshair = 1,
@@ -87,10 +84,8 @@ local generalPanel
 local interfacePanel
 local consolePanel
 local graphicsPanel
-local audioPanel
 local customPanel
 local extrasPanel
-local audioButton
 
 function init()
   for k,v in pairs(defaultOptions) do
@@ -127,9 +122,6 @@ function init()
   graphicsPanel = g_ui.loadUI('graphics')
   optionsTabBar:addTab(tr('Graphics'), graphicsPanel, '/images/optionstab/graphics')
 
-  audioPanel = g_ui.loadUI('audio')
-  optionsTabBar:addTab(tr('Audio'), audioPanel, '/images/optionstab/audio')
-
 
   if DEV_MODE then
     extrasPanel = g_ui.createWidget('OptionPanel')
@@ -146,7 +138,6 @@ function init()
   optionsTabBar:addTab(tr('Custom'), customPanel, '/images/optionstab/features')
 
   optionsButton = modules.client_topmenu.addLeftButton('optionsButton', tr('Options'), '/images/topbuttons/options', toggle)
-  audioButton = modules.client_topmenu.addLeftButton('audioButton', tr('Audio'), '/images/topbuttons/audio', function() toggleOption('enableAudio') end)
 
   addEvent(function() setup() end)
   
@@ -162,7 +153,6 @@ function terminate()
   g_keyboard.unbindKeyDown('Ctrl+N')
   optionsWindow:destroy()
   optionsButton:destroy()
-  audioButton:destroy()
 end
 
 function setup()
@@ -271,24 +261,6 @@ function setOption(key, value, force)
     end
   elseif key == 'fullscreen' then
     g_window.setFullscreen(value)
-  elseif key == 'enableAudio' then
-    if g_sounds ~= nil then
-      g_sounds.setAudioEnabled(value)
-    end
-    if value then
-      audioButton:setIcon('/images/topbuttons/audio')
-    else
-      audioButton:setIcon('/images/topbuttons/audio_mute')
-    end
-  elseif key == 'enableMusicSound' then
-    if g_sounds ~= nil then
-      g_sounds.getChannel(SoundChannels.Music):setEnabled(value)
-    end
-  elseif key == 'musicSoundVolume' then
-    if g_sounds ~= nil then
-      g_sounds.getChannel(SoundChannels.Music):setGain(value/100)
-    end
-    audioPanel:getChildById('musicSoundVolumeLabel'):setText(tr('Music volume: %d', value))
   elseif key == 'showHealthManaCircle' then
     modules.game_healthinfo.healthCircle:setVisible(value)
     modules.game_healthinfo.healthCircleFront:setVisible(value)

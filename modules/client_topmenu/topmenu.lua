@@ -52,8 +52,10 @@ function init()
   
   if g_game.isOnline() then
     scheduleEvent(online, 10)
+  else
+    topMenu:hide()
   end
-  
+
   updateFps()  
   updateStatus()
 end
@@ -70,6 +72,7 @@ function terminate()
 end
 
 function online()
+  topMenu:show()
   if topMenu.hideIngame then
     hide()
   else
@@ -93,9 +96,7 @@ function online()
 end
 
 function offline()
-  if topMenu.hideIngame then
-    show()
-  end
+  topMenu:hide()
   if topMenu.onlineLabel then
     topMenu.onlineLabel:show()
   end

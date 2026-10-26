@@ -678,6 +678,13 @@ ThingPtr Tile::getTopMultiUseThingEx(Point offset)
     return m_things[0];
 }
 
+// players may walk through each other while the local player is inside a protection zone
+static bool isPzPassable(const CreaturePtr& creature)
+{
+    LocalPlayerPtr localPlayer = g_game.getLocalPlayer();
+    return creature->isPlayer() && localPlayer && (localPlayer->getStates() & Otc::IconPz);
+}
+
 bool Tile::isWalkable(bool ignoreCreatures)
 {
     if(!getGround())
@@ -690,7 +697,7 @@ bool Tile::isWalkable(bool ignoreCreatures)
         if(!ignoreCreatures) {
             if(thing->isCreature()) {
                 CreaturePtr creature = thing->static_self_cast<Creature>();
-                if(!creature->isPassable() && creature->canBeSeen() && !creature->isLocalPlayer())
+                if(!creature->isPassable() && creature->canBeSeen() && !creature->isLocalPlayer() && !isPzPassable(creature))
                     return false;
             }
         }
@@ -799,7 +806,7 @@ bool Tile::hasCreature()
 bool Tile::hasBlockingCreature()
 {
     for (const ThingPtr& thing : m_things)
-        if (thing->isCreature() && !thing->static_self_cast<Creature>()->isPassable() && !thing->isLocalPlayer())
+        if (thing->isCreature() && !thing->static_self_cast<Creature>()->isPassable() && !thing->isLocalPlayer() && !isPzPassable(thing->static_self_cast<Creature>()))
             return true;
     return false;
 }

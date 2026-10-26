@@ -329,6 +329,9 @@ InventoryWindow < HeadlessMiniWindow
         InventoryButton
           id: btnShop
           !text: tr('Shop')
+          color: #f0c75e
+          border-width: 1
+          border-color: #f0c75e
           @onClick: modules.game_shop.toggle()
 
         InventoryButton

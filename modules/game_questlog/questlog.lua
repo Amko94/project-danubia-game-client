@@ -6,6 +6,8 @@ settings = {}
 
 local callDelay = 1000 -- each call delay is also increased by random values (0-callDelay/2)
 local dispatcher = {}
+local refreshEvent = nil
+local focusConnected = false
 
 function init()
   g_ui.importStyle('questlogwindow')
@@ -50,6 +52,8 @@ function toggle()
 end
 
 function offline()
+  removeEvent(refreshEvent)
+  refreshEvent = nil
   if window then
     window:hide()
   end
@@ -76,17 +80,20 @@ function online()
   local track = window.missionlog.track
   local missionDescription = window.missionlog.missionDescription
 
-  connect(missionList, { 
-    onChildFocusChange = function(self, focusedChild)
-      if focusedChild == nil then return end
+  if not focusConnected then
+    focusConnected = true
+    connect(missionList, {
+      onChildFocusChange = function(self, focusedChild)
+        if focusedChild == nil then return end
         missionDescription:setText(focusedChild.description)
         if focusedChild:isVisible() then
           track:setEnabled(true)
         end
-        track:setChecked(settings[focusedChild.trackData])
-      end 
-    }
-  )
+        local charSettings = settings[g_game.getCharacterName()] or {}
+        track:setChecked(charSettings[focusedChild.trackData] and true or false)
+      end
+    })
+  end
 end
 
 function show(questlog)
@@ -163,24 +170,26 @@ function onGameQuestLine(questId, questMissions)
   for i,questMission in pairs(questMissions) do
     local name, description = unpack(questMission)
 
-    --questlog
-    local missionLabel = g_ui.createWidget('QuestLabel', missionList)
     local widgetId = questId..'.'..i
-    missionLabel:setChecked(i % 2 == 0)
-    missionLabel:setId(widgetId)
-    missionLabel.questId = questId
-    missionLabel.trackData = widgetId
-    missionLabel:setText(name)
-    missionLabel.description = description
-    missionLabel:setVisible(questId == window.missionlog.currentQuest)
+
+    --questlog (only for the quest currently shown, tracker polling must not add entries)
+    if questId == window.missionlog.currentQuest then
+      local missionLabel = g_ui.createWidget('QuestLabel', missionList)
+      missionLabel:setChecked(i % 2 == 0)
+      missionLabel:setId(widgetId)
+      missionLabel.questId = questId
+      missionLabel.trackData = widgetId
+      missionLabel:setText(name)
+      missionLabel.description = description
+    end
 
     --tracker
     local trackerLabel = trackerWindow.contentsPanel.list[widgetId]
     trackerLabel = trackerLabel or g_ui.createWidget('QuestTrackerLabel', trackerWindow.contentsPanel.list)
     trackerLabel:setId(widgetId)
     trackerLabel.description:setText(description)
-    local data = settings[g_game.getCharacterName()]
-    trackerLabel:setVisible(description:len() > 0 and data[widgetId])
+    local data = settings[g_game.getCharacterName()] or {}
+    trackerLabel:setVisible(description:len() > 0 and data[widgetId] == true)
   end
   local focusTarget = missionList:getFirstChild()
   if focusTarget and focusTarget:isVisible() then
@@ -203,7 +212,7 @@ function onTrackOptionChange(checkbox)
 
   local trackerWidget = trackerWindow.contentsPanel.list[trackdata]
   if trackerWidget then
-    trackerWidget:setVisible(newStatus)
+    trackerWidget:setVisible(newStatus and trackerWidget.description:getText():len() > 0)
   end
 
   refreshQuests()
@@ -211,14 +220,18 @@ function onTrackOptionChange(checkbox)
 end
 
 function refreshQuests()
+  -- only one refresh loop may run at a time
+  removeEvent(refreshEvent)
+  refreshEvent = nil
   if not g_game.isOnline() then return end
   local data = settings[g_game.getCharacterName()]
   data = data or {}
 
   -- do not execute when questlost is in use
   if not window:isVisible() then
+    local requested = {}
     for questData, track in pairs(data) do
-      local id = string.split(questData, ".")[1]
+      local id = tonumber(string.split(questData, ".")[1])
 
       if not track then
         dispatcher[questData] = nil -- remove from dispatcher if no longer tracked
@@ -226,7 +239,8 @@ function refreshQuests()
         dispatcher[questData] = dispatcher[questData] or g_clock.millis()
       end
 
-      if dispatcher[questData] and g_clock.millis() > dispatcher[questData] + callDelay + math.random(callDelay/2) then
+      if id and not requested[id] and dispatcher[questData] and g_clock.millis() > dispatcher[questData] + callDelay + math.random(callDelay/2) then
+        requested[id] = true
         dispatcher[questData] = g_clock.millis()
         scheduleEvent(function()
           g_game.requestQuestLine(id) -- request update
@@ -235,7 +249,7 @@ function refreshQuests()
     end
   end
 
-  scheduleEvent(refreshQuests, callDelay)
+  refreshEvent = scheduleEvent(refreshQuests, callDelay)
 end
 
 function refreshTrackerWidgets()

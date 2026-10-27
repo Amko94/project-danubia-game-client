@@ -823,11 +823,40 @@ function processMessageMenu(mousePos, mouseButton, creatureName, text, label, ta
   end
 end
 
+-- spells that take a string parameter; the longest matching prefix wins
+local parameterSpells = {
+  'exiva',
+  'utevo res ina',
+  'utevo res',
+  'exura sio',
+  'exani hur',
+}
+
+-- The parameter is one string: every quote is stripped and control characters are dropped before wrapping.
+local function quoteSpellParameter(message)
+  local lower = message:lower()
+  local best
+  for _, spell in ipairs(parameterSpells) do
+    local len = #spell
+    if lower:sub(1, len) == spell and (#lower == len or lower:sub(len + 1, len + 1):match('%s'))
+        and (not best or len > #best) then
+      best = spell
+    end
+  end
+  if not best then return message end
+
+  local param = message:sub(#best + 1):gsub('[%c"]', ''):match('^%s*(.-)%s*$')
+  if #param == 0 then return message end
+  return message:sub(1, #best) .. ' "' .. param .. '"'
+end
+
 function sendCurrentMessage()
   local message = consoleTextEdit:getText()
   if #message == 0 then return end
   if not isChatEnabled() then return end
   consoleTextEdit:clearText()
+
+  message = quoteSpellParameter(message)
 
   -- send message
   sendMessage(message)

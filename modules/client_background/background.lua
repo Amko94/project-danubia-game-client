@@ -5,6 +5,7 @@ local background
 function init()
   background = g_ui.displayUI('background')
   background:lower()
+  background:getChildById('versionLabel'):setText('v' .. APP_SEMVER)
 
   connect(g_game, { onGameStart = hide })
   connect(g_game, { onGameEnd = show })

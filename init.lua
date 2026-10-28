@@ -2,6 +2,7 @@
 DEV_MODE = false             -- true enables dev tools (terminal, stats, script reload). MUST be false in releases
 APP_NAME = "danubia"          -- war "otclientv8" -- WICHTIG (siehe Kommentar im Original)
 APP_VERSION = 1                -- war 1341, sinnvoller Startwert für euch
+APP_SEMVER = "1.0.0"           -- Release-Version nach SemVer (MAJOR.MINOR.PATCH); wird angezeigt, APP_VERSION bleibt die Build-Nummer für Updater/Server
 
 -- If you don't use updater or other service, set it to updater = ""
 Services = {
@@ -27,7 +28,7 @@ g_app.setName("ProjectDanubia")
 
 -- print first terminal message
 g_logger.info(os.date("== application started at %b %d %Y %X"))
-g_logger.info(g_app.getName() .. ' ' .. g_app.getVersion() .. ' rev ' .. g_app.getBuildRevision() .. ' (' .. g_app.getBuildCommit() .. ') made by ' .. g_app.getAuthor() .. ' built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())
+g_logger.info(g_app.getName() .. ' v' .. APP_SEMVER .. ' (engine ' .. g_app.getVersion() .. ') rev ' .. g_app.getBuildRevision() .. ' (' .. g_app.getBuildCommit() .. ') made by ' .. g_app.getAuthor() .. ' built on ' .. g_app.getBuildDate() .. ' for arch ' .. g_app.getBuildArch())
 
 if not g_resources.directoryExists("/data") then
   g_logger.fatal("Data dir doesn't exist.")

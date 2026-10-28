@@ -53,7 +53,7 @@ function init()
     if maximized then g_window.maximize() end
   end
 
-  g_window.setTitle(g_app.getName())
+  g_window.setTitle(g_app.getName() .. " " .. APP_SEMVER)
   g_window.setIcon('/images/clienticon')
 
   if DEV_MODE then
@@ -85,9 +85,9 @@ end
 function onGameStart()
   local player = g_game.getLocalPlayer()
   if not player then return end
-  g_window.setTitle(g_app.getName() .. " - " .. player:getName())  
+  g_window.setTitle(g_app.getName() .. " " .. APP_SEMVER .. " - " .. player:getName())  
 end
 
 function onGameEnd()
-  g_window.setTitle(g_app.getName())
+  g_window.setTitle(g_app.getName() .. " " .. APP_SEMVER)
 end

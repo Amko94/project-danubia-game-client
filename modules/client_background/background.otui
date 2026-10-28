@@ -6,3 +6,12 @@ UIWidget
   image-smooth: true
   image-fixed-ratio: true
   margin-top: 1
+
+  Label
+    id: versionLabel
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    margin-right: 8
+    margin-bottom: 6
+    color: #ffffffaa
+    phantom: true

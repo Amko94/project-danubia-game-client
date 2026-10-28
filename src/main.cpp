@@ -61,7 +61,7 @@ int main(int argc, const char* argv[]) {
     }
 
     // setup application name and version
-    g_app.setName("OTClientV8");
+    g_app.setName("ProjectDanubia");
     g_app.setCompactName(compactName);
     g_app.setVersion("3.2");
 

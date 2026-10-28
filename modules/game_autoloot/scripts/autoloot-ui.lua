@@ -7,7 +7,6 @@ local building = false
 local selectedIndex = nil
 local backpackQuery = ''
 local browsingBackpacks = false
-local requestedBackpackOpen = false
 local itemQuery = ''
 
 local namesById = nil
@@ -17,12 +16,10 @@ function AutoLootUI.init()
     g_ui.importStyle('/modules/game_autoloot/ui/autoloot-rows')
 
     connect(g_game, { onGameEnd = AutoLootUI.closeDialog })
-    connect(Container, { onOpen = AutoLootUI.onContainersChanged, onClose = AutoLootUI.onContainersChanged })
 end
 
 function AutoLootUI.terminate()
     disconnect(g_game, { onGameEnd = AutoLootUI.closeDialog })
-    disconnect(Container, { onOpen = AutoLootUI.onContainersChanged, onClose = AutoLootUI.onContainersChanged })
     AutoLootUI.closeDialog()
 end
 
@@ -34,7 +31,6 @@ function AutoLootUI.closeDialog()
     selectedIndex = nil
     backpackQuery = ''
     browsingBackpacks = false
-    requestedBackpackOpen = false
     itemQuery = ''
 end
 
@@ -196,17 +192,15 @@ function AutoLootUI.onBackpackSearchClick()
     AutoLootUI.startBrowsingBackpacks()
 end
 
--- Lists the backpacks the player has. The equipped backpack is opened once so the backpacks inside it
--- become known (asking the server again would close it, hence the flag).
+-- Lists the backpacks the player has. The server reports them, no container has to be opened; the list
+-- refreshes when the answer arrives.
 function AutoLootUI.startBrowsingBackpacks()
     browsingBackpacks = true
-    if not requestedBackpackOpen and AutoLootManager.openEquippedBackpack() then
-        requestedBackpackOpen = true
-    end
+    AutoLootManager.requestBackpacks()
     AutoLootUI.refresh()
 end
 
-function AutoLootUI.onContainersChanged()
+function AutoLootUI.onBackpacksChanged()
     if mainWindow and (browsingBackpacks or backpackQuery ~= '') then
         AutoLootUI.refresh()
     end

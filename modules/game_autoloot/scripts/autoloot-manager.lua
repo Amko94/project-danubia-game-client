@@ -3,15 +3,35 @@ AutoLootManager = {}
 -- The looting itself runs on the server (data/lib/autoloot_manager.lua there): the client only keeps the
 -- rules and sends them to the server at login and after every change.
 local SYNC_CONFIG_OPCODE = 90
+-- The backpacks the player carries are not read from open containers: the client asks the server (empty
+-- buffer) and gets "<backpack id>,<amount>;<backpack id>,<amount>..." back.
+local BACKPACKS_OPCODE = 91
 
 local settings = { enabled = true, rules = {} }
 local settingsFile = nil
+local ownedBackpacks = {}
 
 local function getSettingsFile()
     return '/settings/autoloot_' .. g_game.getCharacterName() .. '.json'
 end
 
+local function onBackpacks(protocol, opcode, buffer)
+    local counts = {}
+    for entry in (buffer or ''):gmatch('[^;]+') do
+        local id, amount = entry:match('^(%d+),(%d+)$')
+        if id then
+            counts[tonumber(id)] = tonumber(amount)
+        end
+    end
+    ownedBackpacks = counts
+
+    if AutoLootUI and AutoLootUI.onBackpacksChanged then
+        AutoLootUI.onBackpacksChanged()
+    end
+end
+
 function AutoLootManager.init()
+    ProtocolGame.registerExtendedOpcode(BACKPACKS_OPCODE, onBackpacks)
     connect(g_game, {
         onGameStart = AutoLootManager.onGameStart,
         onGameEnd = AutoLootManager.onGameEnd
@@ -23,6 +43,7 @@ function AutoLootManager.init()
 end
 
 function AutoLootManager.terminate()
+    ProtocolGame.unregisterExtendedOpcode(BACKPACKS_OPCODE)
     disconnect(g_game, {
         onGameStart = AutoLootManager.onGameStart,
         onGameEnd = AutoLootManager.onGameEnd
@@ -36,6 +57,7 @@ end
 
 function AutoLootManager.onGameEnd()
     settings = { enabled = true, rules = {} }
+    ownedBackpacks = {}
     settingsFile = nil
 end
 
@@ -184,55 +206,18 @@ function AutoLootManager.removeRuleItem(index, itemId)
     AutoLootManager.save()
 end
 
-local function isCorpseContainer(container)
-    local containerItem = container:getContainerItem()
-    return containerItem ~= nil and AutoLootCorpseIds[containerItem:getId()] == true
+-- Asks the server which backpacks the player carries, the answer arrives in onBackpacks.
+function AutoLootManager.requestBackpacks()
+    local protocol = g_game.getProtocolGame()
+    if protocol then
+        protocol:sendExtendedOpcode(BACKPACKS_OPCODE, '')
+    end
 end
 
--- The client only knows what is inside containers that are open, so the equipped backpack has to be open
--- to see the backpacks inside it. Returns true when it had to be opened (the contents arrive afterwards).
-function AutoLootManager.openEquippedBackpack()
-    local player = g_game.getLocalPlayer()
-    local back = player and player:getInventoryItem(InventorySlotBack)
-    if not back or not back:isContainer() then
-        return false
-    end
-
-    for _, container in pairs(g_game.getContainers()) do
-        local containerItem = container:getContainerItem()
-        if containerItem and containerItem:getId() == back:getId() and not container:hasParent() then
-            return false
-        end
-    end
-
-    g_game.open(back)
-    return true
-end
-
--- Backpacks the player carries as { [item id] = amount }: the equipped one plus those inside open
--- containers (corpses excluded, their loot is not carried yet).
+-- Backpacks the player carries as { [item id] = amount }, as last reported by the server: the equipped
+-- one plus every container inside it.
 function AutoLootManager.getOwnedBackpackCounts()
-    local counts = {}
-
-    local function add(item)
-        if item and item:isContainer() then
-            counts[item:getId()] = (counts[item:getId()] or 0) + 1
-        end
-    end
-
-    local player = g_game.getLocalPlayer()
-    if player then
-        add(player:getInventoryItem(InventorySlotBack))
-    end
-
-    for _, container in pairs(g_game.getContainers()) do
-        if not isCorpseContainer(container) then
-            for slot = 0, container:getCapacity() - 1 do
-                add(container:getItem(slot))
-            end
-        end
-    end
-    return counts
+    return ownedBackpacks
 end
 
 function AutoLootManager.getRuleCount(backpackId)

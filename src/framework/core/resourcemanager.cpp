@@ -319,7 +319,7 @@ std::string ResourceManager::getCompactName() {
             return regex_match[1].str();
         }
     }
-    return "otclientv8";
+    return "danubia";
 }
 
 bool ResourceManager::loadDataFromSelf(bool unmountIfMounted) {

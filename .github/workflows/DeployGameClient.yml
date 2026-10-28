@@ -15,7 +15,57 @@ on:
         default: "1"
 
 jobs:
+  # Bricht den Lauf ab, bevor irgendetwas auf den Server geht, wenn APP_SEMVER
+  # in init.lua nicht hochgezogen wurde (oder kein gueltiges MAJOR.MINOR.PATCH ist).
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check APP_SEMVER was bumped
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          semver_of() { sed -n 's/^APP_SEMVER[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1; }
+
+          new=$(semver_of < init.lua)
+          if [ -z "$new" ]; then
+            echo "::error file=init.lua::APP_SEMVER nicht in init.lua gefunden"
+            exit 1
+          fi
+          if ! echo "$new" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$'; then
+            echo "::error file=init.lua::APP_SEMVER '$new' ist kein gueltiges MAJOR.MINOR.PATCH (SemVer)"
+            exit 1
+          fi
+
+          # Manueller Lauf oder erster Push: nur das Format pruefen
+          if [ "${{ github.event_name }}" != "push" ] || [ -z "$BEFORE" ] || echo "$BEFORE" | grep -Eq '^0+$'; then
+            echo "APP_SEMVER=$new (kein Vergleich mit Vorgaenger moeglich)"
+            exit 0
+          fi
+
+          old=$(git show "$BEFORE:init.lua" 2>/dev/null | semver_of || true)
+          if [ -z "$old" ]; then
+            echo "Vorgaenger hat kein APP_SEMVER, ueberspringe Vergleich (neu: $new)"
+            exit 0
+          fi
+
+          if [ "$new" = "$old" ]; then
+            echo "::error file=init.lua::APP_SEMVER wurde nicht hochgezogen (immer noch $old). Bitte in init.lua erhoehen: PATCH = Fix, MINOR = Feature, MAJOR = Breaking."
+            exit 1
+          fi
+          highest=$(printf '%s\n%s\n' "$old" "$new" | sort -V | tail -n1)
+          if [ "$highest" != "$new" ]; then
+            echo "::error file=init.lua::APP_SEMVER $new ist kleiner als die vorherige Version $old"
+            exit 1
+          fi
+          echo "APP_SEMVER: $old -> $new"
+
   package-and-deploy:
+    needs: version-check
     runs-on: windows-latest
     steps:
       - name: Checkout

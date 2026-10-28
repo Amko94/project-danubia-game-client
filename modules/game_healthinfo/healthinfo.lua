@@ -66,6 +66,9 @@ function init()
   manaCircle = overlay:getChildById('manaCircle')
   topHealthBar = overlay:getChildById('topHealthBar')
   topManaBar = overlay:getChildById('topManaBar')
+  local showTopBars = g_settings.getBoolean('topHealtManaBar')
+  topHealthBar:setVisible(showTopBars)
+  topManaBar:setVisible(showTopBars)
   
   connect(overlay, { onGeometryChange = onOverlayGeometryChange })
   

@@ -2,6 +2,8 @@
 *.lua eol=lf 
 *.txt eol=lf 
 *.ot* eol=lf 
+# binary minimap: must not be line-ending converted by the *.ot* rule above
+*.otmm binary
 *.cpp eol=lf 
 *.h   eol=lf 
 *.ipch filter=lfs diff=lfs merge=lfs -text

@@ -2,7 +2,7 @@
 DEV_MODE = false             -- true enables dev tools (terminal, stats, script reload). MUST be false in releases
 APP_NAME = "danubia"          -- war "otclientv8" -- WICHTIG (siehe Kommentar im Original)
 APP_VERSION = 1                -- war 1341, sinnvoller Startwert für euch
-APP_SEMVER = "1.1.0"           -- Release-Version nach SemVer (MAJOR.MINOR.PATCH); wird angezeigt, APP_VERSION bleibt die Build-Nummer für Updater/Server
+APP_SEMVER = "1.1.1"           -- Release-Version nach SemVer (MAJOR.MINOR.PATCH); wird angezeigt, APP_VERSION bleibt die Build-Nummer für Updater/Server
 
 -- If you don't use updater or other service, set it to updater = ""
 Services = {

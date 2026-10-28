@@ -1,0 +1,7 @@
+Module
+  name: game_autoloot
+  description: Auto Loot
+  author: Amko94
+  scripts: [ itemdata, scripts/autoloot-manager, scripts/autoloot-ui, scripts/autoloot ]
+  @onLoad: init()
+  @onUnload: terminate()

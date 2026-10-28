@@ -44,6 +44,13 @@ ButtonsWindow < HeadlessMiniWindow
         @onClick: modules.game_spellbooster.SpellBoosterUI.toggle()
 
       InventoryButton
+        id: btnLoot
+        height: 18
+        margin-top: 0
+        !text: tr('Loot')
+        @onClick: modules.game_autoloot.AutoLootUI.toggle()
+
+      InventoryButton
         id: btnLogout
         height: 18
         margin-top: 0

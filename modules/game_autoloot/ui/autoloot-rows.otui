@@ -1,0 +1,82 @@
+AutoLootBackpackRow < UIWidget
+  height: 44
+  focusable: true
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #3d3d3d
+
+  $hover !on:
+    background-color: #252525
+    border-color: #666666
+
+  $on:
+    background-color: #355d89
+    border-color: #6f9dcc
+
+  Item
+    id: icon
+    size: 34 34
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 5
+    virtual: true
+    phantom: true
+
+  Label
+    id: nameLabel
+    anchors.left: icon.right
+    anchors.right: countLabel.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+    font: verdana-11px-rounded
+    color: #eeeeee
+    phantom: true
+
+  Label
+    id: countLabel
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 8
+    width: 30
+    text-align: right
+    font: verdana-11px-rounded
+    color: #b8b8b8
+    phantom: true
+
+AutoLootItemRow < UIWidget
+  height: 40
+  background-color: #1a1a1a
+  border-width: 1
+  border-color: #3d3d3d
+
+  $hover:
+    background-color: #252525
+
+  Item
+    id: icon
+    size: 32 32
+    anchors.left: parent.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 5
+    virtual: true
+    phantom: true
+
+  Label
+    id: nameLabel
+    anchors.left: icon.right
+    anchors.right: removeButton.left
+    anchors.verticalCenter: parent.verticalCenter
+    margin-left: 8
+    margin-right: 8
+    font: verdana-11px-rounded
+    color: #eeeeee
+    phantom: true
+
+  Button
+    id: removeButton
+    !text: tr('Remove')
+    size: 60 20
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    margin-right: 6
+    font: verdana-11px-rounded

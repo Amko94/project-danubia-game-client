@@ -40,6 +40,7 @@ local defaultOptions = {
   showButtonBattle = true,
   showButtonVip = true,
   showButtonBoosts = true,
+  showButtonLoot = true,
   showButtonLogout = true,
   topHealtManaBar = false,
   displayText = true,

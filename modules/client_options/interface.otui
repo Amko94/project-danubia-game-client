@@ -83,6 +83,10 @@ OptionPanel
       !text: tr('Boosts')
 
     OptionCheckBox
+      id: showButtonLoot
+      !text: tr('Loot')
+
+    OptionCheckBox
       id: showButtonLogout
       !text: tr('Logout')
 

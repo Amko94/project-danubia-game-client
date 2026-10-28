@@ -1,0 +1,195 @@
+AutoLootDialog < MainWindow
+  id: autoLootDialog
+  size: 700 520
+  text: Auto Loot
+  @onEscape: AutoLootUI.closeDialog()
+
+  Panel
+    id: headerPanel
+    height: 30
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    background-color: #1a1a1a
+    border-width: 1
+    border-color: #333333
+
+    CheckBox
+      id: enabledCheck
+      !text: tr('Enable Auto Loot')
+      font: verdana-11px-rounded
+      color: #eeeeee
+      anchors.verticalCenter: parent.verticalCenter
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin: 0 10 0 10
+      @onCheckChange: AutoLootUI.onEnabledChange(self:isChecked())
+
+  Panel
+    id: backpackSection
+    width: 250
+    anchors.top: headerPanel.bottom
+    anchors.left: parent.left
+    anchors.bottom: closeButton.top
+    margin-top: 7
+    margin-bottom: 7
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    Label
+      !text: tr('Containers')
+      font: verdana-11px-rounded
+      color: #b8b8b8
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 6
+      text-align: center
+
+    TextEdit
+      id: backpackSearch
+      placeholder: Search backpack to add...
+      height: 24
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin: 6 6 0 6
+      background-color: #0d0d0dcc
+      border-width: 1
+      border-color: #444444
+      font: verdana-11px-rounded
+      color: #ffffff
+      @onTextChange: AutoLootUI.onBackpackSearch(self:getText())
+      @onFocusChange: AutoLootUI.onBackpackSearchFocus(self:isFocused())
+      @onMousePress: AutoLootUI.onBackpackSearchClick()
+
+    Panel
+      id: backpackListPanel
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: removePanel.top
+      margin: 6 6 6 6
+
+      ScrollablePanel
+        id: backpackList
+        anchors.fill: parent
+        margin-right: 17
+        vertical-scrollbar: backpackScrollBar
+
+        layout:
+          type: verticalBox
+          spacing: 4
+
+      Label
+        id: emptyBackpacks
+        visible: false
+        color: #aaaaaa
+        font: verdana-11px-rounded
+        text-align: center
+        anchors.fill: backpackList
+
+      VerticalScrollBar
+        id: backpackScrollBar
+        width: 14
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        step: 44
+        pixels-scroll: true
+
+    Panel
+      id: removePanel
+      height: 34
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin: 0 6 6 6
+
+      Button
+        id: removeBackpackButton
+        !text: tr('Remove selected backpack')
+        size: 180 22
+        anchors.centerIn: parent
+        font: verdana-11px-rounded
+        @onClick: AutoLootUI.removeSelectedBackpack()
+
+  Panel
+    id: itemSection
+    anchors.top: headerPanel.bottom
+    anchors.left: backpackSection.right
+    anchors.right: parent.right
+    anchors.bottom: closeButton.top
+    margin: 7 0 7 7
+    background-color: #111111
+    border-width: 1
+    border-color: #333333
+
+    Label
+      id: itemsTitle
+      font: verdana-11px-rounded
+      color: #b8b8b8
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin-top: 6
+      text-align: center
+
+    TextEdit
+      id: itemSearch
+      placeholder: Search item to add...
+      height: 24
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      margin: 6 6 0 6
+      background-color: #0d0d0dcc
+      border-width: 1
+      border-color: #444444
+      font: verdana-11px-rounded
+      color: #ffffff
+      @onTextChange: AutoLootUI.onItemSearch(self:getText())
+
+    Panel
+      id: itemListPanel
+      anchors.top: prev.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      margin: 6 6 6 6
+
+      ScrollablePanel
+        id: itemList
+        anchors.fill: parent
+        margin-right: 17
+        vertical-scrollbar: itemScrollBar
+
+        layout:
+          type: verticalBox
+          spacing: 4
+
+      Label
+        id: emptyItems
+        visible: false
+        color: #aaaaaa
+        font: verdana-11px-rounded
+        text-align: center
+        anchors.fill: itemList
+
+      VerticalScrollBar
+        id: itemScrollBar
+        width: 14
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.right: parent.right
+        step: 40
+        pixels-scroll: true
+
+  Button
+    id: closeButton
+    text: Close
+    size: 76 22
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    @onClick: AutoLootUI.closeDialog()

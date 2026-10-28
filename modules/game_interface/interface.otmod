@@ -19,6 +19,7 @@ Module
     - game_viplist
     - game_tasks
     - game_spellbooster
+    - game_autoloot
     - game_battle
     - game_hideandseek
     - game_minimap

@@ -41,3 +41,7 @@ build.ninja
 
 # Local configuration
 /config.otml
+
+# Unused/backup client data (kept outside the repo, not published)
+/things/860/
+/things/backup/
